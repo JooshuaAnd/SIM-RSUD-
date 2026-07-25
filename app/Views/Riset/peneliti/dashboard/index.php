@@ -192,7 +192,7 @@ $bulanIndo = [
                             </div>
                             <div>
                                 <div class="fw-semibold text-dark" style="font-size: 12px;">Surat Izin Penelitian</div>
-                                <div class="text-muted mt-1" style="font-size: 10px;">ID: <?= esc(format_pengajuan_id($izin['id'], 'penelitian')) ?></div>
+                                <div class="text-muted mt-1" style="font-size: 10px;">No: <?= esc(!empty($izin['nomor_surat']) ? $izin['nomor_surat'] : format_pengajuan_id($izin['id'], 'penelitian')) ?></div>
                             </div>
                         </div>
                         <a href="<?= base_url('riset/peneliti/pengajuan/izin/print/' . $izin['id']) ?>" target="_blank" class="btn btn-sm btn-light border-0 text-primary bg-primary bg-opacity-10 rounded-circle d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;" title="Cetak Surat">
