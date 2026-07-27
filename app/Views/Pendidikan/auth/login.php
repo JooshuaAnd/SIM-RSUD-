@@ -74,7 +74,10 @@
             <input type="text" class="form-control" id="email" name="email" placeholder="Contoh: institusi / pengabdian" required>
         </div>
         <div class="mb-3">
-            <label for="password" class="form-label mb-1">Password</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label for="password" class="form-label mb-0">Password</label>
+                <a href="<?= base_url('pendidikan/forgot-password') ?>" class="text-decoration-none small" style="color: #c62828;">Lupa Password?</a>
+            </div>
             <div class="input-group">
                 <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border-color: #ced4da;">

@@ -124,8 +124,50 @@ class Auth extends BaseController
 
     public function processForgotPassword()
     {
-        // Pura-puranya email berhasil dikirim
-        return redirect()->to('/pendidikan/forgot-password')->with('success', 'Instruksi untuk mengatur ulang kata sandi telah dikirim ke email Anda.');
+        $emailInput = $this->request->getPost('email');
+        if (empty($emailInput)) {
+            return redirect()->back()->with('error', 'Email tidak boleh kosong!');
+        }
+
+        $userModel = new \App\Models\UserPendidikanModel();
+        $user = $userModel->where('email', $emailInput)->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Email tidak terdaftar!');
+        }
+
+        try {
+            // Generate random password
+            $passwordBaru = bin2hex(random_bytes(4)); // 8 characters
+            $hashPassword = password_hash($passwordBaru, PASSWORD_DEFAULT);
+
+            // Update database
+            $userModel->update($user['id'], ['password' => $hashPassword]);
+
+            // Kirim Email
+            $email = \Config\Services::email();
+            $email->setFrom('ruskia335@gmail.com', 'Super Admin SIM Diklat');
+            $email->setTo($emailInput);
+            $email->setSubject('Reset Password Pendidikan SIM Diklat');
+            
+            $pesan = "Halo Pengguna Pendidikan,<br><br>";
+            $pesan .= "Password Anda telah direset.<br>";
+            $pesan .= "Berikut adalah password baru Anda: <b>{$passwordBaru}</b><br><br>";
+            $pesan .= "Silakan login menggunakan password tersebut dan segera ganti password Anda demi keamanan.<br><br>";
+            $pesan .= "Terima kasih.";
+
+            $email->setMessage($pesan);
+
+            if ($email->send()) {
+                return redirect()->to('/pendidikan/login')->with('success', "Password baru berhasil dikirim ke {$emailInput}!");
+            } else {
+                $errorMsg = $email->printDebugger(['headers']);
+                log_message('error', 'Gagal mengirim email reset password pendidikan: ' . $errorMsg);
+                return redirect()->back()->with('error', 'Gagal mengirim email. Pastikan koneksi internet server stabil.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mereset password: ' . $e->getMessage());
+        }
     }
 
     public function processRegister()
