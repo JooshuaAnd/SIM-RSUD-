@@ -99,17 +99,56 @@ function openLogModal(pesertaId, nama) {
         .then(res => res.json())
         .then(data => {
             let html = '';
-            ['pre_test', 'post_test'].forEach(tipe => {
-                if (data[tipe]) {
-                    const label = tipe === 'pre_test' ? 'PRE-TEST' : 'POST-TEST';
+            
+            if (Object.keys(data).length === 0) {
+                html = '<div class="alert alert-warning text-center">Belum ada riwayat pengerjaan kuis.</div>';
+            } else {
+                for (const [tipeRaw, ujianData] of Object.entries(data)) {
+                    const tipe = tipeRaw.toLowerCase();
+                    const label = (tipe.includes('pre')) ? 'PRE-TEST' : 'POST-TEST';
                     html += `
                         <div class="mb-4">
-                            <h6 class="fw-bold bg-dark text-white p-2 rounded">${label} - Nilai: ${data[tipe].score}</h6>
+                            <h6 class="fw-bold bg-dark text-white p-2 rounded">${label} - Nilai: ${ujianData.score}</h6>
+                            
+                            <!-- Summary by Materi -->
+                            <div class="mb-3">
+                                <h6 class="fw-bold small text-muted"><i class="fas fa-chart-pie me-1"></i> Ringkasan per Materi:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="bg-light text-center small">
+                                            <tr>
+                                                <th class="text-start">Materi</th>
+                                                <th>Benar</th>
+                                                <th>Salah</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="small">
+                    `;
+                    
+                    let summary = {};
+                    ujianData.jawaban.forEach(j => {
+                        let materiName = j.materi_judul ? (j.materi_id + ' - ' + j.materi_judul) : 'Umum / Tidak Terkait Materi';
+                        if (!summary[materiName]) summary[materiName] = { benar: 0, salah: 0 };
+                        if (j.is_correct == 1) summary[materiName].benar++;
+                        else summary[materiName].salah++;
+                    });
+                    
+                    for (const [materi, stats] of Object.entries(summary)) {
+                        html += `<tr><td class="text-start fw-bold">${materi}</td><td class="text-center text-success fw-bold">${stats.benar}</td><td class="text-center text-danger fw-bold">${stats.salah}</td></tr>`;
+                    }
+                    
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead class="bg-light text-center small">
                                         <tr>
                                             <th>Pertanyaan</th>
+                                            <th>Materi</th>
                                             <th>Kunci Jawaban</th>
                                             <th>Jawaban Peserta</th>
                                             <th>Status</th>
@@ -117,28 +156,28 @@ function openLogModal(pesertaId, nama) {
                                     </thead>
                                     <tbody class="small">
                     `;
-                    data[tipe].jawaban.forEach(j => {
+                    ujianData.jawaban.forEach(j => {
                         const status = j.is_correct == 1 
                             ? '<span class="badge bg-success"><i class="fas fa-check"></i> Benar</span>' 
                             : '<span class="badge bg-danger"><i class="fas fa-times"></i> Salah</span>';
+                        const materiTeks = j.materi_judul ? j.materi_judul : '-';
                         html += `
                             <tr>
                                 <td>${j.pertanyaan}</td>
-                                <td class="text-center fw-bold text-success">${j.jawaban_benar.toUpperCase()}</td>
-                                <td class="text-center fw-bold">${j.jawaban_peserta}</td>
+                                <td class="text-center" style="font-size:0.7rem;">${materiTeks}</td>
+                                <td class="text-center fw-bold text-success">${(j.jawaban_benar || '-').toUpperCase()}</td>
+                                <td class="text-center fw-bold">${j.jawaban_peserta || '-'}</td>
                                 <td class="text-center">${status}</td>
                             </tr>
                         `;
                     });
                     html += `</tbody></table></div></div>`;
                 }
-            });
-            if (html === '') {
-                html = '<div class="alert alert-warning text-center">Belum ada riwayat pengerjaan kuis.</div>';
             }
             document.getElementById('logContent').innerHTML = html;
         })
         .catch(err => {
+            console.error("Error log_jawaban:", err);
             document.getElementById('logContent').innerHTML = '<div class="alert alert-danger">Gagal mengambil data log jawaban.</div>';
         });
 }

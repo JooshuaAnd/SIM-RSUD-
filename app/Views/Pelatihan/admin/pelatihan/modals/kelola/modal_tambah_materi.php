@@ -24,7 +24,7 @@ $sesiList = $sesiList ?? [];
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold text-muted">Segmen ke-</label>
-                                <input type="number" name="segmen" class="form-control rounded-pill" placeholder="1" value="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                <input type="number" name="segmen" class="form-control rounded-pill" placeholder="Otomatis" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label small fw-bold text-muted">Terkait Sesi (Opsional)</label>

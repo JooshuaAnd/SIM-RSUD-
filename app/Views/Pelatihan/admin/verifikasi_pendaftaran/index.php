@@ -60,7 +60,6 @@ $history = $history ?? [];
                                        data-nama="<?= esc($row['judul_pelatihan']) ?>"
                                        data-metode="<?= esc($row['metode']) ?>"
                                        data-program="<?= esc($row['program']) ?>"
-                                       data-narasumber="<?= esc($row['narasumber']) ?>"
                                        data-jadwal="<?= tanggal_indo($row['jadwal_mulai']) . ' s.d ' . tanggal_indo($row['jadwal_selesai']) ?>"
                                        data-kuota="<?= esc($row['kuota']) ?>"
                                        data-biaya="<?= esc($row['biaya']) . ($row['biaya_nominal'] > 0 ? ' (Rp ' . number_format($row['biaya_nominal'],0,',','.') . ')' : '') ?>"
@@ -151,7 +150,6 @@ $history = $history ?? [];
                                        data-nama="<?= esc($row['judul_pelatihan']) ?>"
                                        data-metode="<?= esc($row['metode']) ?>"
                                        data-program="<?= esc($row['program']) ?>"
-                                       data-narasumber="<?= esc($row['narasumber']) ?>"
                                        data-jadwal="<?= tanggal_indo($row['jadwal_mulai']) . ' s.d ' . tanggal_indo($row['jadwal_selesai']) ?>"
                                        data-kuota="<?= esc($row['kuota']) ?>"
                                        data-biaya="<?= esc($row['biaya']) . ($row['biaya_nominal'] > 0 ? ' (Rp ' . number_format($row['biaya_nominal'],0,',','.') . ')' : '') ?>"
@@ -236,10 +234,7 @@ $history = $history ?? [];
                         <small class="text-muted d-block">Program</small>
                         <span class="fw-bold text-dark small" id="detProgram">-</span>
                     </div>
-                    <div class="col-6">
-                        <small class="text-muted d-block">Narasumber</small>
-                        <span class="fw-bold text-dark small" id="detNarasumber">-</span>
-                    </div>
+
                     <div class="col-6">
                         <small class="text-muted d-block">Jadwal Pelaksanaan</small>
                         <span class="fw-bold text-dark small" id="detJadwal">-</span>
@@ -481,7 +476,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('detNama').innerText = this.getAttribute('data-nama');
             document.getElementById('detMetode').innerText = this.getAttribute('data-metode');
             document.getElementById('detProgram').innerText = this.getAttribute('data-program');
-            document.getElementById('detNarasumber').innerText = this.getAttribute('data-narasumber');
             document.getElementById('detJadwal').innerText = this.getAttribute('data-jadwal');
             document.getElementById('detKuota').innerText = this.getAttribute('data-kuota') + ' Mhs';
             document.getElementById('detBiaya').innerText = this.getAttribute('data-biaya');

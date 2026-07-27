@@ -193,6 +193,39 @@ class MasterPelatihanSeeder extends Seeder
                 "created_at" => date("Y-m-d H:i:s")
             ]
         ];
+        $narasumberData = [];
+        $penyelenggaraData = [];
+
+        foreach ($data as &$row) {
+            if (isset($row['narasumber'])) {
+                if (!empty($row['narasumber']) && $row['narasumber'] !== '-') {
+                    $narasumberData[] = [
+                        'id_pelatihan' => $row['id'],
+                        'nama_narasumber' => $row['narasumber'],
+                        'created_at' => date("Y-m-d H:i:s")
+                    ];
+                }
+                unset($row['narasumber']);
+            }
+            if (isset($row['penyelenggara'])) {
+                if (!empty($row['penyelenggara']) && $row['penyelenggara'] !== '-') {
+                    $penyelenggaraData[] = [
+                        'id_pelatihan' => $row['id'],
+                        'nama_penyelenggara' => $row['penyelenggara'],
+                        'created_at' => date("Y-m-d H:i:s")
+                    ];
+                }
+                unset($row['penyelenggara']);
+            }
+        }
+
         $this->db->table("master_pelatihan")->insertBatch($data);
+        
+        if (!empty($narasumberData)) {
+            $this->db->table("narasumber_pelatihan")->insertBatch($narasumberData);
+        }
+        if (!empty($penyelenggaraData)) {
+            $this->db->table("penyelenggara_pelatihan")->insertBatch($penyelenggaraData);
+        }
     }
 }

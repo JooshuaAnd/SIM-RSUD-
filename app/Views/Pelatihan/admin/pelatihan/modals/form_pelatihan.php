@@ -151,11 +151,11 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-dark">NARASUMBER</label>
-                            <input type="text" name="narasumber" id="f_narasumber" class="form-control rounded-pill border shadow-sm px-4" placeholder="Nama & Gelar" required>
+                            <select name="narasumber[]" id="f_narasumber" class="form-select border shadow-sm" multiple="multiple" required></select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-dark">PENYELENGGARA</label>
-                            <input type="text" name="penyelenggara" id="f_penyelenggara" class="form-control rounded-pill border shadow-sm px-4" placeholder="Instansi" required>
+                            <select name="penyelenggara[]" id="f_penyelenggara" class="form-select border shadow-sm" multiple="multiple" required></select>
                         </div>
                         <div class="col-md-9">
                             <label class="form-label small fw-bold text-dark">KONTAK PENYEDIA</label>

@@ -65,6 +65,12 @@
                                             <span class="text-muted small">Lokasi belum diatur</span>
                                         <?php endif; ?>
                                     <?php endif; ?>
+                                    <?php if(!empty($s['narasumber'])): ?>
+                                        <div class="small mt-2 text-muted"><i class="fas fa-user-tie me-1"></i> <?= $s['narasumber'] ?></div>
+                                    <?php endif; ?>
+                                    <?php if(!empty($s['penyelenggara'])): ?>
+                                        <div class="small mt-1 text-muted"><i class="fas fa-building me-1"></i> <?= $s['penyelenggara'] ?></div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center">
@@ -125,6 +131,28 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Nama/Topik Sesi</label>
                         <input type="text" class="form-control border-light-subtle bg-light" name="nama_sesi" id="nama_sesi" required placeholder="Contoh: Sesi Pembukaan">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Narasumber</label>
+                        <select class="form-select border-light-subtle bg-light" name="narasumber" id="narasumber" style="width: 100%;">
+                            <option value="">-- Pilih Narasumber --</option>
+                            <?php if(!empty($master_narasumber)): foreach($master_narasumber as $mn): ?>
+                                <option value="<?= htmlspecialchars($mn['nama_narasumber']) ?>"><?= htmlspecialchars($mn['nama_narasumber']) ?></option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                        <small class="text-muted">Pilih dari daftar narasumber yang terdaftar pada pelatihan ini.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Penyelenggara</label>
+                        <select class="form-select border-light-subtle bg-light" name="penyelenggara" id="penyelenggara" style="width: 100%;">
+                            <option value="">-- Pilih Penyelenggara --</option>
+                            <?php if(!empty($master_penyelenggara)): foreach($master_penyelenggara as $mp): ?>
+                                <option value="<?= htmlspecialchars($mp['nama_penyelenggara']) ?>"><?= htmlspecialchars($mp['nama_penyelenggara']) ?></option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                        <small class="text-muted">Pilih dari daftar penyelenggara yang terdaftar pada pelatihan ini.</small>
                     </div>
 
                     <div class="row g-3 mb-3">
@@ -222,6 +250,9 @@
         document.getElementById('tempat').value = '';
         document.getElementById('alamat').value = '';
         document.getElementById('maps_url').value = '';
+
+        $('#narasumber').val('');
+        $('#penyelenggara').val('');
         
         toggleSesiFields();
         new bootstrap.Modal(document.getElementById('modalSesi')).show();
@@ -244,6 +275,24 @@
         document.getElementById('alamat').value = sesi.alamat;
         document.getElementById('maps_url').value = sesi.maps_url;
         
+        var selectNarasumber = $('#narasumber');
+        selectNarasumber.val('');
+        if (sesi.narasumber) {
+            var nList = sesi.narasumber.split(',');
+            if (nList.length > 0) {
+                selectNarasumber.val(nList[0].trim());
+            }
+        }
+
+        var selectPenyelenggara = $('#penyelenggara');
+        selectPenyelenggara.val('');
+        if (sesi.penyelenggara) {
+            var pList = sesi.penyelenggara.split(',');
+            if (pList.length > 0) {
+                selectPenyelenggara.val(pList[0].trim());
+            }
+        }
+
         toggleSesiFields();
         new bootstrap.Modal(document.getElementById('modalSesi')).show();
     }
