@@ -128,6 +128,20 @@
                 width: '100%',
                 dropdownParent: $('#modalPelatihan')
             });
+            $('#f_narasumber').select2({
+                placeholder: "Ketik nama narasumber lalu Enter",
+                tags: true,
+                tokenSeparators: [','],
+                width: '100%',
+                dropdownParent: $('#modalPelatihan')
+            });
+            $('#f_penyelenggara').select2({
+                placeholder: "Ketik nama penyelenggara lalu Enter",
+                tags: true,
+                tokenSeparators: [','],
+                width: '100%',
+                dropdownParent: $('#modalPelatihan')
+            });
         });
     });
 
@@ -211,6 +225,8 @@
             toggleClosedFields('Terbuka');
             $('#f_target_khusus_profesi').val(null).trigger('change');
             $('#f_target_khusus_unit').val(null).trigger('change');
+            $('#f_narasumber').empty().trigger('change');
+            $('#f_penyelenggara').empty().trigger('change');
             // Update categories for the currently selected (first) ranah
             const firstRanah = document.getElementById('f_ranah_skp');
             if (firstRanah && firstRanah.value) updateTrainingCategories(firstRanah.value);
@@ -274,8 +290,27 @@
                 $('#f_target_khusus_unit').val(null).trigger('change');
             }
             document.getElementById('f_metode').value = data.metode;
-            document.getElementById('f_narasumber').value = data.narasumber || "";
-            document.getElementById('f_penyelenggara').value = data.penyelenggara;
+            
+            let narasumberList = data.narasumber_list || [];
+            if (typeof data.narasumber_list === 'string') {
+                try { narasumberList = JSON.parse(data.narasumber_list); } catch(e) { narasumberList = [data.narasumber_list]; }
+            }
+            $('#f_narasumber').empty();
+            narasumberList.forEach(function(item) {
+                $('#f_narasumber').append(new Option(item, item, true, true));
+            });
+            $('#f_narasumber').trigger('change');
+
+            let penyelenggaraList = data.penyelenggara_list || [];
+            if (typeof data.penyelenggara_list === 'string') {
+                try { penyelenggaraList = JSON.parse(data.penyelenggara_list); } catch(e) { penyelenggaraList = [data.penyelenggara_list]; }
+            }
+            $('#f_penyelenggara').empty();
+            penyelenggaraList.forEach(function(item) {
+                $('#f_penyelenggara').append(new Option(item, item, true, true));
+            });
+            $('#f_penyelenggara').trigger('change');
+            
             document.getElementById('f_kontak').value = data.kontak;
             document.getElementById('f_jadwal_mulai').value = data.jadwal_mulai;
             document.getElementById('f_jam_mulai').value = data.jam_mulai;
@@ -599,8 +634,13 @@
             $('#f_target_khusus_unit').val(['ICU', 'IGD']).trigger('change');
         }, 100);
         $('#f_metode').val('Offline / Clasical');
-        $('#f_narasumber').val('dr. Ahmad Suharto, M.Kes, Sp.OG');
-        $('#f_penyelenggara').val('RSUD Kota Yogyakarta');
+        
+        $('#f_narasumber').empty();
+        $('#f_narasumber').append(new Option('dr. Ahmad Suharto, M.Kes, Sp.OG', 'dr. Ahmad Suharto, M.Kes, Sp.OG', true, true)).trigger('change');
+        
+        $('#f_penyelenggara').empty();
+        $('#f_penyelenggara').append(new Option('RSUD Kota Yogyakarta', 'RSUD Kota Yogyakarta', true, true)).trigger('change');
+        
         $('#f_kontak').val('081234567890');
 
         $('#f_reg_buka_tgl').val(today);

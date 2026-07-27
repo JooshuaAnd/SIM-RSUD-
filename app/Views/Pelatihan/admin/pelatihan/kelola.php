@@ -235,6 +235,20 @@ $kuesioner = $kuesioner ?? [];
             let checkedC = soal.jawaban_benar === 'C' ? 'checked' : '';
             let checkedD = soal.jawaban_benar === 'D' ? 'checked' : '';
 
+            let materiOptions = '<option value="">-- Umum / Tidak Terkait Materi --</option>';
+            <?php foreach($materi as $m): ?>
+                <?php 
+                $sesiText = "Umum";
+                foreach($sesiList as $s) {
+                    if ($s['id'] == $m['sesi_id']) {
+                        $sesiText = $s['nama_sesi'];
+                        break;
+                    }
+                }
+                ?>
+                materiOptions += `<option value="<?= $m['id'] ?>" ${soal.materi_id == <?= $m['id'] ?> ? 'selected' : ''}>ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (${"<?= addslashes(htmlspecialchars($sesiText)) ?>"})</option>`;
+            <?php endforeach; ?>
+
             const html = `
                 <div class="card border-0 shadow-sm rounded-lg mb-3 p-4">
                     <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" onsubmit="simpanSoalAjax(event, this)">
@@ -251,6 +265,13 @@ $kuesioner = $kuesioner ?? [];
                         </div>
                         
                         ${imgOrPdf}
+                        
+                        <div class="mb-3">
+                            <label class="small text-muted mb-1">Terkait Materi (Opsional)</label>
+                            <select name="materi_id" class="form-select form-select-sm mb-2">
+                                ${materiOptions}
+                            </select>
+                        </div>
                         
                         <div class="mb-3">
                             <label class="small text-muted mb-1">Upload Lampiran Soal (Gambar/PDF/Word/Excel/PPT/Video, Opsional)</label>
@@ -676,6 +697,25 @@ $kuesioner = $kuesioner ?? [];
                     </div>
                     
                     <div class="mb-3">
+                        <label class="small text-muted mb-1">Terkait Materi (Opsional)</label>
+                        <select name="materi_id" class="form-select form-select-sm mb-2">
+                            <option value="">-- Umum / Tidak Terkait Materi --</option>
+                            <?php foreach($materi as $m): ?>
+                                <?php 
+                                $sesiText = "Umum";
+                                foreach($sesiList as $s) {
+                                    if ($s['id'] == $m['sesi_id']) {
+                                        $sesiText = $s['nama_sesi'];
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <option value="<?= $m['id'] ?>">ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (<?= addslashes(htmlspecialchars($sesiText)) ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="small text-muted mb-1">Upload File (Gambar/PDF, Opsional)</label>
                         <input type="file" name="file_soal" class="form-control form-control-sm mb-2">
                     </div>
@@ -720,6 +760,25 @@ $kuesioner = $kuesioner ?? [];
                         </div>
                     </div>
                     
+                    <div class="mb-3">
+                        <label class="small text-muted mb-1">Terkait Materi (Opsional)</label>
+                        <select name="materi_id" class="form-select form-select-sm mb-2">
+                            <option value="">-- Umum / Tidak Terkait Materi --</option>
+                            <?php foreach($materi as $m): ?>
+                                <?php 
+                                $sesiText = "Umum";
+                                foreach($sesiList as $s) {
+                                    if ($s['id'] == $m['sesi_id']) {
+                                        $sesiText = $s['nama_sesi'];
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <option value="<?= $m['id'] ?>">ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (<?= addslashes(htmlspecialchars($sesiText)) ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
                     <div class="mb-3">
                         <label class="small text-muted mb-1">Upload File (Gambar/PDF, Opsional)</label>
                         <input type="file" name="file_soal" class="form-control form-control-sm mb-2">

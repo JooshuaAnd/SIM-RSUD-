@@ -11,6 +11,8 @@ class DataAwalPelatihanSeeder extends Seeder
             'master_kategori_skp_pelatihan',
             'kategori_evaluasi_pelatihan',
             'master_pelatihan',
+            'narasumber_pelatihan',
+            'penyelenggara_pelatihan',
             'materi_pelatihan',
             'sesi_interaktif_pelatihan',
             'ujian_pelatihan',

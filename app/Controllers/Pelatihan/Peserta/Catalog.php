@@ -46,6 +46,9 @@ class Catalog extends BaseController
             $p['peserta'] = $db->table('peserta_pelatihan')
                 ->where('pelatihan_id', $p['id'])
                 ->countAllResults();
+            
+            $penyelenggaraList = $db->table('penyelenggara_pelatihan')->where('id_pelatihan', $p['id'])->get()->getResultArray();
+            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama_penyelenggara'));
         }
 
         // Fetch filter options dynamically
@@ -83,6 +86,13 @@ class Catalog extends BaseController
         $item['peserta'] = $db->table('peserta_pelatihan')
             ->where('pelatihan_id', $id)
             ->countAllResults();
+
+        // Get Narasumber and Penyelenggara
+        $narasumberList = $db->table('narasumber_pelatihan')->where('id_pelatihan', $id)->get()->getResultArray();
+        $item['narasumber'] = implode(', ', array_column($narasumberList, 'nama_narasumber'));
+        
+        $penyelenggaraList = $db->table('penyelenggara_pelatihan')->where('id_pelatihan', $id)->get()->getResultArray();
+        $item['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama_penyelenggara'));
 
         // Get registration status
         $reg = $db->table('peserta_pelatihan')

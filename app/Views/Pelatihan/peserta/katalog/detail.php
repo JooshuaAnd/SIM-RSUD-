@@ -159,7 +159,11 @@ $jadwal_selesai = $jadwal_selesai ?? null;
                 </div>
                 <h1 class="display-5 fw-extrabold mb-4 lh-sm text-white" style="letter-spacing: -0.5px;"><?= $p['nama'] ?? 'Pelatihan Kesehatan' ?></h1>
                 <div class="d-flex align-items-center gap-3 bg-white bg-opacity-10 p-3 rounded-4 d-inline-flex border border-white border-opacity-10">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($p['penyelenggara'] ?? 'Kemenkes') ?>&background=ce2127&color=fff" class="rounded-circle shadow-sm" width="45">
+                    <?php 
+                        $penyList = explode(',', $p['penyelenggara'] ?? 'Dinas Kesehatan');
+                        $firstPeny = trim($penyList[0]);
+                    ?>
+                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($firstPeny) ?>&background=ce2127&color=fff" class="rounded-circle shadow-sm" width="45">
                     <div>
                         <div class="fw-bold text-white mb-1"><?= strtoupper($p['penyelenggara'] ?? 'Dinas Kesehatan') ?></div>
                     </div>

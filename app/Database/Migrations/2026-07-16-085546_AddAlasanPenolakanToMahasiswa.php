@@ -8,19 +8,24 @@ class AddAlasanPenolakanToMahasiswa extends Migration
 {
     public function up()
     {
-        if (!$this->db->fieldExists('alasan_penolakan', 'mahasiswa_pendidikan')) {
+        try {
             $this->forge->addColumn('mahasiswa_pendidikan', [
                 'alasan_penolakan' => [
                     'type' => 'TEXT',
-                    'null' => true,
-                    'after' => 'catatan_revisi'
+                    'null' => true
                 ],
             ]);
+        } catch (\Exception $e) {
+            // Ignore if column exists
         }
     }
 
     public function down()
     {
-        $this->forge->dropColumn('mahasiswa_pendidikan', 'alasan_penolakan');
+        try {
+            if ($this->db->fieldExists('alasan_penolakan', 'mahasiswa_pendidikan')) {
+                $this->forge->dropColumn('mahasiswa_pendidikan', 'alasan_penolakan');
+            }
+        } catch (\Exception $e) {}
     }
 }

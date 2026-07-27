@@ -13,7 +13,7 @@ class MyLearning extends BaseController
 
         $db = \Config\Database::connect();
         $registrations = $db->table('peserta_pelatihan')
-            ->select('peserta_pelatihan.*, master_pelatihan.id as id, master_pelatihan.nama as nama, master_pelatihan.metode, master_pelatihan.biaya, master_pelatihan.mekanisme, master_pelatihan.penyelenggara, master_pelatihan.jpl, master_pelatihan.jadwal_mulai, master_pelatihan.jam_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.jam_selesai')
+            ->select('peserta_pelatihan.*, master_pelatihan.id as id, master_pelatihan.nama as nama, master_pelatihan.metode, master_pelatihan.biaya, master_pelatihan.mekanisme, master_pelatihan.jpl, master_pelatihan.jadwal_mulai, master_pelatihan.jam_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.jam_selesai')
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->where('peserta_pelatihan.user_id', $userId)
             ->get()->getResultArray();

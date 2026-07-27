@@ -9,7 +9,7 @@ class VerifikasiPendaftaran extends BaseController
         $db = \Config\Database::connect();
         
         $pendingList = $db->table('peserta_pelatihan')
-            ->select('peserta_pelatihan.*, users_pelatihan.nama_lengkap as nama, users_pelatihan.email, users_pelatihan.no_wa, profesi_pelatihan.nama_profesi as profesi_peserta, unit_kerja_pelatihan.nama_unit as unit_peserta, master_pelatihan.nama as judul_pelatihan, master_pelatihan.mekanisme, master_pelatihan.biaya_nominal, master_pelatihan.metode, master_pelatihan.program, master_pelatihan.target_profesi, master_pelatihan.narasumber, master_pelatihan.jadwal_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.deskripsi, master_pelatihan.kuota, master_pelatihan.biaya')
+            ->select('peserta_pelatihan.*, users_pelatihan.nama_lengkap as nama, users_pelatihan.email, users_pelatihan.no_wa, profesi_pelatihan.nama_profesi as profesi_peserta, unit_kerja_pelatihan.nama_unit as unit_peserta, master_pelatihan.nama as judul_pelatihan, master_pelatihan.mekanisme, master_pelatihan.biaya_nominal, master_pelatihan.metode, master_pelatihan.program, master_pelatihan.target_profesi, master_pelatihan.jadwal_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.deskripsi, master_pelatihan.kuota, master_pelatihan.biaya')
             ->join('users_pelatihan', 'users_pelatihan.nik = peserta_pelatihan.user_id')
             ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
             ->join('unit_kerja_pelatihan', 'unit_kerja_pelatihan.id_unit_kerja = users_pelatihan.id_unit_kerja', 'left')
@@ -22,7 +22,7 @@ class VerifikasiPendaftaran extends BaseController
             ->get()->getResultArray();
 
         $historyList = $db->table('peserta_pelatihan')
-            ->select('peserta_pelatihan.*, users_pelatihan.nama_lengkap as nama, users_pelatihan.email, users_pelatihan.no_wa, profesi_pelatihan.nama_profesi as profesi_peserta, unit_kerja_pelatihan.nama_unit as unit_peserta, master_pelatihan.nama as judul_pelatihan, master_pelatihan.mekanisme, master_pelatihan.biaya_nominal, master_pelatihan.metode, master_pelatihan.program, master_pelatihan.target_profesi, master_pelatihan.narasumber, master_pelatihan.jadwal_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.deskripsi, master_pelatihan.kuota, master_pelatihan.biaya')
+            ->select('peserta_pelatihan.*, users_pelatihan.nama_lengkap as nama, users_pelatihan.email, users_pelatihan.no_wa, profesi_pelatihan.nama_profesi as profesi_peserta, unit_kerja_pelatihan.nama_unit as unit_peserta, master_pelatihan.nama as judul_pelatihan, master_pelatihan.mekanisme, master_pelatihan.biaya_nominal, master_pelatihan.metode, master_pelatihan.program, master_pelatihan.target_profesi, master_pelatihan.jadwal_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.deskripsi, master_pelatihan.kuota, master_pelatihan.biaya')
             ->join('users_pelatihan', 'users_pelatihan.nik = peserta_pelatihan.user_id')
             ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
             ->join('unit_kerja_pelatihan', 'unit_kerja_pelatihan.id_unit_kerja = users_pelatihan.id_unit_kerja', 'left')

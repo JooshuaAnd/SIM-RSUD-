@@ -93,8 +93,9 @@ class Grading extends BaseController
         $data = [];
         foreach ($ujian as $u) {
             $jawaban = $db->table('peserta_jawaban_ujian_pelatihan')
-                ->select('peserta_jawaban_ujian_pelatihan.*, ujian_soal_pelatihan.pertanyaan, ujian_soal_pelatihan.jawaban_benar')
+                ->select('peserta_jawaban_ujian_pelatihan.*, ujian_soal_pelatihan.pertanyaan, ujian_soal_pelatihan.jawaban_benar, ujian_soal_pelatihan.materi_id, materi_pelatihan.judul as materi_judul')
                 ->join('ujian_soal_pelatihan', 'ujian_soal_pelatihan.id = peserta_jawaban_ujian_pelatihan.soal_id')
+                ->join('materi_pelatihan', 'materi_pelatihan.id = ujian_soal_pelatihan.materi_id', 'left')
                 ->where('peserta_ujian_id', $u['id'])
                 ->get()->getResultArray();
             $data[$u['tipe_ujian']] = [
