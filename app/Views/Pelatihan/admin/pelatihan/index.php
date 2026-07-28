@@ -291,25 +291,17 @@
             }
             document.getElementById('f_metode').value = data.metode;
             
-            let narasumberList = data.narasumber_list || [];
-            if (typeof data.narasumber_list === 'string') {
-                try { narasumberList = JSON.parse(data.narasumber_list); } catch(e) { narasumberList = [data.narasumber_list]; }
+            let narasumberIds = data.narasumber_ids || [];
+            if (typeof data.narasumber_ids === 'string') {
+                try { narasumberIds = JSON.parse(data.narasumber_ids); } catch(e) { narasumberIds = []; }
             }
-            $('#f_narasumber').empty();
-            narasumberList.forEach(function(item) {
-                $('#f_narasumber').append(new Option(item, item, true, true));
-            });
-            $('#f_narasumber').trigger('change');
+            $('#f_narasumber').val(narasumberIds).trigger('change');
 
-            let penyelenggaraList = data.penyelenggara_list || [];
-            if (typeof data.penyelenggara_list === 'string') {
-                try { penyelenggaraList = JSON.parse(data.penyelenggara_list); } catch(e) { penyelenggaraList = [data.penyelenggara_list]; }
+            let penyelenggaraIds = data.penyelenggara_ids || [];
+            if (typeof data.penyelenggara_ids === 'string') {
+                try { penyelenggaraIds = JSON.parse(data.penyelenggara_ids); } catch(e) { penyelenggaraIds = []; }
             }
-            $('#f_penyelenggara').empty();
-            penyelenggaraList.forEach(function(item) {
-                $('#f_penyelenggara').append(new Option(item, item, true, true));
-            });
-            $('#f_penyelenggara').trigger('change');
+            $('#f_penyelenggara').val(penyelenggaraIds).trigger('change');
             
             document.getElementById('f_kontak').value = data.kontak;
             document.getElementById('f_jadwal_mulai').value = data.jadwal_mulai;

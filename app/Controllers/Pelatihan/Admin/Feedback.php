@@ -111,6 +111,85 @@ class Feedback extends BaseController
             'feedbacks' => $feedbacks,
             'questionStats' => $questionStats
         ];
+
+        // ─── Aggregate ratings by Materi ─────────────────────────────────────
+        $materiStats = [];
+        $materiList = $db->table('materi_pelatihan')->where('pelatihan_id', $id)->orderBy('urutan', 'ASC')->get()->getResultArray();
+        foreach ($materiList as $materi) {
+            $ratingsForMateri = $db->table('peserta_kuesioner_rating_pelatihan')
+                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
+                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
+                ->where('peserta_kuesioner_rating_pelatihan.materi_id', $materi['id'])
+                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
+                ->get()->getResultArray();
+            if (!empty($ratingsForMateri)) {
+                $materiStats[] = [
+                    'id'    => $materi['id'],
+                    'judul' => $materi['judul'],
+                    'pertanyaan' => array_map(function($r) {
+                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
+                    }, $ratingsForMateri),
+                    'avg_overall' => count($ratingsForMateri) > 0 ? round(array_sum(array_column($ratingsForMateri, 'avg_rating')) / count($ratingsForMateri), 1) : 0,
+                ];
+            }
+        }
+
+        // ─── Aggregate ratings by Narasumber ──────────────────────────────────
+        $narasumberStats = [];
+        $narasumberList = $db->table('narasumber_pelatihan')
+            ->select('narasumber_pelatihan.id, pejabat_ttd_pelatihan.nama_pejabat')
+            ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id', 'left')
+            ->where('narasumber_pelatihan.pelatihan_id', $id)
+            ->get()->getResultArray();
+        foreach ($narasumberList as $narasumber) {
+            $ratingsForNar = $db->table('peserta_kuesioner_rating_pelatihan')
+                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
+                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
+                ->where('peserta_kuesioner_rating_pelatihan.narasumber_id', $narasumber['id'])
+                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
+                ->get()->getResultArray();
+            if (!empty($ratingsForNar)) {
+                $narasumberStats[] = [
+                    'id'   => $narasumber['id'],
+                    'nama' => $narasumber['nama_pejabat'] ?? $narasumber['pejabat_ttd_id'],
+                    'pertanyaan' => array_map(function($r) {
+                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
+                    }, $ratingsForNar),
+                    'avg_overall' => count($ratingsForNar) > 0 ? round(array_sum(array_column($ratingsForNar, 'avg_rating')) / count($ratingsForNar), 1) : 0,
+                ];
+            }
+        }
+
+        // ─── Aggregate ratings by Penyelenggara ───────────────────────────────
+        $penyelenggaraStats = [];
+        $penyelenggaraList = $db->table('penyelenggara_pelatihan')
+            ->select('penyelenggara_pelatihan.id, master_penyelenggara.nama')
+            ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
+            ->where('penyelenggara_pelatihan.pelatihan_id', $id)
+            ->get()->getResultArray();
+        foreach ($penyelenggaraList as $penyelenggara) {
+            $ratingsForPen = $db->table('peserta_kuesioner_rating_pelatihan')
+                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
+                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
+                ->where('peserta_kuesioner_rating_pelatihan.penyelenggara_id', $penyelenggara['id'])
+                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
+                ->get()->getResultArray();
+            if (!empty($ratingsForPen)) {
+                $penyelenggaraStats[] = [
+                    'id'   => $penyelenggara['id'],
+                    'nama' => $penyelenggara['nama'] ?? $penyelenggara['penyelenggara_id'],
+                    'pertanyaan' => array_map(function($r) {
+                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
+                    }, $ratingsForPen),
+                    'avg_overall' => count($ratingsForPen) > 0 ? round(array_sum(array_column($ratingsForPen, 'avg_rating')) / count($ratingsForPen), 1) : 0,
+                ];
+            }
+        }
+
+        $data['materiStats']       = $materiStats;
+        $data['narasumberStats']   = $narasumberStats;
+        $data['penyelenggaraStats'] = $penyelenggaraStats;
+
         return view('pelatihan/admin/feedback/detail', $data);
     }
 }

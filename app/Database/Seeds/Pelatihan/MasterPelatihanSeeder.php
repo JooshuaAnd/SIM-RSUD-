@@ -193,6 +193,8 @@ class MasterPelatihanSeeder extends Seeder
                 "created_at" => date("Y-m-d H:i:s")
             ]
         ];
+        $narasumberNames = [];
+        $penyelenggaraNames = [];
         $narasumberData = [];
         $penyelenggaraData = [];
 
@@ -200,9 +202,8 @@ class MasterPelatihanSeeder extends Seeder
             if (isset($row['narasumber'])) {
                 if (!empty($row['narasumber']) && $row['narasumber'] !== '-') {
                     $narasumberData[] = [
-                        'id_pelatihan' => $row['id'],
+                        'pelatihan_id' => $row['id'],
                         'nama_narasumber' => $row['narasumber'],
-                        'created_at' => date("Y-m-d H:i:s")
                     ];
                 }
                 unset($row['narasumber']);
@@ -210,9 +211,8 @@ class MasterPelatihanSeeder extends Seeder
             if (isset($row['penyelenggara'])) {
                 if (!empty($row['penyelenggara']) && $row['penyelenggara'] !== '-') {
                     $penyelenggaraData[] = [
-                        'id_pelatihan' => $row['id'],
+                        'pelatihan_id' => $row['id'],
                         'nama_penyelenggara' => $row['penyelenggara'],
-                        'created_at' => date("Y-m-d H:i:s")
                     ];
                 }
                 unset($row['penyelenggara']);
@@ -220,7 +220,40 @@ class MasterPelatihanSeeder extends Seeder
         }
 
         $this->db->table("master_pelatihan")->insertBatch($data);
-        
+
+        foreach ($narasumberData as &$nd) {
+            $name = $nd['nama_narasumber'];
+            $existing = $this->db->table('pejabat_ttd_pelatihan')
+                ->where('nama_pejabat', $name)->where('status', 'Narasumber')->get()->getRowArray();
+            if (!$existing) {
+                $this->db->table('pejabat_ttd_pelatihan')->insert([
+                    'status' => 'Narasumber', 'nama_pejabat' => $name,
+                    'created_at' => date("Y-m-d H:i:s"), 'updated_at' => date("Y-m-d H:i:s")
+                ]);
+                $nd['pejabat_ttd_id'] = $this->db->insertID();
+            } else {
+                $nd['pejabat_ttd_id'] = $existing['id'];
+            }
+            unset($nd['nama_narasumber']);
+            $nd['created_at'] = date("Y-m-d H:i:s");
+        }
+        foreach ($penyelenggaraData as &$pd) {
+            $name = $pd['nama_penyelenggara'];
+            $existing = $this->db->table('master_penyelenggara')
+                ->where('nama', $name)->get()->getRowArray();
+            if (!$existing) {
+                $this->db->table('master_penyelenggara')->insert([
+                    'nama' => $name, 'status' => 'Aktif',
+                    'created_at' => date("Y-m-d H:i:s"), 'updated_at' => date("Y-m-d H:i:s")
+                ]);
+                $pd['penyelenggara_id'] = $this->db->insertID();
+            } else {
+                $pd['penyelenggara_id'] = $existing['id'];
+            }
+            unset($pd['nama_penyelenggara']);
+            $pd['created_at'] = date("Y-m-d H:i:s");
+        }
+
         if (!empty($narasumberData)) {
             $this->db->table("narasumber_pelatihan")->insertBatch($narasumberData);
         }

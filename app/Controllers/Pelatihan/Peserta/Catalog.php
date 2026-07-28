@@ -47,8 +47,12 @@ class Catalog extends BaseController
                 ->where('pelatihan_id', $p['id'])
                 ->countAllResults();
             
-            $penyelenggaraList = $db->table('penyelenggara_pelatihan')->where('id_pelatihan', $p['id'])->get()->getResultArray();
-            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama_penyelenggara'));
+            $penyelenggaraList = $db->table('penyelenggara_pelatihan')
+                ->select('master_penyelenggara.nama')
+                ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
+                ->where('penyelenggara_pelatihan.pelatihan_id', $p['id'])
+                ->get()->getResultArray();
+            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
         }
 
         // Fetch filter options dynamically
@@ -88,11 +92,24 @@ class Catalog extends BaseController
             ->countAllResults();
 
         // Get Narasumber and Penyelenggara
-        $narasumberList = $db->table('narasumber_pelatihan')->where('id_pelatihan', $id)->get()->getResultArray();
-        $item['narasumber'] = implode(', ', array_column($narasumberList, 'nama_narasumber'));
+        $narasumberList = $db->table('narasumber_pelatihan')
+            ->select('pejabat_ttd_pelatihan.nama_pejabat, pejabat_ttd_pelatihan.gelar_depan, pejabat_ttd_pelatihan.gelar_belakang')
+            ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id', 'left')
+            ->where('narasumber_pelatihan.pelatihan_id', $id)
+            ->get()->getResultArray();
+        $item['narasumber'] = implode(', ', array_map(function($n) {
+            $nama = $n['nama_pejabat'] ?? '';
+            $depan = $n['gelar_depan'] ?? '';
+            $belakang = $n['gelar_belakang'] ?? '';
+            return trim($depan . ' ' . $nama . ' ' . $belakang);
+        }, $narasumberList));
         
-        $penyelenggaraList = $db->table('penyelenggara_pelatihan')->where('id_pelatihan', $id)->get()->getResultArray();
-        $item['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama_penyelenggara'));
+        $penyelenggaraList = $db->table('penyelenggara_pelatihan')
+            ->select('master_penyelenggara.nama')
+            ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
+            ->where('penyelenggara_pelatihan.pelatihan_id', $id)
+            ->get()->getResultArray();
+        $item['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
 
         // Get registration status
         $reg = $db->table('peserta_pelatihan')
@@ -162,6 +179,12 @@ class Catalog extends BaseController
         $konten[] = ['tipe' => 'evaluasi', 'judul' => 'Evaluasi Pelatihan', 'deskripsi' => 'Ulasan Fasilitator, Modul, dan Penyelenggara'];
         $konten[] = ['tipe' => 'sertifikat', 'judul' => 'Sertifikat Kelulusan'];
 
+        $hasProgress = false;
+        if ($reg && $regStatus == 'disetujui') {
+            $progressVal = $reg['progress'] ?? 0;
+            $hasProgress = ($progressVal > 0);
+        }
+
         $data = [
             'title' => 'Detail Pelatihan',
             'p' => $item,
@@ -174,7 +197,8 @@ class Catalog extends BaseController
             'reg_tutup' => $regTutup,
             'jadwal_mulai' => $jadwalMulai,
             'jadwal_selesai' => $jadwalSelesai,
-            'konten' => $konten
+            'konten' => $konten,
+            'has_progress' => $hasProgress,
         ];
         return view('pelatihan/peserta/katalog/detail', $data);
     }

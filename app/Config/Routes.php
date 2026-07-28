@@ -366,6 +366,14 @@ $routes->group('pelatihan/admin', ['namespace' => 'App\Controllers\Pelatihan\Adm
         $routes->get('hapus_ranah/(.*)', 'DataMaster::hapus_ranah/$1');
         $routes->post('simpan/(:any)', 'DataMaster::simpan/$1');
         $routes->get('hapus/(:segment)/(.*)', 'DataMaster::hapus/$1/$2');
+        $routes->get('narasumber', 'DataMaster::narasumber');
+        $routes->post('simpan_narasumber', 'DataMaster::simpan_narasumber');
+        $routes->get('hapus_narasumber/(:num)', 'DataMaster::hapus_narasumber/$1');
+        $routes->post('simpan_narasumber_ajax', 'DataMaster::simpan_narasumber_ajax');
+        $routes->get('penyelenggara', 'DataMaster::penyelenggara');
+        $routes->post('simpan_penyelenggara', 'DataMaster::simpan_penyelenggara');
+        $routes->get('hapus_penyelenggara/(:num)', 'DataMaster::hapus_penyelenggara/$1');
+        $routes->post('simpan_penyelenggara_ajax', 'DataMaster::simpan_penyelenggara_ajax');
     });
 
     // Finance & Certs
@@ -436,6 +444,7 @@ $routes->group('pelatihan/peserta', ['namespace' => 'App\Controllers\Pelatihan\P
     $routes->post('submit_kuis/(:num)', 'Training::submit_kuis/$1');
     $routes->get('evaluasi/(:num)', 'Training::evaluasi/$1');
     $routes->post('submit_evaluasi/(:num)', 'Training::submit_evaluasi/$1');
+    $routes->post('submit_evaluasi_sesi/(:num)', 'Training::submit_evaluasi_sesi/$1');
     $routes->get('reset_simulasi', 'Training::reset_simulasi');
     $routes->get('reset_simulasi/(:num)', 'Training::reset_simulasi/$1');
     $routes->get('approve_and_start/(:num)', 'Training::approve_and_start/$1');

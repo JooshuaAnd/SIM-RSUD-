@@ -124,19 +124,21 @@
                                 $status = $u['kehadiran'][$s['id']] ?? 'Alfa';
                             ?>
                                 <td class="text-center border-start border-end bg-light bg-opacity-25">
-                                    <div class="form-check form-switch d-inline-block custom-switch-md mb-0">
-                                        <input class="form-check-input attendance-toggle" type="checkbox" 
-                                               data-user="<?= esc($u['user_id']) ?>" 
-                                               data-pelatihan="<?= $pelatihan['id'] ?>" 
-                                               data-sesi="<?= esc($s['id']) ?>"
-                                               <?= $status == 'Hadir' ? 'checked' : '' ?>>
-                                    </div>
+                                    <select class="form-select form-select-sm attendance-select border-0 text-center fw-bold shadow-sm rounded-pill"
+                                            style="font-size: 0.7rem; max-width: 110px; cursor: pointer; <?= $status == 'Hadir' ? 'background-color: #d1e7dd; color: #0f5132;' : ($status == 'Izin' ? 'background-color: #fff3cd; color: #664d03;' : 'background-color: #f8d7da; color: #842029;') ?>"
+                                            data-user="<?= esc($u['user_id']) ?>"
+                                            data-pelatihan="<?= $pelatihan['id'] ?>"
+                                            data-sesi="<?= esc($s['id']) ?>">
+                                        <option value="alfa" <?= $status == 'Alfa' ? 'selected' : '' ?>>Alfa</option>
+                                        <option value="hadir" <?= $status == 'Hadir' ? 'selected' : '' ?>>Hadir</option>
+                                        <option value="izin" <?= $status == 'Izin' ? 'selected' : '' ?>>Izin</option>
+                                    </select>
                                 </td>
                             <?php endforeach; ?>
                             
                             <td class="text-center bg-light bg-opacity-10">
                                 <div class="progress shadow-sm mx-auto" style="height: 6px; border-radius: 3px; max-width: 100px; background-color: #f1f5f9;">
-                                    <div class="progress-bar bg-danger" style="width: <?= $u['progress'] ?>%"></div>
+                                    <div class="progress-bar bg-danger progress-bar-text" style="width: <?= $u['progress'] ?>%"></div>
                                 </div>
                                 <div class="small fw-bold text-dark mt-1 progress-percentage" style="font-size: 0.7rem;"><?= number_format($u['progress'], 0) ?>%</div>
                             </td>
@@ -213,16 +215,16 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    /* Custom Styling Switch */
-    .custom-switch-md .form-check-input {
-        width: 2.2em;
-        height: 1.1em;
+    /* Custom Styling Select */
+    .attendance-select {
+        border: none !important;
         cursor: pointer;
-        margin-top: 0;
+        font-weight: 700;
+        padding: 4px 10px;
+        appearance: auto;
     }
-    .custom-switch-md .form-check-input:checked {
-        background-color: #ce2127 !important;
-        border-color: #ce2127 !important;
+    .attendance-select:focus {
+        box-shadow: none !important;
     }
     
     /* DataTables Pagination Override (Merah & Hitam) */
@@ -264,7 +266,7 @@
             initComplete: function() {
                 $("div.custom-action-btn").html(`
                     <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small fw-bold d-none d-md-inline-block border-end pe-3 border-2"><i class="fas fa-info-circle text-danger me-1"></i> Geser switch untuk absensi real-time.</span>
+                        <span class="text-muted small fw-bold d-none d-md-inline-block border-end pe-3 border-2"><i class="fas fa-info-circle text-danger me-1"></i> Pilih status kehadiran: Hadir, Izin (dihitung progres), atau Alfa.</span>
                         <a href="<?= base_url('pelatihan/admin/add_peserta/'.$pelatihan['id']) ?>" class="btn btn-register-submit rounded-pill px-4 fw-bold border-0 d-inline-flex align-items-center gap-2 shadow-sm"><i class="fas fa-user-plus text-white small"></i> PLOTTING PESERTA</a>
                     </div>
                 `);
@@ -277,33 +279,33 @@
 
 
 
-        $(document).on('change', '.attendance-toggle', function() {
-            var toggleSwitch = $(this);
-            var userId = toggleSwitch.data('user');
-            var pelId = toggleSwitch.data('pelatihan');
-            var sesi = toggleSwitch.data('sesi'); 
-            var status = toggleSwitch.is(':checked') ? 'hadir' : 'tidak_hadir';
-            
-            var trNode = toggleSwitch.closest('tr');
+        $(document).on('change', '.attendance-select', function() {
+            var selectEl = $(this);
+            var userId = selectEl.data('user');
+            var pelId = selectEl.data('pelatihan');
+            var sesi = selectEl.data('sesi');
+            var status = selectEl.val();
 
-            // --- LIVE PROGRESS CALCULATION ---
+            // Color update
+            var colors = { hadir: ['#d1e7dd','#0f5132'], izin: ['#fff3cd','#664d03'], alfa: ['#f8d7da','#842029'] };
+            var c = colors[status] || colors['alfa'];
+            selectEl.css({ 'background-color': c[0], 'color': c[1] });
+
+            // Live progress: Hadir & Izin count
+            var trNode = selectEl.closest('tr');
             if(totalSesi > 0) {
-                var totalCheckedInRow = trNode.find('.attendance-toggle:checked').length;
-                var currentProgressPercentage = Math.round((totalCheckedInRow / totalSesi) * 100);
-                
-                var progressBar = trNode.find('.progress-bar');
-                var progressText = trNode.find('.progress-percentage');
-                
-                progressBar.css('width', currentProgressPercentage + '%');
-                progressText.text(currentProgressPercentage + '%');
+                var hadirCount = 0;
+                trNode.find('.attendance-select').each(function() {
+                    if($(this).val() === 'hadir' || $(this).val() === 'izin') hadirCount++;
+                });
+                var currentProgressPercentage = Math.round((hadirCount / totalSesi) * 100);
+                trNode.find('.progress-bar').css('width', currentProgressPercentage + '%');
+                trNode.find('.progress-percentage').text(currentProgressPercentage + '%');
 
                 setTimeout(function() {
-                    let totalProgressSum = 0;
-                    let totalRowsCount = 0;
+                    let totalProgressSum = 0, totalRowsCount = 0;
                     $('.progress-percentage').each(function() {
-                        let textVal = $(this).text().replace('%', '');
-                        let floatVal = parseFloat(textVal) || 0;
-                        totalProgressSum += floatVal;
+                        totalProgressSum += parseFloat($(this).text().replace('%', '')) || 0;
                         totalRowsCount++;
                     });
                     if (totalRowsCount > 0) {
@@ -313,38 +315,22 @@
                 }, 50);
             }
 
+            var prevVal = selectEl.data('prev') || 'alfa';
+            selectEl.data('prev', status);
+
             $.ajax({
                 url: '<?= base_url('pelatihan/admin/toggle_presensi') ?>',
                 method: 'POST',
-                data: {
-                    user_id: userId,
-                    pelatihan_id: pelId,
-                    sesi: sesi,
-                    status: status
-                },
+                data: { user_id: userId, pelatihan_id: pelId, sesi: sesi, status: status },
                 success: function(res) {
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 1500,
-                        timerProgressBar: true
-                    });
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Presensi berhasil diperbarui'
-                    }).then(() => {
-                        location.reload();
-                    });
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, timerProgressBar: true });
+                    Toast.fire({ icon: 'success', title: 'Presensi berhasil diperbarui' }).then(() => { location.reload(); });
                 },
                 error: function() {
-                    Swal.fire({
-                        title: 'Koneksi Gagal',
-                        text: 'Sistem gagal menyinkronkan status presensi ke server DB.',
-                        icon: 'error',
-                        confirmButtonColor: '#ce2127'
-                    });
-                    toggleSwitch.prop('checked', !toggleSwitch.is(':checked'));
+                    Swal.fire({ title: 'Koneksi Gagal', text: 'Sistem gagal menyinkronkan status presensi ke server DB.', icon: 'error', confirmButtonColor: '#ce2127' });
+                    selectEl.val(prevVal);
+                    var c2 = colors[prevVal] || colors['alfa'];
+                    selectEl.css({ 'background-color': c2[0], 'color': c2[1] });
                 }
             });
         });

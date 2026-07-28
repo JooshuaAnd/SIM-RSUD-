@@ -390,6 +390,23 @@
             background: #cbd5e1;
             border-radius: 10px;
         }
+
+        /* Fix: <form> inside .modal-content breaks flex scrolling */
+        .modal-content > form {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .modal-content > form > .modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .modal-content > form > .modal-footer {
+            flex-shrink: 0;
+        }
     </style>
 </head>
 
@@ -450,6 +467,12 @@
                 </a>
                 <a href="<?= site_url('pelatihan/admin/master/kategori_skp') ?>" class="nav-link-custom <?= strpos($cur, 'master/kategori_skp') !== false ? 'active' : '' ?>">
                     <i class="fas fa-layer-group"></i> Ranah & Kategori SKP
+                </a>
+                <a href="<?= site_url('pelatihan/admin/master/narasumber') ?>" class="nav-link-custom <?= strpos($cur, 'master/narasumber') !== false ? 'active' : '' ?>">
+                    <i class="fas fa-chalkboard-teacher"></i> Daftar Narasumber
+                </a>
+                <a href="<?= site_url('pelatihan/admin/master/penyelenggara') ?>" class="nav-link-custom <?= strpos($cur, 'master/penyelenggara') !== false ? 'active' : '' ?>">
+                    <i class="fas fa-building"></i> Daftar Penyelenggara
                 </a>
                 <a href="<?= site_url('pelatihan/admin/pengaturan_logo') ?>" class="nav-link-custom <?= strpos($cur, 'pengaturan_logo') !== false ? 'active' : '' ?>">
                     <i class="fas fa-image"></i> Pengaturan Logo

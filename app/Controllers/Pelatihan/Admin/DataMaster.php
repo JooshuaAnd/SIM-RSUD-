@@ -274,4 +274,173 @@ class DataMaster extends BaseController
 
         return redirect()->back()->with('error', 'Data tidak ditemukan.');
     }
+
+    public function narasumber()
+    {
+        $model = new \App\Models\Pelatihan\PejabatTtdPelatihanModel();
+        $data = [
+            'title' => 'Data Master Narasumber',
+            'list'  => $model->where('status', 'Narasumber')->orderBy('nama_pejabat', 'ASC')->findAll()
+        ];
+        return view('pelatihan/admin/data_master/narasumber', $data);
+    }
+
+    public function simpan_narasumber()
+    {
+        $model = new \App\Models\Pelatihan\PejabatTtdPelatihanModel();
+        $id = $this->request->getPost('id');
+
+        $data = [
+            'status'         => $this->request->getPost('status') ?? 'Narasumber',
+            'nama_pejabat'   => $this->request->getPost('nama_pejabat'),
+            'gelar_depan'    => $this->request->getPost('gelar_depan') ?? null,
+            'gelar_belakang' => $this->request->getPost('gelar_belakang') ?? null,
+            'pendidikan'     => $this->request->getPost('pendidikan') ?? null,
+            'keahlian'       => $this->request->getPost('keahlian') ?? null,
+            'an_pejabat'     => $this->request->getPost('an_pejabat') ?? null,
+            'jabatan'        => $this->request->getPost('jabatan') ?? null,
+            'nip_pejabat'    => $this->request->getPost('nip_pejabat') ?? null,
+            'kontak'         => $this->request->getPost('kontak') ?? null,
+            'email'          => $this->request->getPost('email') ?? null,
+            'riwayat'        => $this->request->getPost('riwayat') ?? null,
+            'updated_at'     => date('Y-m-d H:i:s'),
+        ];
+
+        // Handle foto upload
+        $file = $this->request->getFile('foto');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            $extension = strtolower($file->getExtension());
+            if (in_array($extension, $allowedExtensions, true) && $file->getSize() <= 2 * 1024 * 1024) {
+                if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/foto')) {
+                    mkdir(ROOTPATH . 'public/uploads/pelatihan/foto', 0777, true);
+                }
+                $namaPejabat = preg_replace('/[^A-Za-z0-9]/', '_', $this->request->getPost('nama_pejabat') ?: 'Narasumber');
+                $newName = "Foto_{$namaPejabat}_" . date('Ymd_His') . "." . $extension;
+                $file->move(ROOTPATH . 'public/uploads/pelatihan/foto', $newName);
+                $data['foto'] = 'uploads/pelatihan/foto/' . $newName;
+            }
+        }
+
+        // Handle ttd_image upload
+        $ttdFile = $this->request->getFile('ttd_image');
+        if ($ttdFile && $ttdFile->isValid() && !$ttdFile->hasMoved()) {
+            $extension = strtolower($ttdFile->getExtension());
+            if ($extension === 'png' && $ttdFile->getSize() <= 2 * 1024 * 1024) {
+                if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/ttd')) {
+                    mkdir(ROOTPATH . 'public/uploads/pelatihan/ttd', 0777, true);
+                }
+                $namaPejabat = preg_replace('/[^A-Za-z0-9]/', '_', $this->request->getPost('nama_pejabat') ?: 'Pejabat');
+                $newName = "TTD_{$namaPejabat}_" . date('Ymd_His') . ".png";
+                $ttdFile->move(ROOTPATH . 'public/uploads/pelatihan/ttd', $newName);
+                $data['ttd_image'] = 'ttd/' . $newName;
+            }
+        }
+
+        if ($id) {
+            $model->update($id, $data);
+            return redirect()->back()->with('success', 'Data narasumber berhasil diperbarui.');
+        }
+
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $model->insert($data);
+        return redirect()->back()->with('success', 'Data narasumber berhasil ditambahkan.');
+    }
+
+    public function hapus_narasumber(int $id)
+    {
+        $model = new \App\Models\Pelatihan\PejabatTtdPelatihanModel();
+        $model->delete($id);
+        return redirect()->back()->with('success', 'Data narasumber berhasil dihapus.');
+    }
+
+    public function simpan_narasumber_ajax()
+    {
+        $model = new \App\Models\Pelatihan\PejabatTtdPelatihanModel();
+        $data = [
+            'status'         => 'Narasumber',
+            'nama_pejabat'   => $this->request->getPost('nama_pejabat'),
+            'gelar_depan'    => $this->request->getPost('gelar_depan') ?? null,
+            'gelar_belakang' => $this->request->getPost('gelar_belakang') ?? null,
+            'pendidikan'     => $this->request->getPost('pendidikan') ?? null,
+            'keahlian'       => $this->request->getPost('keahlian') ?? null,
+            'an_pejabat'     => $this->request->getPost('an_pejabat') ?? null,
+            'jabatan'        => $this->request->getPost('jabatan') ?? null,
+            'nip_pejabat'    => $this->request->getPost('nip_pejabat') ?? null,
+            'kontak'         => $this->request->getPost('kontak') ?? null,
+            'email'          => $this->request->getPost('email') ?? null,
+            'riwayat'        => $this->request->getPost('riwayat') ?? null,
+            'created_at'     => date('Y-m-d H:i:s'),
+        ];
+        $model->insert($data);
+        $newId = $model->getInsertID();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => ['id' => $newId, 'nama_pejabat' => $data['nama_pejabat'], 'gelar_depan' => $data['gelar_depan'], 'gelar_belakang' => $data['gelar_belakang']]
+        ]);
+    }
+
+    public function penyelenggara()
+    {
+        $model = new \App\Models\Pelatihan\MasterPenyelenggaraModel();
+        $data = [
+            'title' => 'Data Master Penyelenggara',
+            'list'  => $model->orderBy('nama', 'ASC')->findAll()
+        ];
+        return view('pelatihan/admin/data_master/penyelenggara', $data);
+    }
+
+    public function simpan_penyelenggara()
+    {
+        $model = new \App\Models\Pelatihan\MasterPenyelenggaraModel();
+        $id = $this->request->getPost('id');
+
+        $data = [
+            'nama'         => $this->request->getPost('nama'),
+            'alamat'       => $this->request->getPost('alamat') ?? null,
+            'fokus_bidang' => $this->request->getPost('fokus_bidang') ?? null,
+            'kontak'       => $this->request->getPost('kontak') ?? null,
+            'email'        => $this->request->getPost('email') ?? null,
+            'status'       => $this->request->getPost('status') ?? 'Aktif',
+            'updated_at'   => date('Y-m-d H:i:s'),
+        ];
+
+        if ($id) {
+            $model->update($id, $data);
+            return redirect()->back()->with('success', 'Data penyelenggara berhasil diperbarui.');
+        }
+
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $model->insert($data);
+        return redirect()->back()->with('success', 'Data penyelenggara berhasil ditambahkan.');
+    }
+
+    public function hapus_penyelenggara(int $id)
+    {
+        $model = new \App\Models\Pelatihan\MasterPenyelenggaraModel();
+        $model->delete($id);
+        return redirect()->back()->with('success', 'Data penyelenggara berhasil dihapus.');
+    }
+
+    public function simpan_penyelenggara_ajax()
+    {
+        $model = new \App\Models\Pelatihan\MasterPenyelenggaraModel();
+        $data = [
+            'nama'         => $this->request->getPost('nama'),
+            'alamat'       => $this->request->getPost('alamat') ?? null,
+            'fokus_bidang' => $this->request->getPost('fokus_bidang') ?? null,
+            'kontak'       => $this->request->getPost('kontak') ?? null,
+            'email'        => $this->request->getPost('email') ?? null,
+            'status'       => 'Aktif',
+            'created_at'   => date('Y-m-d H:i:s'),
+        ];
+        $model->insert($data);
+        $newId = $model->getInsertID();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => ['id' => $newId, 'nama' => $data['nama']]
+        ]);
+    }
 }

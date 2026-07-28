@@ -18,8 +18,6 @@ class MyLearning extends BaseController
             ->where('peserta_pelatihan.user_id', $userId)
             ->get()->getResultArray();
 
-        $sessionProgress = $this->session->get('progress') ?? [];
-
         $list = [];
         foreach ($registrations as $reg) {
             $item = $reg;
@@ -33,17 +31,9 @@ class MyLearning extends BaseController
                 $item['reg_status'] = 'disetujui';
             }
 
-            // Find progress
-            $progressVal = 0;
-            $isSelesai = in_array($reg['status_peserta'], ['Lulus', 'Tidak Lulus']);
-            
-            foreach ($sessionProgress as $sp) {
-                if ($sp['user_id'] == $userId && $sp['pelatihan_id'] == $reg['pelatihan_id']) {
-                    $progressVal = $sp['progress'] ?? 0;
-                    $isSelesai = $isSelesai || ($sp['status'] == 'selesai');
-                    break;
-                }
-            }
+            // Progress from DB
+            $progressVal = (float)($reg['progress'] ?? 0);
+            $isSelesai = in_array($reg['status_peserta'], ['Lulus', 'Gagal']);
 
             if ($isSelesai) {
                 $progressVal = 100;

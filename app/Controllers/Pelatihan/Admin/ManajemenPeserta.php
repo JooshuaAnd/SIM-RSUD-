@@ -859,16 +859,14 @@ class ManajemenPeserta extends BaseController
                     ->where('sesi_id', $s['id'])
                     ->get()->getRowArray();
                 
-                $status = $presensi ? $presensi['status_hadir'] : 'Alfa'; // default is Alfa/tidak hadir
+                $status = $presensi ? $presensi['status_hadir'] : 'Alfa';
                 $p['kehadiran'][$s['id']] = $status;
-                if ($status == 'Hadir') {
+                if ($status == 'Hadir' || $status == 'Izin') {
                     $p['hadir_count']++;
                 }
             }
 
-            // Calculate progress percentage based on attendance
-            $total_sesi = count($sesi_list);
-            $p['progress'] = $total_sesi > 0 ? ($p['hadir_count'] / $total_sesi) * 100 : 0;
+            $p['progress'] = $p['progress'] ?? 0;
         }
 
         $data = [
@@ -886,7 +884,9 @@ class ManajemenPeserta extends BaseController
         $userId = $this->request->getPost('user_id'); // NIK
         $pelatihanId = $this->request->getPost('pelatihan_id');
         $sesiId = $this->request->getPost('sesi'); // sesi_id
-        $status = $this->request->getPost('status') == 'hadir' ? 'Hadir' : 'Alfa';
+        $rawStatus = $this->request->getPost('status');
+        $statusMap = ['hadir' => 'Hadir', 'izin' => 'Izin', 'alfa' => 'Alfa'];
+        $status = $statusMap[$rawStatus] ?? 'Alfa';
 
         $pesertaModel = new \App\Models\Pelatihan\PesertaPelatihanModel();
         $peserta = $pesertaModel->where('user_id', $userId)
@@ -906,7 +906,7 @@ class ManajemenPeserta extends BaseController
         if ($exist) {
             $db->table('peserta_presensi_pelatihan')
                 ->where('id', $exist['id'])
-                ->update(['status_hadir' => $status]);
+                ->update(['status_hadir' => $status, 'waktu_absen' => date('Y-m-d H:i:s')]);
         } else {
             $db->table('peserta_presensi_pelatihan')->insert([
                 'peserta_pelat_id' => $peserta['id'],
@@ -916,7 +916,86 @@ class ManajemenPeserta extends BaseController
             ]);
         }
 
+        $this->_updatePresensiProgress($db, $peserta, $pelatihanId, $sesiId, $status);
+
         return $this->response->setJSON(['status' => 'success']);
+    }
+
+    private function _findPresensiStepId($db, $pelatihanId, $sesiId): ?int
+    {
+        $stepCounter = 1;
+        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
+        if ($preTest) $stepCounter++;
+
+        $sesi = $db->table('sesi_interaktif_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->orderBy('tanggal', 'ASC')
+            ->orderBy('waktu', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+
+        foreach ($sesi as $s) {
+            if ((int)$s['id'] === (int)$sesiId) {
+                return $stepCounter;
+            }
+            $stepCounter++; // presensi or sesi
+            $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->get()->getResultArray();
+            $groupedSegmen = [];
+            foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
+            $stepCounter += count($groupedSegmen);
+            $stepCounter++; // evaluasi_sesi
+        }
+        return null;
+    }
+
+    private function _countTotalSteps($db, $pelatihanId): int
+    {
+        $stepCounter = 1;
+        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
+        if ($preTest) $stepCounter++;
+
+        $sesi = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $pelatihanId)->get()->getResultArray();
+        foreach ($sesi as $s) {
+            $stepCounter++; // presensi or sesi
+            $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->get()->getResultArray();
+            $groupedSegmen = [];
+            foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
+            $stepCounter += count($groupedSegmen);
+            $stepCounter++; // evaluasi_sesi
+        }
+
+        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
+        if ($postTest) $stepCounter++;
+        $stepCounter++; // evaluasi
+        $stepCounter++; // sertifikat
+        return $stepCounter - 1;
+    }
+
+    private function _updatePresensiProgress($db, $peserta, $pelatihanId, $sesiId, $status)
+    {
+        $stepId = $this->_findPresensiStepId($db, $pelatihanId, $sesiId);
+        if (!$stepId) return;
+
+        $completedSteps = json_decode($peserta['completed_steps'] ?? '[]', true) ?? [];
+        $totalSteps = $this->_countTotalSteps($db, $pelatihanId);
+
+        if (in_array($status, ['Hadir', 'Izin'])) {
+            if (!in_array((int)$stepId, $completedSteps)) {
+                $completedSteps[] = (int)$stepId;
+            }
+        } else {
+            $completedSteps = array_values(array_filter($completedSteps, fn($s) => (int)$s !== (int)$stepId));
+        }
+
+        $progressPct = $totalSteps > 0 ? (count($completedSteps) / $totalSteps) * 100 : 0;
+
+        $db->table('peserta_pelatihan')
+            ->where('id', $peserta['id'])
+            ->update([
+                'completed_steps' => json_encode($completedSteps),
+                'progress' => $progressPct,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
     } 
     public function hapus_pendaftaran(string $userId, string $pelatihanId)
     {

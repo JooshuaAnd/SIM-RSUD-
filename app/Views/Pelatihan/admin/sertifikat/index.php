@@ -206,7 +206,7 @@ $templates = $templates ?? [];
                                         <?php else: ?>
                                             <a href="javascript:void(0)" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/unverify/'.$s['id']) ?>', 'Kembalikan status verifikasi ke Pending?')"><i class="fas fa-undo me-1"></i> Batal</a>
                                         <?php endif; ?>
-                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete/'.$s['id']) ?>', 'Yakin ingin menghapus sertifikat ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color:#ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
@@ -257,7 +257,7 @@ $templates = $templates ?? [];
 
                                 <td class="pe-4 text-center">
                                     <div class="d-flex justify-content-center gap-1">
-                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editPejabat(<?= json_encode($pj) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editPejabat(<?= json_encode($pj, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete_pejabat/'.$pj['id']) ?>', 'Hapus pejabat ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color: #ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
@@ -369,7 +369,7 @@ $templates = $templates ?? [];
                                 <td class="pe-4 text-center">
                                     <div class="d-flex justify-content-center gap-1">
                                         <a href="<?= site_url('pelatihan/admin/certificate/preview_template/' . $tmp['id']) ?>" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill fw-bold"><i class="fas fa-eye text-danger"></i> Preview</a>
-                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editTemplate(<?= json_encode($tmp) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editTemplate(<?= json_encode($tmp, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete_template/'.$tmp['id']) ?>', 'Hapus template ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color: #ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
@@ -439,7 +439,7 @@ $templates = $templates ?? [];
                                         <?php else: ?>
                                             <a href="javascript:void(0)" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/unverify/'.$s['id']) ?>', 'Kembalikan status verifikasi ke Pending?')"><i class="fas fa-undo me-1"></i> Batal</a>
                                         <?php endif; ?>
-                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete/'.$s['id']) ?>', 'Yakin ingin menghapus sertifikat ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color:#ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
                                 </td>
@@ -454,36 +454,24 @@ $templates = $templates ?? [];
 </div>
 
 <div class="modal fade" id="pejabatModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-lg">
             <div class="modal-header bg-dark text-white p-4">
-                <h5 class="modal-title fw-bold"><i class="fas fa-signature me-2 text-danger"></i> Form Pejabat Penandatangan</h5>
+                <h5 class="modal-title fw-bold"><i class="fas fa-signature me-2 text-danger"></i> Form Pejabat / Narasumber</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="<?= site_url('pelatihan/admin/certificate/save_pejabat') ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="pj_id">
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Atas Nama (a.n)</label>
-                        <input type="text" name="an_pejabat" id="pj_an" class="form-control rounded-pill border" placeholder="Contoh: a.n Direktur">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Jabatan / Kedudukan</label>
-                        <input type="text" name="jabatan" id="pj_jabatan" class="form-control rounded-pill border" placeholder="Contoh: Direktur RSUD" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nama Lengkap Pejabat</label>
-                        <input type="text" name="nama_pejabat" id="pj_nama" class="form-control rounded-pill border" placeholder="Contoh: Dr. H. Ariyudi Yunantoro" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">NIP Pejabat</label>
-                        <input type="text" name="nip_pejabat" id="pj_nip" class="form-control rounded-pill border" placeholder="Contoh: 19690124XXXXXX">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Upload TTD (PNG Transparan)</label>
-                        <input type="file" name="ttd_image" class="form-control rounded-pill border" accept="image/png">
-                    </div>
+                    <?php
+                    $pejabat = $pj_edit ?? [];
+                    $prefix = 'pj';
+                    $showStatus = true;
+                    $showFoto = true;
+                    $showTtd = true;
+                    $showRiwayat = true;
+                    ?>
+                    <?= $this->include('pelatihan/admin/_partials/form_pejabat_fields') ?>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
@@ -678,21 +666,35 @@ $templates = $templates ?? [];
 
     function openPejabatModal() {
         document.getElementById('pj_id').value = '';
+        document.getElementById('pj_status').value = 'Narasumber';
         document.getElementById('pj_an').value = '';
         document.getElementById('pj_jabatan').value = '';
         document.getElementById('pj_nama').value = '';
         document.getElementById('pj_nip').value = '';
-
+        document.getElementById('pj_gelar_depan').value = '';
+        document.getElementById('pj_gelar_belakang').value = '';
+        document.getElementById('pj_pendidikan').value = '';
+        document.getElementById('pj_keahlian').value = '';
+        document.getElementById('pj_kontak').value = '';
+        document.getElementById('pj_email').value = '';
+        document.getElementById('pj_riwayat').value = '';
         pjModal.show();
     }
 
     function editPejabat(pj) {
         document.getElementById('pj_id').value = pj.id;
-        document.getElementById('pj_an').value = pj.an_pejabat;
-        document.getElementById('pj_jabatan').value = pj.jabatan;
-        document.getElementById('pj_nama').value = pj.nama_pejabat;
-        document.getElementById('pj_nip').value = pj.nip_pejabat;
-
+        if(document.getElementById('pj_status')) document.getElementById('pj_status').value = pj.status || 'Narasumber';
+        document.getElementById('pj_an').value = pj.an_pejabat || '';
+        document.getElementById('pj_jabatan').value = pj.jabatan || '';
+        document.getElementById('pj_nama').value = pj.nama_pejabat || '';
+        document.getElementById('pj_nip').value = pj.nip_pejabat || '';
+        document.getElementById('pj_gelar_depan').value = pj.gelar_depan || '';
+        document.getElementById('pj_gelar_belakang').value = pj.gelar_belakang || '';
+        document.getElementById('pj_pendidikan').value = pj.pendidikan || '';
+        document.getElementById('pj_keahlian').value = pj.keahlian || '';
+        document.getElementById('pj_kontak').value = pj.kontak || '';
+        document.getElementById('pj_email').value = pj.email || '';
+        document.getElementById('pj_riwayat').value = pj.riwayat || '';
         pjModal.show();
     }
 
