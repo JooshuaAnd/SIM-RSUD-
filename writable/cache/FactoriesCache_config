@@ -23,14 +23,14 @@
     'routing' => 'Config\\routing',
     'Config\\routing' => 'Config\\routing',
     'Config\\Feature' => 'Config\\Feature',
-    'Config\\Session' => 'Config\\Session',
     'Routing' => 'Config\\Routing',
     'App' => 'Config\\App',
+    'Config\\Session' => 'Config\\Session',
     'Config\\View' => 'Config\\View',
     'Config\\Database' => 'Config\\Database',
     'Config\\Validation' => 'Config\\Validation',
+    'Config\\Email' => 'Config\\Email',
     'Config\\Security' => 'Config\\Security',
-    'Config\\Format' => 'Config\\Format',
   ),
   'instances' => 
   array (
@@ -41,7 +41,7 @@
       array (
         0 => 404,
       ),
-       'errorViewPath' => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Views/errors',
+       'errorViewPath' => 'D:\\kpfinal\\simdiklatkp\\app\\Views/errors',
        'sensitiveDataInTrace' => 
       array (
       ),
@@ -113,7 +113,7 @@
        'reservedCharacters' => '{}()/\\@:',
        'file' => 
       array (
-        'storePath' => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\writable\\cache/',
+        'storePath' => 'D:\\kpfinal\\simdiklatkp\\writable\\cache/',
         'mode' => 416,
       ),
        'memcached' => 
@@ -364,7 +364,7 @@
       ),
        'collectVarData' => true,
        'maxHistory' => 20,
-       'viewsPath' => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Debug/Toolbar/Views/',
+       'viewsPath' => 'D:\\kpfinal\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Debug/Toolbar/Views/',
        'maxQueries' => 100,
        'watchedDirectories' => 
       array (
@@ -391,7 +391,7 @@
     \Config\Routing::__set_state(array(
        'routeFiles' => 
       array (
-        0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config/Routes.php',
+        0 => 'D:\\kpfinal\\simdiklatkp\\app\\Config/Routes.php',
       ),
        'defaultNamespace' => 'App\\Controllers',
        'defaultController' => 'Home',
@@ -519,7 +519,7 @@
     )),
     'Config\\Logger' => 
     \Config\Logger::__set_state(array(
-       'threshold' => 9,
+       'threshold' => 4,
        'dateFormat' => 'Y-m-d H:i:s',
        'handlers' => 
       array (
@@ -546,7 +546,7 @@
     \Config\Routing::__set_state(array(
        'routeFiles' => 
       array (
-        0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config/Routes.php',
+        0 => 'D:\\kpfinal\\simdiklatkp\\app\\Config/Routes.php',
       ),
        'defaultNamespace' => 'App\\Controllers',
        'defaultController' => 'Home',
@@ -574,7 +574,7 @@
        'driver' => 'CodeIgniter\\Session\\Handlers\\FileHandler',
        'cookieName' => 'ci_session',
        'expiration' => 7200,
-       'savePath' => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\writable\\session',
+       'savePath' => 'D:\\kpfinal\\simdiklatkp\\writable\\session',
        'matchIP' => false,
        'timeToUpdate' => 300,
        'regenerateDestroy' => false,
@@ -666,12 +666,12 @@
     )),
     'Config\\Database' => 
     \Config\Database::__set_state(array(
-       'filesPath' => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Database\\',
+       'filesPath' => 'D:\\kpfinal\\simdiklatkp\\app\\Database\\',
        'defaultGroup' => 'default',
        'default' => 
       array (
         'DSN' => '',
-        'hostname' => '127.0.0.1',
+        'hostname' => 'localhost',
         'username' => 'root',
         'password' => '',
         'database' => 'sim_diklat',
@@ -745,6 +745,36 @@
         'single' => 'CodeIgniter\\Validation\\Views\\single',
       ),
     )),
+    'Config\\Email' => 
+    \Config\Email::__set_state(array(
+       'fromEmail' => 'ruskia335@gmail.com',
+       'fromName' => 'Super Admin SIM Diklat',
+       'recipients' => '',
+       'userAgent' => 'CodeIgniter',
+       'protocol' => 'smtp',
+       'mailPath' => '/usr/sbin/sendmail',
+       'SMTPHost' => 'smtp.gmail.com',
+       'SMTPAuthMethod' => 'login',
+       'SMTPUser' => 'ruskia335@gmail.com',
+       'SMTPPass' => 'dncolbjpkdjgennh',
+       'SMTPPort' => 465,
+       'SMTPTimeout' => 5,
+       'SMTPKeepAlive' => false,
+       'SMTPCrypto' => 'ssl',
+       'wordWrap' => true,
+       'wrapChars' => 76,
+       'mailType' => 'html',
+       'charset' => 'UTF-8',
+       'validate' => false,
+       'priority' => 3,
+       'CRLF' => '
+',
+       'newline' => '
+',
+       'BCCBatchMode' => false,
+       'BCCBatchSize' => 200,
+       'DSN' => false,
+    )),
     'Config\\Security' => 
     \Config\Security::__set_state(array(
        'csrfProtection' => 'cookie',
@@ -755,28 +785,6 @@
        'expires' => 7200,
        'regenerate' => true,
        'redirect' => false,
-    )),
-    'Config\\Format' => 
-    \Config\Format::__set_state(array(
-       'supportedResponseFormats' => 
-      array (
-        0 => 'application/json',
-        1 => 'application/xml',
-        2 => 'text/xml',
-      ),
-       'formatters' => 
-      array (
-        'application/json' => 'CodeIgniter\\Format\\JSONFormatter',
-        'application/xml' => 'CodeIgniter\\Format\\XMLFormatter',
-        'text/xml' => 'CodeIgniter\\Format\\XMLFormatter',
-      ),
-       'formatterOptions' => 
-      array (
-        'application/json' => 320,
-        'application/xml' => 0,
-        'text/xml' => 0,
-      ),
-       'jsonEncodeDepth' => 512,
     )),
   ),
 );

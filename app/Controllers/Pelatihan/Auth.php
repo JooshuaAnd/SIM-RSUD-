@@ -162,5 +162,65 @@ class Auth extends BaseController
         $this->session->destroy();
         return redirect()->to('/pelatihan/login');
     }
+
+    public function forgotPassword()
+    {
+        return view('pelatihan/auth/forgot_password', [
+            'title' => 'Lupa Password | Modul Pelatihan'
+        ]);
+    }
+
+    public function forgotPasswordSubmit()
+    {
+        $email = $this->request->getPost('email');
+        $userModel = new UserPelatihanModel();
+        $user = $userModel->where('email', $email)->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Email tidak ditemukan di sistem kami.')->withInput();
+        }
+
+        // Generate random password
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $newPassword = substr(str_shuffle($characters), 0, 10); // 10 chars random password
+
+        $userModel->update($user['nik'], [
+            'password' => password_hash($newPassword, PASSWORD_DEFAULT),
+        ]);
+
+        // Send Email
+        $emailService = \Config\Services::email();
+        $emailService->setTo($user['email']);
+        $emailService->setFrom('noreply@rsudjogja.id', 'RSUD Yogyakarta');
+        $emailService->setSubject('Password Baru Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
+        
+        $message = "
+        <html>
+        <head>
+            <title>Password Baru Anda</title>
+        </head>
+        <body>
+            <p>Halo " . esc($user['nama_lengkap']) . ",</p>
+            <p>Sesuai dengan permintaan Anda, sistem telah mereset password akun Modul Pelatihan SIM DIKLAT RSUD Yogyakarta Anda.</p>
+            <p>Berikut adalah password baru Anda untuk login:</p>
+            <h3 style='background-color:#f1f1f1; padding: 10px; display:inline-block; border-radius: 5px; letter-spacing: 2px;'>" . $newPassword . "</h3>
+            <p>Silakan login menggunakan NIK dan password di atas. Kami sangat menyarankan agar Anda segera mengubah password ini melalui menu pengaturan profil di sistem setelah berhasil login.</p>
+            <p>Terima kasih,<br>Tim SIM DIKLAT RSUD Yogyakarta</p>
+        </body>
+        </html>
+        ";
+        
+        $emailService->setMessage($message);
+        $emailService->setMailType('html');
+
+        if ($emailService->send()) {
+            return redirect()->to(base_url('pelatihan/login'))->with('success', 'Password baru telah dikirim ke email Anda. Silakan periksa kotak masuk atau folder spam untuk login.');
+        } else {
+            // Log error or display to user for debug (in production, just generic error)
+            $err = $emailService->printDebugger(['headers']);
+            log_message('error', 'Email reset password gagal dikirim: ' . $err);
+            return redirect()->back()->with('error', 'Gagal mengirim email berisi password baru. Pastikan konfigurasi SMTP di server telah diatur.');
+        }
+    }
 }
 
