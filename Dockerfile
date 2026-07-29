@@ -16,61 +16,56 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 3. Disable mpm_event & mpm_worker, lalu pastikan prefork aktif (BUILD TIME)
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork
-
-# 4. Validasi Build Time
-RUN echo "=== DIAGNOSTIK BUILD: MPM AKTIF ===" \
-    && ls -la /etc/apache2/mods-enabled | grep mpm
-
-# 5. Enable Apache rewrite
+# 3. Enable Apache rewrite
 RUN a2enmod rewrite
 
-# 6. Set CodeIgniter DocumentRoot (mengubah konfigurasi bawaan secara aman tanpa echo manual)
+# 4. Set CodeIgniter DocumentRoot
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 7. Working Directory & Composer
+# 5. Working Directory & Composer
 WORKDIR /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# 8. Permissions
+# 6. Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
 EXPOSE 80
 
-# 9. RUNTIME SCRIPT (AUTO-HEAL & DIAGNOSTIC)
+# 7. RUNTIME DIAGNOSTIC & AUTO REPAIR WRAPPER
 RUN printf '#!/bin/bash\n\
 echo "=========================================="\n\
-echo "=== APACHE RUNTIME DIAGNOSTIC & HEAL ==="\n\
+echo "RUNNING CUSTOM START SCRIPT"\n\
 echo "=========================================="\n\
-echo "[*] Modul MPM di mods-enabled saat runtime:"\n\
-ls -la /etc/apache2/mods-enabled | grep mpm || true\n\
 \n\
-# Auto-Heal: Deteksi jika ada mpm_event atau mpm_worker yang menyusup masuk saat runtime\n\
-if ls /etc/apache2/mods-enabled/mpm_*.load | wc -l | grep -v "^1$" > /dev/null; then\n\
-    echo "[!] PERINGATAN: Ditemukan lebih dari satu MPM! Melakukan AUTO-HEAL..."\n\
-    rm -f /etc/apache2/mods-enabled/mpm_event.load\n\
-    rm -f /etc/apache2/mods-enabled/mpm_event.conf\n\
-    rm -f /etc/apache2/mods-enabled/mpm_worker.load\n\
-    rm -f /etc/apache2/mods-enabled/mpm_worker.conf\n\
-    a2enmod mpm_prefork\n\
-    echo "[+] AUTO-HEAL selesai. Modul MPM aktif saat ini:"\n\
-    ls -la /etc/apache2/mods-enabled | grep mpm\n\
-else\n\
-    echo "[+] MPM aman (hanya 1 modul aktif)."\n\
-fi\n\
+echo "--- 1. BUKTI RUNTIME: SYMLINK MPM ---"\n\
+find /etc/apache2 -type l | grep mpm || true\n\
 \n\
-echo "--- LOADED MODULES (apache2ctl -M) ---"\n\
+echo "--- 2. BUKTI RUNTIME: ISI FILE MPM (.load & .conf) ---"\n\
+for file in /etc/apache2/mods-enabled/mpm*.load /etc/apache2/mods-enabled/mpm*.conf; do\n\
+    if [ -e "$file" ] || [ -L "$file" ]; then\n\
+        echo "File: $file"\n\
+        cat "$file"\n\
+        echo "----------------------------------------"\n\
+    fi\n\
+done\n\
+\n\
+echo "--- 3. MELAKUKAN AUTO REPAIR MPM ---"\n\
+a2dismod mpm_event || true\n\
+a2dismod mpm_worker || true\n\
+rm -f /etc/apache2/mods-enabled/mpm_event.*\n\
+rm -f /etc/apache2/mods-enabled/mpm_worker.*\n\
+a2enmod mpm_prefork\n\
+\n\
+echo "--- 4. VALIDASI SETELAH REPAIR (apache2ctl -M) ---"\n\
 apache2ctl -M 2>/dev/null | grep mpm || true\n\
 \n\
 echo "=========================================="\n\
-echo "=== STARTING APACHE ==="\n\
+echo "STARTING APACHE-FOREGROUND"\n\
 echo "=========================================="\n\
 exec apache2-foreground\n' > /usr/local/bin/start-apache.sh \
 && chmod +x /usr/local/bin/start-apache.sh
