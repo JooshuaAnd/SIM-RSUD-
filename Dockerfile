@@ -42,11 +42,18 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-# 11. Definisikan default PORT. Railway akan mengirimkan PORT secara dinamis saat runtime,
-# namun fallback 8080 berguna jika Anda menjalankan docker lokal.
+# 11. Pastikan hanya MPM prefork yang aktif (mencegah error "More than one MPM loaded"
+# jika apt-get install memicu update konfigurasi default apache)
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork
+
+# 12. Definisikan default PORT.
 ENV PORT=8080
 EXPOSE 8080
 
-# 12. CMD Runtime: Ganti port 80 di konfigurasi Apache dengan $PORT tepat sebelum Apache berjalan.
-# Ini mengatasi masalah Apache gagal start karena port dinamis dari Railway.
-CMD sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && apache2-foreground
+# 13. Masukkan PORT ke envvars Apache agar bisa dibaca di sites-available & ports.conf
+RUN echo 'export PORT=${PORT:-8080}' >> /etc/apache2/envvars
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+
+# 14. CMD kembali ke default
+CMD ["apache2-foreground"]
