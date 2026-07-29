@@ -1,0 +1,175 @@
+<?php return array (
+  'search' => 
+  array (
+    'Config/Services' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Services.php',
+          1 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Config\\Services.php',
+        ),
+      ),
+    ),
+    'Config/Registrar.php' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+        ),
+      ),
+    ),
+    'Helpers/kint_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\kint_helper.php',
+        ),
+      ),
+    ),
+    'Helpers/url_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\url_helper.php',
+        ),
+      ),
+    ),
+    'Helpers/filesystem_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\filesystem_helper.php',
+        ),
+      ),
+    ),
+    'Config/Events.php' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Events.php',
+        ),
+      ),
+    ),
+    'Helpers/array_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\array_helper.php',
+        ),
+      ),
+    ),
+    'Config/Filters.php' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Filters.php',
+          1 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Config\\Filters.php',
+        ),
+      ),
+    ),
+    'Config/Routes.php' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Routes.php',
+        ),
+      ),
+    ),
+    'Helpers/form_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\form_helper.php',
+        ),
+      ),
+    ),
+    'Helpers/riset_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Helpers\\riset_helper.php',
+        ),
+      ),
+    ),
+    'Helpers/pelatihan_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Helpers\\pelatihan_helper.php',
+        ),
+      ),
+    ),
+    'Language/en/Email.php' => 
+    array (
+      'php' => 
+      array (
+        0 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Language\\en\\Email.php',
+        ),
+      ),
+    ),
+    'Language/en/Errors.php' => 
+    array (
+      'php' => 
+      array (
+        0 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Language\\en\\Errors.php',
+        ),
+      ),
+    ),
+    'Helpers/number_helper' => 
+    array (
+      'php' => 
+      array (
+        1 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Helpers\\number_helper.php',
+        ),
+      ),
+    ),
+    'Language/en/Number.php' => 
+    array (
+      'php' => 
+      array (
+        0 => 
+        array (
+          0 => 'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Language\\en\\Number.php',
+        ),
+      ),
+    ),
+  ),
+  'findQualifiedNameFromPath' => 
+  array (
+    'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Services.php' => 'Config\\Services',
+  ),
+  'getClassname' => 
+  array (
+    'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\app\\Config\\Filters.php' => 'Config\\Filters',
+    'C:\\ALL FILES\\Magang\\LAST REVISI\\simdiklatkp\\vendor\\codeigniter4\\framework\\system\\Config\\Filters.php' => 'CodeIgniter\\Config\\Filters',
+  ),
+);
