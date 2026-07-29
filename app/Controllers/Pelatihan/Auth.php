@@ -252,10 +252,8 @@ class Auth extends BaseController
         if ($emailService->send()) {
             return redirect()->to(base_url('pelatihan/login'))->with('success', 'Password baru telah dikirim ke email Anda. Silakan periksa kotak masuk atau folder spam untuk login.');
         } else {
-            // Log error or display to user for debug (in production, just generic error)
             $err = $emailService->printDebugger(['headers']);
-            log_message('error', 'Email reset password gagal dikirim: ' . $err);
-            return redirect()->back()->with('error', 'Gagal mengirim email berisi password baru. Pastikan konfigurasi SMTP di server telah diatur.');
+            die("<h1>DEBUG EMAIL ERROR</h1><pre>" . htmlspecialchars($err) . "</pre>");
         }
     }
 }
