@@ -1,7 +1,7 @@
-# Menggunakan image PHP 8.2 dengan Apache
+# 1. Gunakan PHP 8.3 Apache sesuai dengan environment lokal Anda
 FROM php:8.3-apache
 
-# Install dependencies sistem
+# 2. Install dependencies sistem yang dibutuhkan untuk ekstensi PHP
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -13,37 +13,40 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ekstensi PHP yang dibutuhkan CodeIgniter 4
+# 3. Install ekstensi PHP yang dibutuhkan CodeIgniter 4
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# Mengaktifkan mod_rewrite Apache (wajib untuk CodeIgniter)
+# 4. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
 RUN a2enmod rewrite
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Mengubah DocumentRoot Apache ke folder public CodeIgniter
+# 5. Ubah DocumentRoot Apache ke folder public CodeIgniter
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Mengonfigurasi Apache agar menggunakan environment variable PORT (Wajib untuk Railway)
-# RUN sed -s -i -e "s/80/\${PORT}/" /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf
-
-# Set working directory
+# 6. Set working directory
 WORKDIR /var/www/html
 
-# Install Composer
+# 7. Install Composer dari image resmi
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy file project ke dalam container
+# 8. Copy seluruh file project ke dalam container
 COPY . .
 
-# Install dependencies project (tanpa dev untuk production)
+# 9. Install dependencies project (tanpa dev untuk production)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Mengatur permission untuk folder writable
+# 10. Mengatur kepemilikan dan permission agar CodeIgniter bisa menulis ke folder writable
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-# Expose port 80
-EXPOSE 80
+# 11. Definisikan default PORT. Railway akan mengirimkan PORT secara dinamis saat runtime,
+# namun fallback 8080 berguna jika Anda menjalankan docker lokal.
+ENV PORT=8080
+EXPOSE 8080
+
+# 12. CMD Runtime: Ganti port 80 di konfigurasi Apache dengan $PORT tepat sebelum Apache berjalan.
+# Ini mengatasi masalah Apache gagal start karena port dinamis dari Railway.
+CMD sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && apache2-foreground
