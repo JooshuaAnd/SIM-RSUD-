@@ -1,7 +1,5 @@
-# 1. Base Image
 FROM php:8.3-apache
 
-# 2. Install dependensi OS
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -13,52 +11,55 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Install Ekstensi PHP
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 4. Aktifkan mod_rewrite (wajib CI4)
 RUN a2enmod rewrite
 
-# 5. Set DocumentRoot ke /public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+# Perbaiki path DocumentRoot agar menunjuk ke folder public CodeIgniter
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Mengizinkan .htaccess bekerja (penting untuk CodeIgniter)
+# Izinkan .htaccess bekerja
 RUN sed -i '/<Directory \/var\/www\/html\/public\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# 6. Set direktori kerja
 WORKDIR /var/www/html
 
-# 7. Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-COPY . .
-RUN composer install --no-dev --optimize-autoloader
 
-# 8. Writable Permissions (Wajib CI4)
+COPY . .
+
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-# 9. EXPOSE Port 80 (Railway otomatis mendeteksi ini)
 EXPOSE 80
 
-# 10. WRAPPER SCRIPT UNTUK RUNTIME DIAGNOSTIC & START
-# Script ini dieksekusi SAAT CONTAINER START, bukan saat build.
+# WRAPPER DIAGNOSTIK RUNTIME (Dieksekusi saat container Railway mulai berjalan)
 RUN echo '#!/bin/bash\n\
 echo "=================================================="\n\
-echo "1. CEK MPM YANG AKTIF (APACHE2CTL)"\n\
-apache2ctl -M | grep mpm || true\n\
-echo "--------------------------------------------------"\n\
-echo "2. CEK SYMLINK MPM DI MODS-ENABLED"\n\
-ls -la /etc/apache2/mods-enabled/ | grep mpm || true\n\
-echo "--------------------------------------------------"\n\
-echo "3. CEK FILE LOADMODULE MPM"\n\
-grep -R "LoadModule.*mpm" /etc/apache2/ || true\n\
+echo "=== 1. DIAGNOSTIK RUNTIME: APACHE2CTL -t (SYNTAX CHECK) ==="\n\
+apache2ctl -t || true\n\
 echo "=================================================="\n\
-echo "MEMULAI APACHE..."\n\
+echo "=== 2. DIAGNOSTIK RUNTIME: APACHE2CTL -M (LOADED MODULES) ==="\n\
+apache2ctl -M | grep mpm || true\n\
+echo "=================================================="\n\
+echo "=== 3. DIAGNOSTIK RUNTIME: APACHE2CTL -S (VIRTUAL HOSTS) ==="\n\
+apache2ctl -S || true\n\
+echo "=================================================="\n\
+echo "=== 4. DIAGNOSTIK RUNTIME: ISI MODS-ENABLED ==="\n\
+ls -la /etc/apache2/mods-enabled/ | grep mpm || true\n\
+echo "=================================================="\n\
+echo "=== 5. DIAGNOSTIK RUNTIME: SEMUA LOADMODULE DI APACHE ==="\n\
+grep -R "LoadModule" /etc/apache2/ | grep mpm || true\n\
+echo "=================================================="\n\
+echo "=== 6. DIAGNOSTIK RUNTIME: SEMUA KONFIGURASI MPM ==="\n\
+grep -Ri "mpm_" /etc/apache2/ || true\n\
+echo "=================================================="\n\
+echo "=== MEMULAI APACHE ==="\n\
 exec apache2-foreground\n\
 ' > /usr/local/bin/start-apache.sh && chmod +x /usr/local/bin/start-apache.sh
 
-# 11. CMD
 CMD ["/usr/local/bin/start-apache.sh"]
