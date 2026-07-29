@@ -93,7 +93,7 @@ class Auth extends BaseController
         $rules = [
             'nik'      => 'required|numeric|exact_length[16]|is_unique[users_pelatihan.nik]',
             'nama'     => 'required|min_length[3]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
-            'email'    => 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]|is_unique[users_pelatihan.email]',
+            'email'    => 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|id|org|email)$/i]|is_unique[users_pelatihan.email]',
             'phone'    => 'required|numeric|min_length[10]|max_length[15]',
             'password' => 'required|min_length[8]|regex_match[/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/]',
             'role'     => 'required|in_list[named,nonnamed]',
@@ -110,7 +110,7 @@ class Auth extends BaseController
             ],
             'email' => [
                 'valid_email'  => 'Format email harus valid.',
-                'regex_match'  => 'Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau domain instansi pemerintah (.go.id).',
+                'regex_match'  => 'Email harus menggunakan domain yang diizinkan (.com, .id, .org, .email).',
                 'is_unique'    => 'Email sudah terdaftar.'
             ],
             'phone' => [
@@ -150,7 +150,43 @@ class Auth extends BaseController
 
         $userModel = new UserPelatihanModel();
         if ($userModel->insert($userData)) {
-            return redirect()->to('/pelatihan/login')->with('success', 'Pendaftaran Berhasil! Silakan login.');
+            // Send Registration Email
+            $emailService = \Config\Services::email();
+            $emailService->setTo($userData['email']);
+            $emailService->setFrom('noreply@rsudjogja.id', 'RSUD Yogyakarta');
+            $emailService->setSubject('Registrasi Berhasil - Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
+            
+            $loginUrl = base_url('pelatihan/login');
+            
+            $message = "
+            <html>
+            <head>
+                <title>Registrasi Berhasil</title>
+            </head>
+            <body>
+                <p>Halo " . esc($userData['nama_lengkap']) . ",</p>
+                <p>Selamat! Registrasi akun Anda pada Modul Pelatihan SIM DIKLAT RSUD Yogyakarta telah berhasil.</p>
+                <p>Informasi Akun Anda:</p>
+                <ul>
+                    <li><strong>NIK:</strong> " . esc($userData['nik']) . "</li>
+                    <li><strong>Email:</strong> " . esc($userData['email']) . "</li>
+                </ul>
+                <p>Silakan login melalui tautan berikut:</p>
+                <p><a href='" . $loginUrl . "' style='background-color:#007bff; color:white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;'>Login Sekarang</a></p>
+                <br>
+                <p>Terima kasih,<br>Tim SIM DIKLAT RSUD Yogyakarta</p>
+            </body>
+            </html>
+            ";
+            
+            $emailService->setMessage($message);
+            $emailService->setMailType('html');
+            
+            if (!$emailService->send()) {
+                log_message('error', 'Gagal mengirim email registrasi ke: ' . $userData['email'] . '. Error: ' . $emailService->printDebugger(['headers']));
+            }
+
+            return redirect()->to('/pelatihan/login')->with('success', 'Pendaftaran Berhasil! Silakan periksa email Anda untuk informasi akun.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
         }

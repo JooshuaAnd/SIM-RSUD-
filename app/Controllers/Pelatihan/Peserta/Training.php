@@ -99,6 +99,10 @@ class Training extends BaseController
 
     public function upload_bukti_bayar($id)
     {
+        helper('upload_security');
+        if (!is_safe_upload($this->request->getFile('bukti_bayar'))) {
+            return redirect()->back()->with('error', 'Keamanan: File Bukti Pembayaran tidak valid atau mengandung ekstensi berbahaya.');
+        }
         $userId = $this->session->get('user_id');
         if (!$userId) return redirect()->to('/login');
 

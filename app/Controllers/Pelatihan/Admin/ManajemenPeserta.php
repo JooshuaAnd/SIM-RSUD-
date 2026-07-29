@@ -339,6 +339,16 @@ class ManajemenPeserta extends BaseController
             'is_read' => 0
         ]);
         
+        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $user = $userModel->where('nik', $nik)->first();
+        if ($user && !empty($user['email'])) {
+            $emailService = \Config\Services::email();
+            $emailService->setTo($user['email']);
+            $emailService->setSubject('Peringatan Capaian JPL');
+            $emailService->setMessage($message);
+            $emailService->send();
+        }
+        
         return $this->response->setJSON(['status' => 'success']);
     }
 
@@ -410,6 +420,15 @@ class ManajemenPeserta extends BaseController
                 'type' => 'warning',
                 'is_read' => 0
             ]);
+            
+            if (!empty($user['email'])) {
+                $emailService = \Config\Services::email();
+                $emailService->setTo($user['email']);
+                $emailService->setSubject('Peringatan Capaian JPL - Room Broadcast');
+                $emailService->setMessage($personalized);
+                $emailService->send();
+            }
+            
             $sentCount++;
         }
         
@@ -499,6 +518,15 @@ class ManajemenPeserta extends BaseController
                 'type' => 'info',
                 'is_read' => 0
             ]);
+            
+            if (!empty($u['email'])) {
+                $emailService = \Config\Services::email();
+                $emailService->setTo($u['email']);
+                $emailService->setSubject('Broadcast Capaian JPL');
+                $emailService->setMessage($personalized);
+                $emailService->send();
+            }
+            
             $sentCount++;
         }
         
@@ -508,14 +536,26 @@ class ManajemenPeserta extends BaseController
     public function reminder(string $userId)
     {
         $notifModel = new \App\Models\Pelatihan\NotifikasiPelatihanModel();
+        $message = 'Capaian JPL tahunan Anda masih di bawah target minimal. Harap segera ikuti program diklat yang tersedia.';
         $notifModel->insert([
             'user_id' => $userId,
             'title' => 'Peringatan Capaian JPL',
-            'message' => 'Capaian JPL tahunan Anda masih di bawah target minimal. Harap segera ikuti program diklat yang tersedia.',
+            'message' => $message,
             'type' => 'warning',
             'is_read' => 0
         ]);
-        return redirect()->back()->with('success', 'Pengingat telah dikirim ke notifikasi peserta.');
+        
+        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $user = $userModel->where('nik', $userId)->first();
+        if ($user && !empty($user['email'])) {
+            $emailService = \Config\Services::email();
+            $emailService->setTo($user['email']);
+            $emailService->setSubject('Peringatan Capaian JPL');
+            $emailService->setMessage($message);
+            $emailService->send();
+        }
+        
+        return redirect()->back()->with('success', 'Pengingat telah dikirim ke notifikasi dan email peserta.');
     }
 
     public function akun_peserta()

@@ -158,6 +158,10 @@ class Pelatihan extends BaseController
 
     public function simpan()
     {
+        helper('upload_security');
+        if (!is_safe_upload($this->request->getFile('gambar_pelatihan'))) {
+            return redirect()->back()->withInput()->with('error', 'Keamanan: File Gambar Pelatihan tidak valid atau mengandung ekstensi berbahaya.');
+        }
         $data = $this->request->getPost();
         $gambarPelatihan = $this->uploadGambarPelatihan($data['nama'] ?? 'Pelatihan');
         
@@ -1040,6 +1044,9 @@ class Pelatihan extends BaseController
         // Handle logo file upload
         $logoFile = $this->request->getFile('logo_sistem');
         if ($logoFile && $logoFile->isValid() && !$logoFile->hasMoved()) {
+            if (!is_safe_upload($logoFile)) {
+                return redirect()->back()->with('error', 'File logo sistem tidak aman atau format tidak didukung.');
+            }
             if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/system')) {
                 mkdir(ROOTPATH . 'public/uploads/pelatihan/system', 0777, true);
             }
@@ -1051,6 +1058,9 @@ class Pelatihan extends BaseController
         // Handle favicon file upload
         $faviconFile = $this->request->getFile('favicon_sistem');
         if ($faviconFile && $faviconFile->isValid() && !$faviconFile->hasMoved()) {
+            if (!is_safe_upload($faviconFile)) {
+                return redirect()->back()->with('error', 'File favicon sistem tidak aman atau format tidak didukung.');
+            }
             if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/system')) {
                 mkdir(ROOTPATH . 'public/uploads/pelatihan/system', 0777, true);
             }

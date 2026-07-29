@@ -653,6 +653,16 @@
             width: '500px'
         }).then((result) => {
             if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Mengirim Pengingat...',
+                    html: 'Mohon tunggu, sedang mengirim notifikasi dan email.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
                 let msg = document.getElementById('remindMsgIndividual').value;
                 fetch('<?= base_url("pelatihan/admin/monitoring/remind_individual") ?>', {
                         method: 'POST',
@@ -767,6 +777,16 @@
             width: '500px'
         }).then((result) => {
             if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Mengirim Pengingat Ruangan...',
+                    html: 'Mohon tunggu, sedang mengirim notifikasi dan email ke seluruh pegawai ruangan.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
                 let msg = document.getElementById('remindMsgRoom').value;
                 let promises = employees.map(emp => {
                     return fetch('<?= base_url("pelatihan/admin/monitoring/remind_individual") ?>', {

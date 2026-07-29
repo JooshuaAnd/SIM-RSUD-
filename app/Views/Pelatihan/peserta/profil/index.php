@@ -4,7 +4,7 @@
 
 <style>
     :root {
-        --primary-red: #c62828;
+        --primary-red: #800000;
         --accent-yellow: #ffb300;
         --teal-kemenkes: #00bfa5;
         --soft-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -128,7 +128,7 @@
             <div class="glass-card-global mb-4 overflow-hidden">
                 <div class="profile-header"></div>
                 <div class="profile-avatar-container">
-                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($user['nama_lengkap'] ?? 'User') ?>&background=c62828&color=fff&size=128" class="profile-avatar" style="border-color: rgba(255,255,255,0.2);">
+                    <img src="https://ui-avatars.com/api/?name=<?= urlencode($user['nama_lengkap'] ?? 'User') ?>&background=800000&color=fff&size=128" class="profile-avatar" style="border-color: rgba(255,255,255,0.2);">
                 </div>
                 <div class="text-center px-4">
                     <h5 class="fw-bold mb-1 text-white"><?= $user['nama_lengkap'] ?? 'User' ?></h5>

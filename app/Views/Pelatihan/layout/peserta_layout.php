@@ -29,26 +29,28 @@ try {
             --border-muted: #ffffff;
         }
 
-        html, body {
+        html {
+            overflow-x: hidden;
+            height: 100%;
+        }
+        
+        body {
             width: 100%;
             max-width: 100%;
-            overflow-x: hidden;
             margin: 0;
             padding: 0;
-        }
-
-        body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-light);
             color: var(--primary-black);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            padding-top: 80px;
         }
         
         .glass-wrapper-global {
-            background: linear-gradient(135deg, rgba(110, 10, 15, 0.95) 0%, rgba(70, 0, 5, 0.98) 100%);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
             color: white;
             border-radius: 24px;
             padding: 2rem;
@@ -64,6 +66,17 @@ try {
             border-radius: 16px;
             color: white;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .glass-breadcrumb {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+            position: sticky;
+            top: 90px;
+            z-index: 1010;
         }
         
         .glass-card-global:hover {
@@ -164,19 +177,27 @@ try {
         }
 
         .navbar-custom {
-            background: #000000;
-            padding: 0.75rem 0;
-            border-bottom: 5px solid var(--primary-red);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(110, 15, 25, 0.90);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
         .navbar-brand img {
-            height: 45px;
+            height: 42px;
             width: auto;
-            background: white;
-            padding: 5px;
-            border-radius: 10px;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 12px;
             display: block;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .navbar-brand:hover img {
+            transform: scale(1.05) rotate(-2deg);
         }
 
         .logo-placeholder {
@@ -193,38 +214,22 @@ try {
         }
 
         .nav-link {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.7) !important;
-            padding: 0.6rem 1.4rem !important;
+            color: rgba(255, 255, 255, 0.65) !important;
+            padding: 0.5rem 1.2rem !important;
+            margin: 0 0.3rem;
+            border-radius: 50rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             letter-spacing: 0.3px;
-            position: relative;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 3px;
-            bottom: 0;
-            left: 50%;
-            background-color: var(--primary-red);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-            border-radius: 3px 3px 0 0;
         }
 
         .nav-link:hover,
         .nav-link.active {
             color: #ffffff !important;
-            opacity: 1;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
-        }
-
-        .nav-link.active::after {
-            width: 80%;
         }
 
         .btn-profile {
@@ -386,7 +391,7 @@ try {
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="<?= site_url('pelatihan/peserta/beranda') ?>">
                 <img src="<?= get_system_logo() ?>" alt="Logo" class="me-3" style="background: white; padding: 4px; border-radius: 12px; height: 40px;">
@@ -475,11 +480,11 @@ try {
         // Hide breadcrumb in layout for Katalog Detail so we can render it custom in the view
         $hideBreadcrumb = $isMainTab || $isKatalogDetail;
     ?>
-    <div class="<?= $isFullWidth ? 'container-fluid px-0' : 'container' ?> pt-3 pb-0 flex-grow-1">
+    <div class="<?= $isFullWidth ? 'container-fluid px-0' : 'container' ?> pt-3 pb-0" style="flex: 1 0 auto;">
         <div class="row m-0">
             <div class="col-12 <?= $isFullWidth ? 'px-4 px-lg-5' : '' ?>">
                 <?php if (!$hideBreadcrumb): ?>
-                <nav aria-label="breadcrumb" class="glass-card-global px-4 py-2 mb-4 d-inline-block" style="border-radius: 12px;">
+                <nav aria-label="breadcrumb" class="glass-breadcrumb px-4 py-2 mb-4 d-inline-block" style="border-radius: 12px;">
                     <ol class="breadcrumb mb-0 align-items-center">
                             <?php if ($isKatalogDetail): ?>
                                 <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran') ?>" class="text-decoration-none text-danger fw-bold">KATALOG</a></li>
@@ -509,7 +514,7 @@ try {
         <?= $this->renderSection('content') ?>
     </div>
 
-    <footer class="text-white pt-4 pb-3 mt-auto" style="background-color: #000000; z-index: 1020;">
+    <footer class="text-white pt-4 pb-3 mt-auto" style="background-color: #000000; z-index: 1020; flex-shrink: 0;">
         <div class="container">
             <div class="row g-4 mb-3">
                 <div class="col-md-6">

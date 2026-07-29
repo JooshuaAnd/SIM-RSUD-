@@ -101,12 +101,14 @@
             position: fixed;
             left: 0;
             top: 0;
-            background: var(--sidebar-bg);
+            background: rgba(110, 15, 25, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 1000;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
-            border-right: 2px solid #f1f5f9;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .sidebar-content {
@@ -140,11 +142,11 @@
             padding: 0.85rem 1.5rem;
             display: flex;
             align-items: center;
-            color: #475569;
+            color: rgba(255, 255, 255, 0.65);
             text-decoration: none;
-            border-radius: 12px;
+            border-radius: 50rem;
             margin: 0.2rem 1rem;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-weight: 700;
             font-size: 0.85rem;
         }
@@ -158,25 +160,60 @@
         }
 
         .nav-link-custom:hover {
-            background: #f8fafc;
-            color: var(--primary-red);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: translateY(-2px);
         }
 
         .nav-link-custom.active {
-            background: var(--primary-black);
+            background: rgba(255, 255, 255, 0.15);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
         }
 
-        .nav-link-custom.active i {
-            color: var(--primary-yellow);
+        .nav-link-custom.active i, .nav-link-custom:hover i {
+            color: #ffffff;
             opacity: 1;
+        }
+        
+        /* Premium text colors for dark sidebar */
+        .sidebar .text-dark { color: #ffffff !important; }
+        .sidebar .text-muted { color: rgba(255, 255, 255, 0.4) !important; }
+        .sidebar .bg-white { background: transparent !important; }
+        .sidebar .border-top { border-top: 1px solid rgba(255, 255, 255, 0.08) !important; }
+        
+        .sidebar .btn-outline-dark {
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar .btn-outline-dark:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+        }
+        .sidebar .btn-dark {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .sidebar .btn-dark:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
         }
 
         .card {
-            border: 2px solid #f1f5f9;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 2px 0 rgba(255, 255, 255, 0.8);
             border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), inset 0 2px 0 rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
         }
 
         .logo-box {

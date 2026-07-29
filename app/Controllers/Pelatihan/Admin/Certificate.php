@@ -334,6 +334,10 @@ class Certificate extends BaseController
     // CRUD Pejabat Penandatangan
     public function save_pejabat()
     {
+        helper('upload_security');
+        if (!is_safe_upload($this->request->getFile('ttd_image')) || !is_safe_upload($this->request->getFile('foto'))) {
+            return redirect()->back()->withInput()->with('error', 'Keamanan: File TTD atau Foto tidak valid atau mengandung ekstensi berbahaya.');
+        }
         $id = $this->request->getPost('id');
         $data = [
             'status'         => $this->request->getPost('status') ?? 'Narasumber',
@@ -400,6 +404,10 @@ class Certificate extends BaseController
     // CRUD templates / sertif_terbit
     public function save_template()
     {
+        helper('upload_security');
+        if (!is_safe_upload($this->request->getFile('logo_header'))) {
+            return redirect()->back()->withInput()->with('error', 'Keamanan: File Logo Header tidak valid atau mengandung ekstensi berbahaya.');
+        }
         $id = $this->request->getPost('id');
         $data = [
             'pelatihan_id' => $this->request->getPost('pelatihan_id'),
