@@ -689,7 +689,7 @@ class ManajemenPeserta extends BaseController
             // Send email
             $emailService = \Config\Services::email();
             $emailService->setTo($userData['email']);
-            $emailService->setFrom('noreply@rsudjogja.id', 'RSUD Yogyakarta');
+            $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
             $emailService->setSubject('Informasi Akun SIM Diklat KP');
             
             $message = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>";

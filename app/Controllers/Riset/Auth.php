@@ -177,7 +177,7 @@ class Auth extends BaseController
         // Send Email
         $emailService = \Config\Services::email();
         $emailService->setTo($user['email']);
-        $emailService->setFrom('noreply@rsudjogja.id', 'RSUD Yogyakarta');
+        $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
         $emailService->setSubject('Password Baru Modul Riset SIM DIKLAT RSUD Yogyakarta');
         
         $message = "
