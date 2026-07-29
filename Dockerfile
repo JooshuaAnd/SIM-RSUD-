@@ -19,11 +19,15 @@ RUN docker-php-ext-configure intl \
 
 # Mengaktifkan mod_rewrite Apache (wajib untuk CodeIgniter)
 RUN a2enmod rewrite
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Mengubah DocumentRoot Apache ke folder public CodeIgniter
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Mengonfigurasi Apache agar menggunakan environment variable PORT (Wajib untuk Railway)
+# RUN sed -s -i -e "s/80/\${PORT}/" /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf
 
 # Set working directory
 WORKDIR /var/www/html
