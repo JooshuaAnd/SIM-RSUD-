@@ -1,5 +1,8 @@
 FROM php:8.3-apache
 
+# ==========================================
+# 1. Install system dependencies
+# ==========================================
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -11,55 +14,79 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# ==========================================
+# 2. Install PHP extensions untuk CI4
+# ==========================================
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
+# ==========================================
+# 3. Enable Apache rewrite
+# ==========================================
 RUN a2enmod rewrite
 
+# ==========================================
+# 4. SOLUSI FINAL & BRUTAL UNTUK KONFLIK MPM
+# ==========================================
+# Alih-alih hanya menghapus symlink, kita HANCURKAN file fisik (.so) dari modul event dan worker.
+# Jika file fisiknya tidak ada, mustahil bagi Apache untuk memuatnya, tidak peduli 
+# konfigurasi apa yang mencoba memanggilnya saat runtime.
+RUN rm -f /usr/lib/apache2/modules/mod_mpm_event.so \
+    && rm -f /usr/lib/apache2/modules/mod_mpm_worker.so \
+    && rm -f /etc/apache2/mods-available/mpm_event.load \
+    && rm -f /etc/apache2/mods-available/mpm_worker.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_event.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_worker.load \
+    && a2enmod mpm_prefork || true
+
+# ==========================================
+# 5. Set CodeIgniter public directory
+# ==========================================
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-# Perbaiki path DocumentRoot agar menunjuk ke folder public CodeIgniter
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-# Izinkan .htaccess bekerja
-RUN sed -i '/<Directory \/var\/www\/html\/public\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+RUN echo '<Directory /var/www/html/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/apache2.conf
 
+# ==========================================
+# 6. Copy project & Install Composer
+# ==========================================
 WORKDIR /var/www/html
-
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 COPY . .
-
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
+# ==========================================
+# 7. Permission CodeIgniter writable
+# ==========================================
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
+# ==========================================
+# 8. Railway expose port
+# ==========================================
 EXPOSE 80
 
-# WRAPPER DIAGNOSTIK RUNTIME (Dieksekusi saat container Railway mulai berjalan)
-RUN echo '#!/bin/bash\n\
-echo "=================================================="\n\
-echo "=== 1. DIAGNOSTIK RUNTIME: APACHE2CTL -t (SYNTAX CHECK) ==="\n\
+# ==========================================
+# 9. Runtime Debug Wrapper
+# ==========================================
+RUN printf '#!/bin/bash\n\
+echo "========================================"\n\
+echo " APACHE RUNTIME DEBUG (STARTING) "\n\
+echo "========================================"\n\
+echo "--- Apache Syntax Test ---"\n\
 apache2ctl -t || true\n\
-echo "=================================================="\n\
-echo "=== 2. DIAGNOSTIK RUNTIME: APACHE2CTL -M (LOADED MODULES) ==="\n\
-apache2ctl -M | grep mpm || true\n\
-echo "=================================================="\n\
-echo "=== 3. DIAGNOSTIK RUNTIME: APACHE2CTL -S (VIRTUAL HOSTS) ==="\n\
-apache2ctl -S || true\n\
-echo "=================================================="\n\
-echo "=== 4. DIAGNOSTIK RUNTIME: ISI MODS-ENABLED ==="\n\
+echo "--- Loaded MPM Modules ---"\n\
+apache2ctl -M 2>/dev/null | grep mpm || true\n\
+echo "--- Enabled MPM Files ---"\n\
 ls -la /etc/apache2/mods-enabled/ | grep mpm || true\n\
-echo "=================================================="\n\
-echo "=== 5. DIAGNOSTIK RUNTIME: SEMUA LOADMODULE DI APACHE ==="\n\
-grep -R "LoadModule" /etc/apache2/ | grep mpm || true\n\
-echo "=================================================="\n\
-echo "=== 6. DIAGNOSTIK RUNTIME: SEMUA KONFIGURASI MPM ==="\n\
-grep -Ri "mpm_" /etc/apache2/ || true\n\
-echo "=================================================="\n\
-echo "=== MEMULAI APACHE ==="\n\
-exec apache2-foreground\n\
-' > /usr/local/bin/start-apache.sh && chmod +x /usr/local/bin/start-apache.sh
+echo "--- ALL MPM LOADMODULE ---"\n\
+grep -R "LoadModule.*mpm" /etc/apache2 || true\n\
+echo "========================================"\n\
+echo " STARTING APACHE "\n\
+echo "========================================"\n\
+exec apache2-foreground\n' > /usr/local/bin/start-apache.sh \
+&& chmod +x /usr/local/bin/start-apache.sh
 
 CMD ["/usr/local/bin/start-apache.sh"]
