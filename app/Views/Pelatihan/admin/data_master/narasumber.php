@@ -94,17 +94,18 @@
                 <div class="modal-body p-4 bg-light">
                     <input type="hidden" name="id" id="n_id" value="">
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Status</label>
-                        <select name="status" id="n_status" class="form-select rounded-pill border">
-                            <option value="Narasumber">Narasumber</option>
-                            <option value="Pejabat">Pejabat TTD</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_pejabat" id="n_nama" class="form-control rounded-pill border" placeholder="Contoh: Dr. H. Ariyudi Yunantoro" required>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-dark">Status</label>
+                            <select name="status" id="n_status" class="form-select rounded-pill border shadow-sm px-3">
+                                <option value="Narasumber">Narasumber</option>
+                                <option value="Pejabat">Pejabat TTD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-9">
+                            <label class="form-label small fw-bold text-dark">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_pejabat" id="n_nama" class="form-control rounded-pill border shadow-sm px-3" placeholder="Contoh: Dr. Budi Santoso, Sp.A" required>
+                        </div>
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -159,9 +160,15 @@
                         <textarea name="riwayat" id="n_riwayat" class="form-control border p-3" rows="3" placeholder="Riwayat singkat, pengalaman, publikasi, dll." style="border-radius: 15px;"></textarea>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Foto Profil</label>
-                        <input type="file" name="foto" id="n_foto" class="form-control rounded-pill border" accept="image/*">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Foto Profil</label>
+                            <input type="file" name="foto" id="n_foto" class="form-control rounded-pill border shadow-sm px-3" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Upload TTD (PNG Transparan)</label>
+                            <input type="file" name="ttd_image" id="n_ttd" class="form-control rounded-pill border shadow-sm px-3" accept=".png">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 bg-white">

@@ -26,9 +26,9 @@ $has_progress = $has_progress ?? false;
     }
 
     .detail-header {
-        background: var(--primary-black);
+        background: linear-gradient(135deg, rgba(110, 10, 15, 0.95) 0%, rgba(70, 0, 5, 0.98) 100%);
         color: white;
-        padding: 60px 0 80px;
+        padding: 40px 0 80px;
         border-radius: 0 0 40px 40px;
         margin-bottom: 50px;
         position: relative;
@@ -143,16 +143,85 @@ $has_progress = $has_progress ?? false;
     }
     
     /* Scrollbar styling for target profesi removed */
+
+    .glass-wrapper {
+        background: linear-gradient(135deg, rgba(165,15,20,0.9) 0%, rgba(130,5,10,0.98) 100%);
+        box-shadow: 0 15px 35px rgba(165,15,20,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: white;
+    }
+
+    .glass-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: white;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
+        border-color: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.15);
+    }
+    
+    .glass-card .keahlian-badge {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .section-title-glass {
+        position: relative;
+        padding-left: 18px;
+        margin-bottom: 25px;
+        font-weight: 800;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .section-title-glass::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 80%;
+        width: 5px;
+        background: white;
+        border-radius: 10px;
+    }
+
+    .btn-action {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 25px rgba(0,0,0,0.2) !important;
+        filter: brightness(1.15);
+    }
 </style>
 
 <?php
     $gambarPelatihan = !empty($p['gambar_pelatihan']) ? base_url($p['gambar_pelatihan']) : null;
 ?>
 
-<div class="detail-header" <?= $gambarPelatihan ? 'style="background-image: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,0,0,0.7)), url(' . esc($gambarPelatihan) . '); background-size: cover; background-position: center;"' : '' ?>>
+<div class="detail-header" <?= $gambarPelatihan ? 'style="background-image: linear-gradient(135deg, rgba(110, 10, 15, 0.85) 0%, rgba(70, 0, 5, 0.95) 100%), url(' . esc($gambarPelatihan) . '); background-size: cover; background-position: center;"' : '' ?>>
     <div class="container-fluid px-4 px-lg-5 position-relative" style="z-index: 2;">
+        
+        <!-- Integrated Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran') ?>" class="text-decoration-none text-white opacity-75 fw-bold">KATALOG</a></li>
+                <li class="breadcrumb-item active fw-bold text-white" aria-current="page">DETAIL PELATIHAN</li>
+            </ol>
+        </nav>
+
         <div class="row align-items-center">
-            <div class="col-lg-10 mx-auto animate__animated animate__fadeInUp">
+            <div class="col-lg-10 animate__animated animate__fadeInUp">
                 <div class="d-flex gap-2 mb-4 flex-wrap">
                     <span class="badge badge-premium rounded-pill text-white"><?= strtoupper($p['metode'] ?? 'ONLINE') ?></span>
                     <span class="badge badge-premium rounded-pill text-white"><?= strtoupper($p['biaya'] ?? 'GRATIS') ?></span>
@@ -184,18 +253,18 @@ $has_progress = $has_progress ?? false;
                     <i class="fas fa-clipboard-check text-danger"></i> Registrasi
                 </h5>
                 
-                <div class="bg-light rounded-4 p-3 mb-4">
+                <div class="bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 p-3 mb-4">
                     <div class="d-flex justify-content-between mb-3 align-items-center">
-                        <span class="text-muted fw-bold small">KUOTA</span>
-                        <span class="h6 fw-bold mb-0 text-dark"><?= $p['kuota'] ?? 0 ?> <small class="text-muted">Slot</small></span>
+                        <span class="text-danger fw-bold small">KUOTA</span>
+                        <span class="h6 fw-bold mb-0 text-danger"><?= $p['kuota'] ?? 0 ?> <small class="text-danger opacity-75">Slot</small></span>
                     </div>
                     <div class="d-flex justify-content-between mb-3 align-items-center">
-                        <span class="text-muted fw-bold small">TERISI</span>
-                        <span class="h6 fw-bold mb-0 text-dark"><?= $p['peserta'] ?? 0 ?> <small class="text-muted">Peserta</small></span>
+                        <span class="text-danger fw-bold small">TERISI</span>
+                        <span class="h6 fw-bold mb-0 text-danger"><?= $p['peserta'] ?? 0 ?> <small class="text-danger opacity-75">Peserta</small></span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <span class="text-muted fw-bold small">TOTAL BOBOT</span>
-                        <span class="h5 fw-bold mb-0 text-danger"><?= $p['jpl'] ?? 0 ?> <small class="text-muted fs-6">JPL</small></span>
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top border-danger border-opacity-25">
+                        <span class="text-danger fw-bold small">TOTAL BOBOT</span>
+                        <span class="h5 fw-bold mb-0 text-danger"><?= $p['jpl'] ?? 0 ?> <small class="text-danger opacity-75 fs-6">JPL</small></span>
                     </div>
                 </div>
 
@@ -227,7 +296,7 @@ $has_progress = $has_progress ?? false;
                                     <small class="text-dark opacity-75">Bukti bayar sedang ditinjau.</small>
                                 </div>
                             <?php else: ?>
-                                <button type="button" onclick="showUploadForm()" class="btn w-100 py-3 fs-6 rounded-pill text-white fw-bold shadow" style="background-color: var(--primary-red);">
+                                <button type="button" onclick="showUploadForm()" class="btn w-100 py-3 fs-6 rounded-pill text-white fw-bold shadow btn-action" style="background-color: #d97706;">
                                     UNGGAH BUKTI BAYAR <i class="fas fa-upload ms-2"></i>
                                 </button>
                             <?php endif; ?>
@@ -244,7 +313,7 @@ $has_progress = $has_progress ?? false;
                                 PELATIHAN BERAKHIR
                             </div>
                         <?php elseif ($is_learning_open): ?>
-                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn w-100 py-3 rounded-pill fw-bold text-white shadow-lg" style="background-color: #0f766e; transition: all 0.3s;">
+                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn w-100 py-3 rounded-pill fw-bold text-white shadow-lg btn-action" style="background-color: #059669;">
                                 <?= !empty($has_progress) ? 'LANJUTKAN BELAJAR' : 'MULAI BELAJAR' ?> <i class="fas fa-play-circle ms-2"></i>
                             </a>
                         <?php else: ?>
@@ -269,7 +338,7 @@ $has_progress = $has_progress ?? false;
                             </div>
                         <?php else: ?>
                             <form action="<?= base_url('pelatihan/peserta/daftar/'.$p['id']) ?>" method="POST">
-                                <button type="submit" class="btn w-100 py-3 rounded-pill text-white fw-bold shadow-lg" style="background-color: var(--primary-red); transition: all 0.3s;">
+                                <button type="submit" class="btn w-100 py-3 rounded-pill text-white fw-bold shadow-lg btn-action" style="background-color: #2563eb;">
                                     DAFTAR SEKARANG <i class="fas fa-arrow-right ms-2"></i>
                                 </button>
                             </form>
@@ -283,82 +352,82 @@ $has_progress = $has_progress ?? false;
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-lg-8 col-xl-8 order-lg-1 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+        <!-- Main Content (Beside Sidebar) -->
+        <div class="col-lg-8 col-xl-9 order-lg-1 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
             
-            <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm border mb-4" style="border-color: #f1f5f9 !important;">
+            <div class="glass-wrapper p-4 p-md-5 rounded-4 mb-4">
                 
                 <!-- Pengumuman -->
                 <?php if (!empty($p['pengumuman'])): ?>
-                <div class="alert border d-flex gap-3 align-items-center mb-5 rounded-3" style="background-color: var(--primary-black); color: white; border-color: var(--primary-red) !important; border-left: 5px solid var(--primary-red) !important;">
-                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; color: var(--primary-red);">
+                <div class="alert glass-card d-flex gap-3 align-items-center mb-5 rounded-3 border-0">
+                    <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; color: white;">
                         <i class="fas fa-bullhorn"></i>
                     </div>
                     <div>
                         <h6 class="fw-bold mb-1 text-white">Pengumuman</h6>
-                        <p class="mb-0 small text-white-50"><?= $p['pengumuman'] ?></p>
+                        <p class="mb-0 small text-white opacity-75"><?= $p['pengumuman'] ?></p>
                     </div>
                 </div>
                 <?php endif; ?>
 
                 <!-- Tentang -->
                 <div class="mb-5">
-                    <h4 class="section-title">Tentang Pelatihan</h4>
-                    <p class="text-muted" style="line-height: 1.8;">
+                    <h4 class="section-title-glass">Tentang Pelatihan</h4>
+                    <p class="text-white opacity-75" style="line-height: 1.8;">
                         <?= $p['deskripsi'] ?? 'Deskripsi pelatihan tidak tersedia.' ?>
                     </p>
                 </div>
 
                 <!-- Informasi Grid -->
                 <div class="mb-5">
-                    <h4 class="section-title">Informasi Lengkap</h4>
+                    <h4 class="section-title-glass">Informasi Lengkap</h4>
                     <div class="feature-grid">
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-shapes"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-shapes fs-5"></i></div>
                             <div>
-                                <div class="small text-muted fw-bold mb-1">Tema / Program</div>
-                                <div class="text-dark fw-bold small"><?= $p['tema'] ?? '-' ?></div>
-                                <div class="text-danger small fw-semibold"><?= $p['program'] ?? '-' ?></div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Tema / Program</div>
+                                <div class="text-white fw-bold small"><?= $p['tema'] ?? '-' ?></div>
+                                <div class="text-white opacity-50 small fw-semibold"><?= $p['program'] ?? '-' ?></div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-layer-group fs-5"></i></div>
                             <div>
-                                <div class="small text-muted fw-bold mb-1">Level & Cakupan</div>
-                                <div class="text-dark fw-bold small"><?= $p['level'] ?? '-' ?></div>
-                                <div class="text-danger small fw-semibold"><?= $p['cakupan'] ?? '-' ?></div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Level & Cakupan</div>
+                                <div class="text-white fw-bold small"><?= $p['level'] ?? '-' ?></div>
+                                <div class="text-white opacity-50 small fw-semibold"><?= $p['cakupan'] ?? '-' ?></div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-user-md fs-5"></i></div>
                             <div class="w-100">
-                                <div class="small text-muted fw-bold mb-1">Target Profesi</div>
-                                <div class="text-dark fw-bold small target-profesi-box">
+                                <div class="small text-white opacity-75 fw-bold mb-1">Target Profesi</div>
+                                <div class="text-white fw-bold small">
                                     <?php 
                                         $profesiList = explode(',', $p['target_profesi'] ?? 'Semua Profesi');
                                         foreach($profesiList as $prof) {
-                                            echo '<span class="d-inline-block bg-light border rounded px-2 py-1 mb-1 me-1" style="font-size:0.7rem;">'.trim($prof).'</span>';
+                                            echo '<span class="d-inline-block bg-white bg-opacity-25 rounded px-2 py-1 mb-1 me-1" style="font-size:0.7rem;">'.trim($prof).'</span>';
                                         }
                                     ?>
                                 </div>
                                 <?php if(!empty($p['target_khusus_profesi'])): ?>
-                                    <div class="text-danger small fw-semibold mt-1 border-top pt-1">Khusus: <?= $p['target_khusus_profesi'] ?></div>
+                                    <div class="text-white opacity-75 small fw-semibold mt-1 border-top border-white border-opacity-10 pt-1">Khusus: <?= $p['target_khusus_profesi'] ?></div>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-calendar-alt fs-5"></i></div>
                             <div>
-                                <div class="small text-muted fw-bold mb-1">Jadwal Pelaksanaan</div>
-                                <div class="text-dark fw-bold small"><?= tanggal_indo($p['jadwal_mulai'] ?? 'now') ?> - <?= tanggal_indo($p['jadwal_selesai'] ?? 'now') ?></div>
-                                <div class="text-danger small fw-semibold"><?= $p['jam_mulai'] ?? '08:00' ?> s.d <?= $p['jam_selesai'] ?? '16:00' ?> WIB</div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Jadwal Pelaksanaan</div>
+                                <div class="text-white fw-bold small"><?= tanggal_indo($p['jadwal_mulai'] ?? 'now') ?> - <?= tanggal_indo($p['jadwal_selesai'] ?? 'now') ?></div>
+                                <div class="text-white opacity-50 small fw-semibold"><?= $p['jam_mulai'] ?? '08:00' ?> s.d <?= $p['jam_selesai'] ?? '16:00' ?> WIB</div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-map-marker-alt fs-5"></i></div>
                             <div>
-                                <div class="small text-muted fw-bold mb-1">Metode & Lokasi</div>
-                                <div class="text-dark fw-bold small"><?= $p['metode'] ?? 'Online' ?></div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Metode & Lokasi</div>
+                                <div class="text-white fw-bold small"><?= $p['metode'] ?? 'Online' ?></div>
                                 <?php
                                     $metodeText = $p['metode'] ?? 'Online';
                                     $lokasiText = 'Zoom / LMS';
@@ -368,60 +437,148 @@ $has_progress = $has_progress ?? false;
                                         $lokasiText = 'Zoom / LMS & ' . (empty($p['lokasi']) ? 'LOKASI OFFLINE menyesuaikan sesi.' : $p['lokasi']);
                                     }
                                 ?>
-                                <div class="text-danger small fw-semibold"><?= $lokasiText ?></div>
+                                <div class="text-white opacity-50 small fw-semibold"><?= $lokasiText ?></div>
                             </div>
                         </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-check-double fs-5"></i></div>
                             <div>
-                                <div class="small text-muted fw-bold mb-1">Narasumber</div>
-                                <div class="text-dark fw-bold small"><?= $p['narasumber'] ?? '-' ?></div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Nilai KKM Kelulusan</div>
+                                <div class="text-white fw-bold small"><?= $p['kkm'] ?? '70' ?></div>
+                                <div class="text-white opacity-50 small fw-semibold">Batas Minimal Lulus</div>
                             </div>
                         </div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-award fs-5"></i></div>
+                            <div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">SKP & Bobot JPL</div>
+                                <div class="text-white fw-bold small"><?= $p['skp'] ?? '0' ?> SKP / <?= $p['jpl'] ?? '0' ?> JPL</div>
+                                <div class="text-white opacity-50 small fw-semibold">Sertifikasi</div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-hospital-user fs-5"></i></div>
+                            <div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Target Unit Khusus</div>
+                                <div class="text-white fw-bold small"><?= $p['target_khusus_unit'] ?? 'Semua Unit / Tidak Ada' ?></div>
+                                <div class="text-white opacity-50 small fw-semibold">Prioritas Peserta</div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-4 p-3 d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:45px; height:45px;"><i class="fas fa-headset fs-5"></i></div>
+                            <div>
+                                <div class="small text-white opacity-75 fw-bold mb-1">Kontak Penyelenggara</div>
+                                <div class="text-white fw-bold small"><?= $p['kontak'] ?? '-' ?></div>
+                                <div class="text-white opacity-50 small fw-semibold">Bantuan / Info</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Narasumber Section Inside Main Box -->
+                <div class="mb-5">
+                    <h4 class="section-title-glass">Instruktur & Narasumber Ahli</h4>
+                    <div class="row g-4">
+                        <?php if (empty($p['narasumber_data'])): ?>
+                            <div class="col-12">
+                                <div class="bg-white bg-opacity-10 rounded-3 p-4 text-center">
+                                    <p class="text-white opacity-75 mb-0">Belum ada instruktur/narasumber yang ditentukan.</p>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach($p['narasumber_data'] as $n): ?>
+                            <div class="col-12 col-xl-6">
+                                <div class="p-4 rounded-4 glass-card h-100 d-flex flex-column">
+                                    <div class="d-flex flex-column flex-sm-row gap-4 mb-4">
+                                        <?php
+                                            $fotoN = !empty($n['foto']) ? base_url('uploads/narasumber/'.$n['foto']) : 'https://ui-avatars.com/api/?name='.urlencode($n['nama_lengkap']).'&background=fff&color=ce2127';
+                                        ?>
+                                        <div class="position-relative flex-shrink-0 text-center text-sm-start">
+                                            <img src="<?= $fotoN ?>" class="rounded-circle object-fit-cover shadow-lg" width="100" height="100" style="border: 3px solid rgba(255,255,255,0.9);">
+                                            <div class="position-absolute bg-success rounded-circle border border-3 border-white" style="width: 20px; height: 20px; bottom: 5px; right: 5px;"></div>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold text-white mb-2" style="letter-spacing: -0.5px;"><?= esc($n['nama_lengkap']) ?></h5>
+                                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                                <span class="keahlian-badge text-white px-3 py-1 rounded-pill fw-bold" style="font-size: 0.7rem;">
+                                                    <i class="fas fa-star text-warning me-1"></i> <?= esc($n['keahlian'] ?? 'Instruktur') ?>
+                                                </span>
+                                                <?php if(!empty($n['jabatan'])): ?>
+                                                    <span class="bg-black bg-opacity-25 text-white px-3 py-1 rounded-pill fw-normal" style="font-size: 0.7rem;">
+                                                        <i class="fas fa-briefcase me-1 opacity-50"></i> <?= esc($n['jabatan']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-white opacity-75 small mb-1">
+                                                <i class="fas fa-graduation-cap me-2 opacity-50"></i><?= esc($n['pendidikan'] ?? 'Pendidikan tidak disebutkan') ?>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-3 text-white opacity-75 small">
+                                                <?php if(!empty($n['email'])): ?>
+                                                    <div><i class="fas fa-envelope me-2 opacity-50"></i><?= esc($n['email']) ?></div>
+                                                <?php endif; ?>
+                                                <?php if(!empty($n['kontak'])): ?>
+                                                    <div><i class="fas fa-phone-alt me-2 opacity-50"></i><?= esc($n['kontak']) ?></div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php if(!empty($n['riwayat'])): ?>
+                                        <div class="bg-black bg-opacity-25 p-3 rounded-3 mt-auto border border-white border-opacity-10">
+                                            <h6 class="text-white fw-bold mb-2 fs-6"><i class="fas fa-file-alt me-2 text-white-50"></i> Profil & Riwayat</h6>
+                                            <p class="text-white opacity-75 small mb-0 lh-base" style="text-align: justify;">
+                                                <?= nl2br(esc($n['riwayat'])) ?>
+                                            </p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Tujuan & Kompetensi -->
                 <div class="row g-4 mb-5">
                     <div class="col-md-6">
-                        <div class="bg-light p-4 rounded-4 h-100 border" style="border-color: #e2e8f0 !important;">
-                            <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2"><i class="fas fa-bullseye text-danger"></i> Tujuan</h6>
-                            <p class="text-muted small mb-0 lh-lg"><?= $p['tujuan'] ?? 'Belum ada informasi tujuan.' ?></p>
+                        <div class="glass-card p-4 rounded-4 h-100">
+                            <h6 class="fw-bold mb-3 text-white d-flex align-items-center gap-2"><i class="fas fa-bullseye text-warning"></i> Tujuan</h6>
+                            <p class="text-white opacity-75 small mb-0 lh-lg"><?= $p['tujuan'] ?? 'Belum ada informasi tujuan.' ?></p>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="bg-light p-4 rounded-4 h-100 border" style="border-color: #e2e8f0 !important;">
-                            <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2"><i class="fas fa-star text-danger"></i> Kompetensi</h6>
-                            <p class="text-muted small mb-0 lh-lg"><?= $p['kompetensi'] ?? 'Belum ada informasi kompetensi.' ?></p>
+                        <div class="glass-card p-4 rounded-4 h-100">
+                            <h6 class="fw-bold mb-3 text-white d-flex align-items-center gap-2"><i class="fas fa-star text-warning"></i> Kompetensi</h6>
+                            <p class="text-white opacity-75 small mb-0 lh-lg"><?= $p['kompetensi'] ?? 'Belum ada informasi kompetensi.' ?></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Kurikulum -->
                 <div class="mb-2">
-                    <h4 class="section-title">Kurikulum Materi</h4>
+                    <h4 class="section-title-glass">Kurikulum Materi</h4>
                     <?php if(empty($konten)): ?>
-                        <div class="text-center py-5 text-muted bg-light rounded-4 border">
+                        <div class="text-center py-5 text-white opacity-75 glass-card rounded-4 border-0">
                             <i class="fas fa-folder-open mb-3 fs-3 opacity-50"></i>
                             <div class="small fw-bold">Belum ada materi terdaftar</div>
                         </div>
                     <?php else: ?>
-                        <div class="list-group list-group-flush rounded-3 border">
+                        <div class="list-group list-group-flush rounded-4 overflow-hidden" style="border: 1px solid rgba(255,255,255,0.2);">
                             <?php foreach($konten as $index => $k): ?>
-                                <div class="list-group-item p-3 border-bottom <?= $index % 2 == 0 ? 'bg-light' : 'bg-white' ?>">
+                                <div class="list-group-item p-3 border-bottom border-white border-opacity-10" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(5px);">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center fw-bold text-danger border" style="width: 35px; height: 35px; flex-shrink: 0; font-size: 0.8rem;">
+                                        <div class="bg-white bg-opacity-25 rounded-circle shadow-sm d-flex align-items-center justify-content-center fw-bold text-white border border-white border-opacity-25" style="width: 35px; height: 35px; flex-shrink: 0; font-size: 0.8rem;">
                                             <?= $index + 1 ?>
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.9rem;"><?= $k['judul'] ?></h6>
+                                                    <h6 class="fw-bold mb-1 text-white" style="font-size: 0.9rem;"><?= $k['judul'] ?></h6>
                                                     <?php if(!empty($k['deskripsi'])): ?>
-                                                        <p class="text-muted mb-0" style="font-size: 0.75rem;"><?= $k['deskripsi'] ?></p>
+                                                        <p class="text-white opacity-75 mb-0" style="font-size: 0.75rem;"><?= $k['deskripsi'] ?></p>
                                                     <?php endif; ?>
                                                 </div>
-                                                <span class="badge rounded-pill bg-dark px-2 py-1 text-white-50" style="font-size: 0.65rem;">
+                                                <span class="badge rounded-pill bg-white text-danger px-2 py-1 fw-bold shadow-sm" style="font-size: 0.65rem;">
                                                     <i class="fas fa-<?= $k['tipe'] == 'video' ? 'play-circle' : ($k['tipe'] == 'materi' ? 'file-alt' : 'tasks') ?> me-1"></i>
                                                     <?= strtoupper($k['tipe']) ?>
                                                 </span>
@@ -438,6 +595,8 @@ $has_progress = $has_progress ?? false;
         </div>
     </div>
 </div>
+
+
 
 <?= $this->endSection() ?>
 

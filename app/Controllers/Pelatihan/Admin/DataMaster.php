@@ -358,7 +358,7 @@ class DataMaster extends BaseController
     {
         $model = new \App\Models\Pelatihan\PejabatTtdPelatihanModel();
         $data = [
-            'status'         => 'Narasumber',
+            'status'         => $this->request->getPost('status') ?? 'Narasumber',
             'nama_pejabat'   => $this->request->getPost('nama_pejabat'),
             'gelar_depan'    => $this->request->getPost('gelar_depan') ?? null,
             'gelar_belakang' => $this->request->getPost('gelar_belakang') ?? null,
@@ -372,6 +372,38 @@ class DataMaster extends BaseController
             'riwayat'        => $this->request->getPost('riwayat') ?? null,
             'created_at'     => date('Y-m-d H:i:s'),
         ];
+
+        // Handle foto upload
+        $file = $this->request->getFile('foto');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            $extension = strtolower($file->getExtension());
+            if (in_array($extension, $allowedExtensions, true) && $file->getSize() <= 2 * 1024 * 1024) {
+                if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/foto')) {
+                    mkdir(ROOTPATH . 'public/uploads/pelatihan/foto', 0777, true);
+                }
+                $namaPejabat = preg_replace('/[^A-Za-z0-9]/', '_', $this->request->getPost('nama_pejabat') ?: 'Narasumber');
+                $newName = "Foto_{$namaPejabat}_" . date('Ymd_His') . "." . $extension;
+                $file->move(ROOTPATH . 'public/uploads/pelatihan/foto', $newName);
+                $data['foto'] = 'uploads/pelatihan/foto/' . $newName;
+            }
+        }
+
+        // Handle ttd_image upload
+        $ttdFile = $this->request->getFile('ttd_image');
+        if ($ttdFile && $ttdFile->isValid() && !$ttdFile->hasMoved()) {
+            $extension = strtolower($ttdFile->getExtension());
+            if ($extension === 'png' && $ttdFile->getSize() <= 2 * 1024 * 1024) {
+                if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/ttd')) {
+                    mkdir(ROOTPATH . 'public/uploads/pelatihan/ttd', 0777, true);
+                }
+                $namaPejabat = preg_replace('/[^A-Za-z0-9]/', '_', $this->request->getPost('nama_pejabat') ?: 'Pejabat');
+                $newName = "TTD_{$namaPejabat}_" . date('Ymd_His') . ".png";
+                $ttdFile->move(ROOTPATH . 'public/uploads/pelatihan/ttd', $newName);
+                $data['ttd_image'] = 'ttd/' . $newName;
+            }
+        }
+
         $model->insert($data);
         $newId = $model->getInsertID();
 

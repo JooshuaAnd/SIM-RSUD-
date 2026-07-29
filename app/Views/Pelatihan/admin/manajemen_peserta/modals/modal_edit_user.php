@@ -80,18 +80,7 @@ $profesi = $profesi ?? [];
                         </div>
                     </div>
 
-                    <div class="section-title">Keamanan Akun</div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-12">
-                            <div class="mb-2 text-muted small fw-bold fst-italic">Kosongkan sandi jika tidak ingin diubah.</div>
-                            <label class="form-label small fw-bold mb-1">KATA SANDI BARU</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" name="password" minlength="8" placeholder="Minimal 8 karakter..." pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$" title="Password harus mengandung kombinasi huruf dan angka (tanpa spasi/simbol).">
-                                <button class="btn btn-outline-secondary toggle-password" type="button" style="border: 2px solid #f1f5f9; border-left: none; background: white;"><i class="fas fa-eye text-muted"></i></button>
-                            </div>
-                            <div class="form-text" style="font-size: 0.65rem;">Min. 8 karakter, kombinasi angka & huruf.</div>
-                        </div>
-                    </div>
+
 
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-dark w-100 btn-register-submit" style="background:#1e293b; box-shadow: 0 8px 16px rgba(30, 41, 59, 0.2);">

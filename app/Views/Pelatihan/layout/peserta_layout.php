@@ -23,10 +23,10 @@ try {
             --primary-red: #c62828;
             --primary-black: #0f141b;
             --primary-dark: #0f172a;
-            --bg-light: #f4f7fe;
+            --bg-light: #ffffff;
             --surface: #ffffff;
-            --surface-soft: #f8fafc;
-            --border-muted: #e2e8f0;
+            --surface-soft: #ffffff;
+            --border-muted: #ffffff;
         }
 
         html, body {
@@ -45,11 +45,48 @@ try {
             flex-direction: column;
             min-height: 100vh;
         }
+        
+        .glass-wrapper-global {
+            background: linear-gradient(135deg, rgba(110, 10, 15, 0.95) 0%, rgba(70, 0, 5, 0.98) 100%);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .glass-card-global {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .glass-card-global:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .btn-action-global {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        }
+        
+        .btn-action-global:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.2) !important;
+            filter: brightness(1.15);
+        }
 
         /* Visibility Fixes */
         .text-muted {
-            color: #64748b !important;
-            opacity: 1 !important;
+            color: #ffffff !important;
+            opacity: 0.85 !important;
         }
 
         .text-dark {
@@ -431,34 +468,37 @@ try {
         $isDiklatSayaDetail = in_array('belajar', $segments) || in_array('learn', $segments) || in_array('materi', $segments) || in_array('kuis', $segments) || in_array('evaluasi', $segments);
         $isSertifikatDetail = in_array('upload_sertifikat', $segments) || in_array('edit_sertifikat', $segments) || in_array('unduh_sertifikat', $segments);
         
-        $isFullWidth = $isKatalogDetail || $isKatalogIndex || $isDiklatSayaDetail;
+        $isFullWidth = true;
         
         $isMainTab = $isHomeActive || ($isKatalogActive && !$isKatalogDetail) || ($isDiklatSayaActive && !$isDiklatSayaDetail) || ($isSertifikatActive && !$isSertifikatDetail) || in_array('profil', $segments) || in_array('notifikasi', $segments);
+        
+        // Hide breadcrumb in layout for Katalog Detail so we can render it custom in the view
+        $hideBreadcrumb = $isMainTab || $isKatalogDetail;
     ?>
     <div class="<?= $isFullWidth ? 'container-fluid px-0' : 'container' ?> pt-3 pb-0 flex-grow-1">
         <div class="row m-0">
             <div class="col-12 <?= $isFullWidth ? 'px-4 px-lg-5' : '' ?>">
-                <?php if (!$isMainTab): ?>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
+                <?php if (!$hideBreadcrumb): ?>
+                <nav aria-label="breadcrumb" class="glass-card-global px-4 py-2 mb-4 d-inline-block" style="border-radius: 12px;">
+                    <ol class="breadcrumb mb-0 align-items-center">
                             <?php if ($isKatalogDetail): ?>
-                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran') ?>" class="text-decoration-none text-muted fw-bold">KATALOG</a></li>
+                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran') ?>" class="text-decoration-none text-danger fw-bold">KATALOG</a></li>
                             <?php elseif ($isDiklatSayaDetail): ?>
-                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran_saya') ?>" class="text-decoration-none text-muted fw-bold">DIKLAT SAYA</a></li>
+                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/pembelajaran_saya') ?>" class="text-decoration-none text-danger fw-bold">DIKLAT SAYA</a></li>
                             <?php elseif ($isSertifikatDetail): ?>
-                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/sertifikat_saya') ?>" class="text-decoration-none text-muted fw-bold">SERTIFIKAT SAYA</a></li>
+                                <li class="breadcrumb-item"><a href="<?= site_url('pelatihan/peserta/sertifikat_saya') ?>" class="text-decoration-none text-danger fw-bold">SERTIFIKAT SAYA</a></li>
                             <?php endif; ?>
 
                             <?php if (in_array('detail_pelatihan', $segments)): ?>
-                                <li class="breadcrumb-item active fw-bold text-danger" aria-current="page">DETAIL PELATIHAN</li>
+                                <li class="breadcrumb-item active fw-bold text-warning" aria-current="page">DETAIL PELATIHAN</li>
                             <?php elseif (in_array('belajar', $segments) || in_array('learn', $segments)): ?>
-                                <li class="breadcrumb-item active fw-bold text-danger" aria-current="page">PROSES BELAJAR</li>
+                                <li class="breadcrumb-item active fw-bold text-warning" aria-current="page">PROSES BELAJAR</li>
                             <?php elseif (in_array('upload_sertifikat', $segments)): ?>
-                                <li class="breadcrumb-item active fw-bold text-danger" aria-current="page">UPLOAD</li>
+                                <li class="breadcrumb-item active fw-bold text-warning" aria-current="page">UPLOAD</li>
                             <?php elseif (in_array('edit_sertifikat', $segments)): ?>
-                                <li class="breadcrumb-item active fw-bold text-danger" aria-current="page">EDIT</li>
+                                <li class="breadcrumb-item active fw-bold text-warning" aria-current="page">EDIT</li>
                             <?php else: ?>
-                                <li class="breadcrumb-item active fw-bold text-danger" aria-current="page"><?= strtoupper($title) ?></li>
+                                <li class="breadcrumb-item active fw-bold text-warning" aria-current="page"><?= strtoupper($title) ?></li>
                             <?php endif; ?>
                     </ol>
                 </nav>

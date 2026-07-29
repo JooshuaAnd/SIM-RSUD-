@@ -579,7 +579,6 @@ class ManajemenPeserta extends BaseController
             'nama'     => 'required|min_length[3]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
             'email'    => 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]|is_unique[users_pelatihan.email]',
             'wa'       => 'required|numeric|min_length[10]|max_length[15]',
-            'password' => 'required|min_length[8]|regex_match[/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/]',
         ];
 
         $customErrors = [
@@ -600,9 +599,6 @@ class ManajemenPeserta extends BaseController
                 'numeric'      => 'No. WhatsApp harus berupa angka murni.',
                 'min_length'   => 'No. WhatsApp minimal 10 digit.',
                 'max_length'   => 'No. WhatsApp maksimal 15 digit.'
-            ],
-            'password' => [
-                'regex_match'  => 'Password harus berupa kombinasi huruf dan angka saja (tanpa simbol).'
             ]
         ];
 
@@ -632,6 +628,9 @@ class ManajemenPeserta extends BaseController
              $idProfesi = $this->request->getPost('id_profesi');
         }
 
+        // Generate random password
+        $randomPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+
         $userData = [
             'nik'           => $this->request->getPost('nik'),
             'nama_lengkap'  => $this->request->getPost('nama'),
@@ -641,13 +640,35 @@ class ManajemenPeserta extends BaseController
             'role'          => $dbRole,
             'id_unit_kerja' => $idUnitKerja ?: null,
             'id_profesi'    => $idProfesi ?: null,
-            'password'      => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
+            'password'      => password_hash($randomPassword, PASSWORD_BCRYPT),
             'status'        => 'aktif'
         ];
 
         $userModel = new UserPelatihanModel();
         if ($userModel->insert($userData)) {
-            return redirect()->to('/pelatihan/admin/akun_peserta')->with('success', 'Akun berhasil ditambahkan.');
+            // Send email
+            $emailService = \Config\Services::email();
+            $emailService->setTo($userData['email']);
+            $emailService->setFrom('noreply@rsudjogja.id', 'RSUD Yogyakarta');
+            $emailService->setSubject('Informasi Akun SIM Diklat KP');
+            
+            $message = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>";
+            $message .= "<h2 style='color: #ce2127;'>Selamat Datang di SIM Diklat KP</h2>";
+            $message .= "<p>Halo <b>" . esc($userData['nama_lengkap']) . "</b>,</p>";
+            $message .= "<p>Akun Anda telah berhasil didaftarkan oleh Admin. Berikut adalah detail login Anda:</p>";
+            $message .= "<table style='border-collapse: collapse; width: 100%; max-width: 400px;'>";
+            $message .= "<tr><td style='padding: 8px; border: 1px solid #ddd;'><b>Username / NIK</b></td><td style='padding: 8px; border: 1px solid #ddd; font-family: monospace;'>" . esc($userData['nik']) . "</td></tr>";
+            $message .= "<tr><td style='padding: 8px; border: 1px solid #ddd;'><b>Password</b></td><td style='padding: 8px; border: 1px solid #ddd; font-family: monospace;'>" . esc($randomPassword) . "</td></tr>";
+            $message .= "</table>";
+            $message .= "<p style='margin-top: 20px;'>Harap segera ubah password Anda setelah berhasil login untuk keamanan akun Anda.</p>";
+            $message .= "<a href='" . base_url('pelatihan/peserta/login') . "' style='display: inline-block; padding: 10px 20px; color: #fff; background-color: #ce2127; text-decoration: none; border-radius: 5px;'>Login Sekarang</a>";
+            $message .= "<p style='margin-top: 20px; font-size: 0.9em; color: #666;'>Terima kasih,<br>Tim Diklat RSUD Kota Yogyakarta</p>";
+            $message .= "</div>";
+            
+            $emailService->setMessage($message);
+            $emailService->send();
+
+            return redirect()->to('/pelatihan/admin/akun_peserta')->with('success', 'Akun berhasil ditambahkan dan password telah dikirim ke email peserta.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan akun. Silakan coba lagi.');
         }
@@ -658,7 +679,6 @@ class ManajemenPeserta extends BaseController
         $id = $this->request->getPost('id'); // original NIK
         $newNik = $this->request->getPost('nik');
         $newEmail = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
 
         $userModel = new UserPelatihanModel();
         $user = $userModel->find($id);
@@ -685,9 +705,6 @@ class ManajemenPeserta extends BaseController
             $rules['email'] = 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]';
         }
 
-        if (!empty($password)) {
-            $rules['password'] = 'required|min_length[8]|regex_match[/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/]';
-        }
 
         $customErrors = [
             'nik' => [
@@ -707,9 +724,6 @@ class ManajemenPeserta extends BaseController
                 'numeric'      => 'No. WhatsApp harus berupa angka murni.',
                 'min_length'   => 'No. WhatsApp minimal 10 digit.',
                 'max_length'   => 'No. WhatsApp maksimal 15 digit.'
-            ],
-            'password' => [
-                'regex_match'  => 'Password harus berupa kombinasi huruf dan angka saja (tanpa simbol).'
             ]
         ];
 
@@ -744,9 +758,6 @@ class ManajemenPeserta extends BaseController
             }
         }
 
-        if (!empty($password)) {
-            $updateData['password'] = password_hash($password, PASSWORD_BCRYPT);
-        }
 
         // If NIK is updated, CodeIgniter's manual primary key update is safer to handle by transaction
         if ($newNik !== $id) {
@@ -1068,5 +1079,189 @@ class ManajemenPeserta extends BaseController
         }
         
         return redirect()->to('/pelatihan/admin/presensi/'.$pelatihanId)->with('success', count($userIds) . ' Peserta berhasil ditambahkan.');
+    }
+
+    public function export_excel(string $pelatihanId)
+    {
+        $masterPelatihanModel = new \App\Models\Pelatihan\MasterPelatihanModel();
+        $pesertaModel = new \App\Models\Pelatihan\PesertaPelatihanModel();
+        $db = \Config\Database::connect();
+
+        $pelatihan = $masterPelatihanModel->find($pelatihanId);
+        if (!$pelatihan) {
+            return redirect()->to('/pelatihan/admin/monitoring_peserta');
+        }
+
+        $countPeserta = $pesertaModel->where('pelatihan_id', $pelatihanId)->countAllResults();
+
+        // Spreadsheet setup
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+
+        // === SHEET 1: INFO PELATIHAN ===
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('Info Pelatihan');
+        
+        $sheet1->setCellValue('A1', 'INFORMASI PELATIHAN: ' . $pelatihan['nama']);
+        $sheet1->mergeCells('A1:B1');
+        $sheet1->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        
+        $sheet1->setCellValue('A3', 'Nama Pelatihan');
+        $sheet1->setCellValue('B3', $pelatihan['nama']);
+        
+        $sheet1->setCellValue('A4', 'Metode & Lokasi');
+        $sheet1->setCellValue('B4', ($pelatihan['metode'] ?? '-') . ' - ' . ($pelatihan['lokasi'] ?? '-'));
+        
+        $sheet1->setCellValue('A5', 'Kuota');
+        $sheet1->setCellValue('B5', $pelatihan['kuota']);
+        
+        $sheet1->setCellValue('A6', 'Jumlah Peserta');
+        $sheet1->setCellValue('B6', $countPeserta);
+        
+        $sheet1->setCellValue('A7', 'Tema / Program');
+        $sheet1->setCellValue('B7', $pelatihan['program'] ?? '-');
+        
+        $sheet1->setCellValue('A8', 'Level & Cakupan');
+        $sheet1->setCellValue('B8', ($pelatihan['level_pelatihan'] ?? '-') . ' - ' . ($pelatihan['cakupan'] ?? '-'));
+        
+        $sheet1->setCellValue('A9', 'Jadwal Pelaksanaan');
+        $jadwal = ($pelatihan['jadwal_mulai'] ?? '') . ' s.d ' . ($pelatihan['jadwal_selesai'] ?? '');
+        $sheet1->setCellValue('B9', $jadwal);
+        
+        $sheet1->setCellValue('A10', 'Tujuan');
+        $sheet1->setCellValue('B10', strip_tags($pelatihan['tujuan'] ?? '-'));
+        
+        $sheet1->setCellValue('A11', 'Kompetensi');
+        $sheet1->setCellValue('B11', strip_tags($pelatihan['kompetensi'] ?? '-'));
+
+        $narasumberList = $db->table('narasumber_pelatihan')
+            ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id')
+            ->where('narasumber_pelatihan.pelatihan_id', $pelatihanId)
+            ->get()->getResultArray();
+        $narasumberText = [];
+        foreach($narasumberList as $n) { $narasumberText[] = $n['nama_pejabat']; }
+        $sheet1->setCellValue('A12', 'Narasumber');
+        $sheet1->setCellValue('B12', implode(', ', $narasumberText) ?: '-');
+
+        // Kurikulum Materi
+        $sheet1->setCellValue('A14', 'Kurikulum Materi');
+        $sheet1->getStyle('A14')->getFont()->setBold(true);
+        $rowK = 15;
+        $noK = 1;
+
+        // Pre Test
+        $sheet1->setCellValue('A'.$rowK, $noK++);
+        $sheet1->setCellValue('B'.$rowK, "Pre Test");
+        $rowK++;
+
+        // Sesi
+        $sesi = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $pelatihanId)->orderBy('tanggal', 'ASC')->get()->getResultArray();
+        foreach ($sesi as $s) {
+            $sheet1->setCellValue('A'.$rowK, $noK++);
+            $sheet1->setCellValue('B'.$rowK, "Sesi " . ucfirst($s['tipe_sesi']) . ": " . $s['nama_sesi'] . " (" . $s['tanggal'] . ")");
+            $rowK++;
+        }
+
+        // Materi
+        $materi = $db->table('materi_pelatihan')->where('pelatihan_id', $pelatihanId)->orderBy('urutan', 'ASC')->get()->getResultArray();
+        foreach ($materi as $m) {
+            $sheet1->setCellValue('A'.$rowK, $noK++);
+            $sheet1->setCellValue('B'.$rowK, "Materi: " . $m['judul']);
+            $rowK++;
+        }
+
+        // Post Test
+        $sheet1->setCellValue('A'.$rowK, $noK++);
+        $sheet1->setCellValue('B'.$rowK, "Post Test");
+        $rowK++;
+
+        // Kuesioner
+        $kuesionerCount = $db->table('kuesioner_master_pelatihan')->where('pelatihan_id', $pelatihanId)->countAllResults();
+        if ($kuesionerCount > 0) {
+            $sheet1->setCellValue('A'.$rowK, $noK++);
+            $sheet1->setCellValue('B'.$rowK, "Evaluasi Pelatihan (Kuesioner)");
+            $rowK++;
+        }
+
+        $sheet1->setCellValue('A'.$rowK, $noK++);
+        $sheet1->setCellValue('B'.$rowK, "Sertifikat Kelulusan");
+
+        $sheet1->getColumnDimension('A')->setWidth(25);
+        $sheet1->getColumnDimension('B')->setWidth(80);
+        $sheet1->getStyle('A3:A12')->getFont()->setBold(true);
+
+        // === SHEET 2: PESERTA ===
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Data Peserta');
+
+        $headers = [
+            'No', 'Role Sistem', 'Status Aktivasi', 'Nama Lengkap', 'NIK', 'Email', 
+            'No WhatsApp', 'Unit Kerja', 'Profesi', 'Target JPL', 'Capaian JPL', 
+            'Nilai Pre Test', 'Nilai Post Test', 'Status Kelulusan'
+        ];
+        
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet2->setCellValue($col . '1', $header);
+            $sheet2->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet2->getColumnDimension($col)->setAutoSize(true);
+            $col++;
+        }
+
+        $peserta = $pesertaModel->select('peserta_pelatihan.*, users_pelatihan.nama_lengkap as nama, users_pelatihan.email, users_pelatihan.no_wa, users_pelatihan.role, users_pelatihan.status, users_pelatihan.capaian_jpl, profesi_pelatihan.nama_profesi as profesi, profesi_pelatihan.target_jpl, unit_kerja_pelatihan.nama_unit as ruangan')
+            ->join('users_pelatihan', 'users_pelatihan.nik = peserta_pelatihan.user_id')
+            ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
+            ->join('unit_kerja_pelatihan', 'unit_kerja_pelatihan.id_unit_kerja = users_pelatihan.id_unit_kerja', 'left')
+            ->where('peserta_pelatihan.pelatihan_id', $pelatihanId)
+            ->findAll();
+
+        $row = 2;
+        $no = 1;
+        foreach ($peserta as $p) {
+            // Pre-test
+            $pre = $db->table('peserta_ujian_pelatihan')
+                      ->where('peserta_pelat_id', $p['id'])
+                      ->where('tipe_ujian', 'pre_test')
+                      ->get()->getRowArray();
+            $nilaiPre = $pre ? $pre['score'] : '-';
+
+            // Post-test
+            $post = $db->table('peserta_ujian_pelatihan')
+                      ->where('peserta_pelat_id', $p['id'])
+                      ->where('tipe_ujian', 'post_test')
+                      ->get()->getRowArray();
+            $nilaiPost = $post ? $post['score'] : '-';
+
+            $kkm = $pelatihan['kkm'] ?? 70;
+            $statusKelulusan = ($nilaiPost !== '-' && $nilaiPost >= $kkm) ? 'LULUS' : 'TIDAK LULUS';
+            if ($nilaiPost === '-') $statusKelulusan = 'BELUM UJIAN';
+
+            $sheet2->setCellValue('A'.$row, $no++);
+            $sheet2->setCellValue('B'.$row, $p['role'] ?? 'Peserta');
+            $sheet2->setCellValue('C'.$row, $p['status'] ?? 'Aktif');
+            $sheet2->setCellValue('D'.$row, $p['nama']);
+            $sheet2->setCellValueExplicit('E'.$row, $p['user_id'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet2->setCellValue('F'.$row, $p['email']);
+            $sheet2->setCellValueExplicit('G'.$row, $p['no_wa'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet2->setCellValue('H'.$row, $p['ruangan'] ?? '-');
+            $sheet2->setCellValue('I'.$row, $p['profesi'] ?? '-');
+            $sheet2->setCellValue('J'.$row, $p['target_jpl'] ?? 0);
+            $sheet2->setCellValue('K'.$row, $p['capaian_jpl'] ?? 0);
+            $sheet2->setCellValue('L'.$row, $nilaiPre);
+            $sheet2->setCellValue('M'.$row, $nilaiPost);
+            $sheet2->setCellValue('N'.$row, $statusKelulusan);
+            
+            $row++;
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $fileName = 'Data_Monitoring_Pelatihan_' . date('Ymd_His') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . urlencode($fileName) . '"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit();
     }
 }

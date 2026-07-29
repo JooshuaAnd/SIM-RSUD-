@@ -72,24 +72,7 @@ $profesi = $profesi ?? [];
                         </div>
                     </div>
 
-                    <div class="section-title">Keamanan Akun</div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold mb-1">KATA SANDI</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" name="password" minlength="8" placeholder="Minimal 8 karakter..." required pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$" title="Password harus mengandung kombinasi huruf dan angka (tanpa spasi/simbol).">
-                                <button class="btn btn-outline-secondary toggle-password" type="button" style="border: 2px solid #f1f5f9; border-left: none; background: white;"><i class="fas fa-eye text-muted"></i></button>
-                            </div>
-                            <div class="form-text" style="font-size: 0.65rem;">Min. 8 karakter, kombinasi angka & huruf.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold mb-1">KONFIRMASI SANDI</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" name="confirm_password" minlength="8" placeholder="Ulangi kata sandi..." required>
-                                <button class="btn btn-outline-secondary toggle-password" type="button" style="border: 2px solid #f1f5f9; border-left: none; background: white;"><i class="fas fa-eye text-muted"></i></button>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-register-submit w-100">
@@ -125,8 +108,6 @@ function autofillAkun() {
         profSelect.selectedIndex = 1;
     }
 
-    document.querySelector('#formRegistrasi [name="password"]').value = 'testing123';
-    document.querySelector('#formRegistrasi [name="confirm_password"]').value = 'testing123';
 }
 </script>
 

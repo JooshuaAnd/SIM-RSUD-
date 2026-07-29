@@ -564,6 +564,31 @@ class Certificate extends BaseController
             ->join('users_pelatihan', 'users_pelatihan.nik = peserta_pelatihan.user_id')
             ->where('peserta_pelatihan.pelatihan_id', $pelatihanId)
             ->get()->getResultArray();
+            
+        foreach ($list as &$p) {
+            if (empty($p['status_peserta']) || $p['status_peserta'] !== 'Lulus') {
+                $postTest = $db->table('peserta_ujian_pelatihan')
+                    ->where('peserta_pelat_id', $p['id'])
+                    ->where('tipe_ujian', 'post_test')
+                    ->orderBy('id', 'DESC')
+                    ->get()->getRowArray();
+                    
+                if ($postTest) {
+                    $p['status_peserta'] = $postTest['status_lulus'];
+                    
+                    if ($postTest['status_lulus'] === 'Lulus') {
+                        $db->table('peserta_pelatihan')
+                           ->where('id', $p['id'])
+                           ->update(['status_peserta' => 'Lulus']);
+                    } else if ($postTest['status_lulus'] === 'Tidak Lulus') {
+                        $db->table('peserta_pelatihan')
+                           ->where('id', $p['id'])
+                           ->update(['status_peserta' => 'Tidak Lulus']);
+                    }
+                }
+            }
+        }
+        
         return $this->response->setJSON($list);
     }
 }

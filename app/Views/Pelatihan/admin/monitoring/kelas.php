@@ -192,6 +192,9 @@ function renderTableRow(array $l, string $badgeColor, string $statusLabel, bool 
                 <a href="'.base_url('pelatihan/admin/presensi/'.$l['id']).'" class="btn btn-action-pill btn-white text-uppercase shadow-sm" title="Monitoring Kelas">
                     <i class="fas fa-desktop me-1 small"></i> MONITOR
                 </a>
+                <a href="'.base_url('pelatihan/admin/monitoring/export_excel/'.$l['id']).'" class="btn btn-action-pill btn-white text-uppercase shadow-sm" title="Export Excel">
+                    <i class="fas fa-file-excel text-success me-1 small"></i> EXCEL
+                </a>
                 <a href="'.base_url('pelatihan/admin/grading/detail/'.$l['id']).'" class="btn btn-action-pill btn-white text-uppercase shadow-sm" title="Nilai Post-test">
                     <i class="fas fa-poll me-1 small"></i> NILAI
                 </a>

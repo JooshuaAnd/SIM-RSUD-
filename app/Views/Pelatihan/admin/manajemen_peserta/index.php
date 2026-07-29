@@ -230,19 +230,6 @@ $users_non_named = $users_non_named ?? [];
             if (!form.checkValidity()) {
                 e.preventDefault();
                 e.stopPropagation();
-            } else {
-                var pass = $(form).find('input[name="password"]').val();
-                var conf = $(form).find('input[name="confirm_password"]').val();
-                if(pass !== conf) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'Password Salah', 
-                        text: 'Kata sandi dan konfirmasi tidak cocok!', 
-                        icon: 'error',
-                        confirmButtonColor: '#ce2127'
-                    });
-                    return false;
-                }
             }
             $(form).addClass('was-validated');
         });

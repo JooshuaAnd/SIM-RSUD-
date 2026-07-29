@@ -206,6 +206,7 @@ $templates = $templates ?? [];
                                         <?php else: ?>
                                             <a href="javascript:void(0)" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/unverify/'.$s['id']) ?>', 'Kembalikan status verifikasi ke Pending?')"><i class="fas fa-undo me-1"></i> Batal</a>
                                         <?php endif; ?>
+                                        <a href="javascript:void(0)" class="btn btn-outline-info btn-sm rounded-circle" onclick='showDetailCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;" title="Detail"><i class="fas fa-info"></i></a>
                                         <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete/'.$s['id']) ?>', 'Yakin ingin menghapus sertifikat ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color:#ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
@@ -439,6 +440,7 @@ $templates = $templates ?? [];
                                         <?php else: ?>
                                             <a href="javascript:void(0)" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/unverify/'.$s['id']) ?>', 'Kembalikan status verifikasi ke Pending?')"><i class="fas fa-undo me-1"></i> Batal</a>
                                         <?php endif; ?>
+                                        <a href="javascript:void(0)" class="btn btn-outline-info btn-sm rounded-circle" onclick='showDetailCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;" title="Detail"><i class="fas fa-info"></i></a>
                                         <button class="btn btn-outline-dark btn-sm rounded-circle" onclick='editCert(<?= json_encode($s, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS) ?>)' style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
                                         <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm rounded-circle border-0" onclick="confirmAction('<?= site_url('pelatihan/admin/certificate/delete/'.$s['id']) ?>', 'Yakin ingin menghapus sertifikat ini?')" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center; color:#ce2127;"><i class="fas fa-trash"></i></a>
                                     </div>
@@ -585,6 +587,83 @@ $templates = $templates ?? [];
                         <tbody id="official_participant_list">
                             </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 bg-white">
+                <button class="btn btn-dark rounded-pill px-4 fw-bold" data-bs-dismiss="modal">TUTUP</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Sertifikat -->
+<div class="modal fade" id="detailCertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+            <div class="modal-header bg-dark text-white border-0 p-4">
+                <h5 class="modal-title fw-bold text-uppercase"><i class="fas fa-info-circle me-2"></i> Detail Informasi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">NAMA PESERTA</label>
+                        <div class="fw-bold" id="detail_nama"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">NIK / ID USER</label>
+                        <div class="fw-bold font-monospace" id="detail_nik"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">PROFESI</label>
+                        <div class="fw-bold" id="detail_profesi"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">KATEGORI KEGIATAN</label>
+                        <div class="fw-bold text-uppercase" id="detail_kategori"></div>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="small text-muted fw-bold">JUDUL KEGIATAN</label>
+                        <div class="fw-bold text-dark" id="detail_judul"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">RANAH</label>
+                        <div class="fw-bold text-uppercase" id="detail_ranah"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">TOTAL SKP / JPL</label>
+                        <div class="fw-bold text-danger" id="detail_skp"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">TANGGAL MULAI</label>
+                        <div class="fw-bold" id="detail_mulai"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">TANGGAL SELESAI</label>
+                        <div class="fw-bold" id="detail_selesai"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">PENERBIT</label>
+                        <div class="fw-bold" id="detail_penerbit"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">JENIS DOKUMEN</label>
+                        <div class="fw-bold text-uppercase" id="detail_jenis"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">TANGGAL UPLOAD</label>
+                        <div class="fw-bold" id="detail_upload"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small text-muted fw-bold">STATUS VERIFIKASI</label>
+                        <div class="fw-bold text-uppercase" id="detail_verifikasi"></div>
+                    </div>
+                    
+                    <div class="col-12 mt-4" id="detail_berkas_container">
+                        <label class="small text-muted fw-bold mb-2">BERKAS TERLAMPIR</label>
+                        <div class="d-flex gap-2" id="detail_berkas_links">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 p-4 bg-white">
@@ -799,6 +878,19 @@ $templates = $templates ?? [];
             
             if(list && list.length > 0) {
                 list.forEach(p => {
+                    let statusBadge = 'bg-secondary';
+                    let statusText = 'DAFTAR';
+                    if (p.status_peserta === 'Lulus') {
+                        statusBadge = 'bg-success';
+                        statusText = 'LULUS';
+                    } else if (p.status_peserta === 'Tidak Lulus') {
+                        statusBadge = 'bg-danger';
+                        statusText = 'TIDAK LULUS';
+                    } else if (p.status_peserta) {
+                        statusText = p.status_peserta.toUpperCase();
+                        if (statusText !== 'DAFTAR') statusBadge = 'bg-info';
+                    }
+
                     tbody.innerHTML += `
                         <tr>
                             <td class="ps-4 py-3">
@@ -806,7 +898,7 @@ $templates = $templates ?? [];
                                 <div class="text-muted font-monospace" style="font-size: 0.6rem;">NIK: ${p.nik}</div>
                             </td>
                             <td class="text-center">
-                                <span class="badge ${p.status_peserta === 'Lulus' ? 'bg-success' : 'bg-secondary'} text-white rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.6rem;">${p.status_peserta.toUpperCase()}</span>
+                                <span class="badge ${statusBadge} text-white rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.6rem;">${statusText}</span>
                             </td>
                             <td class="pe-4 text-center">
                                 ${p.status_peserta === 'Lulus' ? `<a href="<?= site_url('pelatihan/admin/certificate/preview_pelatihan') ?>/${id}/${p.nik}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill fw-bold"><i class="fas fa-eye text-danger me-1"></i> LIHAT</a>` : `<span class="text-muted small">-</span>`}
@@ -872,6 +964,42 @@ $templates = $templates ?? [];
                 window.location.href = url;
             }
         });
+    }
+
+    function showDetailCert(cert) {
+        document.getElementById('detail_nama').innerText = cert.user_nama || '-';
+        document.getElementById('detail_nik').innerText = cert.user_id || '-';
+        document.getElementById('detail_profesi').innerText = cert.user_profesi || '-';
+        document.getElementById('detail_kategori').innerText = cert.kategori_kegiatan || '-';
+        document.getElementById('detail_judul').innerText = cert.judul || '-';
+        document.getElementById('detail_ranah').innerText = cert.ranah || '-';
+        document.getElementById('detail_skp').innerText = cert.skp ? parseFloat(cert.skp) + ' JPL' : '-';
+        document.getElementById('detail_mulai').innerText = cert.tgl_mulai || '-';
+        document.getElementById('detail_selesai').innerText = cert.tgl_selesai || '-';
+        document.getElementById('detail_penerbit').innerText = cert.penerbit || '-';
+        document.getElementById('detail_jenis').innerText = cert.jenis_dokumen || '-';
+        document.getElementById('detail_upload').innerText = cert.tgl_upload || '-';
+        
+        let statusText = cert.verifikasi || '-';
+        if (cert.verifikasi === 'approved') statusText = 'DISETUJUI';
+        else if (cert.verifikasi === 'rejected') statusText = 'DITOLAK: ' + (cert.alasan_penolakan || '');
+        else if (cert.verifikasi === 'pending') statusText = 'PENDING';
+        document.getElementById('detail_verifikasi').innerText = statusText;
+
+        const berkasLinks = document.getElementById('detail_berkas_links');
+        berkasLinks.innerHTML = '';
+        if (cert.file_path) {
+            berkasLinks.innerHTML += `<a href="<?= base_url() ?>${cert.file_path}" target="_blank" class="btn btn-outline-danger rounded-pill fw-bold btn-sm px-3"><i class="fas fa-file-pdf me-1"></i> File Sertifikat/Kegiatan</a>`;
+        }
+        if (cert.surat_tugas_path) {
+            berkasLinks.innerHTML += `<a href="<?= base_url() ?>${cert.surat_tugas_path}" target="_blank" class="btn btn-outline-dark rounded-pill fw-bold btn-sm px-3"><i class="fas fa-file-contract me-1"></i> Surat Tugas</a>`;
+        }
+        if (!cert.file_path && !cert.surat_tugas_path) {
+            berkasLinks.innerHTML = '<span class="text-muted small">Tidak ada lampiran berkas</span>';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('detailCertModal'));
+        modal.show();
     }
 </script>
 

@@ -68,13 +68,13 @@
     }
 </style>
 
-<div class="pt-1 mb-5">
+<div class="pt-1 mb-5 glass-wrapper-global">
     <!-- Header Section -->
     <div class="mb-4 animate__animated animate__fadeIn">
-        <h3 class="fw-bold mb-1 text-dark"><i class="fas fa-book-open me-2 text-danger"></i> Pembelajaran Saya</h3>
-        <p class="text-muted mb-0 fw-medium">Berikut daftar program pembelajaran yang Anda ambil beserta status pelaksanaannya.</p>
+        <h3 class="fw-bold mb-1 text-white"><i class="fas fa-book-open me-2 text-warning"></i> Pembelajaran Saya</h3>
+        <p class="text-white opacity-75 mb-0 fw-medium">Berikut daftar program pembelajaran yang Anda ambil beserta status pelaksanaannya.</p>
     </div>
-    <ul class="nav nav-pills mb-5 p-2 bg-light rounded-lg d-inline-flex border" id="ps-tab" role="tablist">
+    <ul class="nav nav-pills mb-5 p-2 rounded-lg d-inline-flex border border-light" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1) !important;" id="ps-tab" role="tablist">
         <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#minta-akses" type="button" role="tab">MINTA AKSES</button></li>
         <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#belum-dimulai" type="button" role="tab">BELUM DIMULAI</button></li>
         <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#sedang-berjalan" type="button" role="tab">SEDANG BERJALAN</button></li>
@@ -87,14 +87,14 @@
             <div class="row g-4">
                 <?php foreach ($minta_akses as $p): ?>
                 <div class="col-md-4">
-                    <div class="card h-100 border-top border-danger border-4">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark text-uppercase"><?= $p['nama'] ?></h5>
-                            <p class="card-text small text-muted fw-bold mb-3"><i class="fas fa-hospital me-1 text-danger"></i> <?= strtoupper($p['penyelenggara']) ?></p>
-                            <span class="badge bg-dark text-white badge-status fw-bold border border-white mb-4">MENUNGGU VERIFIKASI</span>
+                    <div class="glass-card-global h-100" style="border-top: 4px solid #f59e0b;">
+                        <div class="p-4 d-flex flex-column h-100">
+                            <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
+                            <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
+                            <span class="badge bg-warning text-dark badge-status fw-bold shadow-sm mb-4">MENUNGGU VERIFIKASI</span>
                             <div class="d-flex gap-2 mt-auto">
-                                <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="btn btn-dark flex-grow-1 rounded-pill fw-bold shadow-sm">DETAIL</a>
-                                <a href="javascript:void(0)" class="btn btn-outline-danger flex-grow-1 rounded-pill fw-bold shadow-sm" onclick="confirmBatalkan('<?= base_url('pelatihan/peserta/batalkan_pelatihan/'.$p['pelatihan_id']) ?>', '<?= esc($p['nama'], 'js') ?>')">BATALKAN</a>
+                                <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="btn btn-light flex-grow-1 rounded-pill fw-bold shadow-sm">DETAIL</a>
+                                <a href="javascript:void(0)" class="btn btn-outline-light flex-grow-1 rounded-pill fw-bold shadow-sm" onclick="confirmBatalkan('<?= base_url('pelatihan/peserta/batalkan_pelatihan/'.$p['pelatihan_id']) ?>', '<?= esc($p['nama'], 'js') ?>')">BATALKAN</a>
                             </div>
                         </div>
                     </div>
@@ -107,11 +107,11 @@
             <div class="row g-4">
                 <?php foreach ($belum_dimulai as $p): ?>
                 <div class="col-md-4">
-                    <div class="card h-100 border-top border-success border-4">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark text-uppercase"><?= $p['nama'] ?></h5>
-                            <p class="card-text small text-muted fw-bold mb-3"><i class="fas fa-hospital me-1 text-danger"></i> <?= strtoupper($p['penyelenggara']) ?></p>
-                            <span class="badge bg-success text-white badge-status fw-bold border border-white mb-4">DISETUJUI</span>
+                    <div class="glass-card-global h-100" style="border-top: 4px solid #10b981;">
+                        <div class="p-4 d-flex flex-column h-100">
+                            <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
+                            <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
+                            <span class="badge bg-success text-white badge-status fw-bold shadow-sm mb-4">DISETUJUI</span>
                             <div class="d-flex flex-column gap-2 mt-auto">
                                 <?php 
                                     $now = date('Y-m-d H:i:s');
@@ -119,13 +119,13 @@
                                     $waktu_selesai = $p['jadwal_selesai'] . ' ' . ($p['jam_selesai'] ?: '23:59:59');
                                     if ($now >= $mulai && $now <= $waktu_selesai):
                                 ?>
-                                    <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn w-100 rounded-pill fw-bold shadow-sm" style="background-color: var(--primary-red); color: white;">MULAI BELAJAR</a>
+                                    <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-global w-100 rounded-pill fw-bold shadow-sm" style="background-color: #2563eb; color: white;">MULAI BELAJAR</a>
                                 <?php elseif ($now < $mulai): ?>
-                                    <button class="btn btn-secondary w-100 rounded-pill fw-bold shadow-sm" disabled>BELUM MULAI</button>
+                                    <button class="btn btn-secondary w-100 rounded-pill fw-bold shadow-sm" disabled style="background: rgba(255,255,255,0.2); border: none;">BELUM MULAI</button>
                                 <?php else: ?>
-                                    <button class="btn btn-secondary w-100 rounded-pill fw-bold shadow-sm" disabled>WAKTU HABIS</button>
+                                    <button class="btn btn-secondary w-100 rounded-pill fw-bold shadow-sm" disabled style="background: rgba(255,255,255,0.2); border: none;">WAKTU HABIS</button>
                                 <?php endif; ?>
-                                <a href="javascript:void(0)" class="btn btn-outline-dark w-100 rounded-pill fw-bold shadow-sm" onclick="confirmBatalkan('<?= base_url('pelatihan/peserta/batalkan_pelatihan/'.$p['pelatihan_id']) ?>', '<?= esc($p['nama'], 'js') ?>')">BATALKAN</a>
+                                <a href="javascript:void(0)" class="btn btn-outline-light w-100 rounded-pill fw-bold shadow-sm" onclick="confirmBatalkan('<?= base_url('pelatihan/peserta/batalkan_pelatihan/'.$p['pelatihan_id']) ?>', '<?= esc($p['nama'], 'js') ?>')">BATALKAN</a>
                             </div>
                         </div>
                     </div>
@@ -138,14 +138,14 @@
             <div class="row g-4">
                 <?php foreach ($berjalan as $p): ?>
                 <div class="col-md-4">
-                    <div class="card h-100 border-top border-dark border-4">
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark text-uppercase"><?= $p['nama'] ?></h5>
-                            <p class="card-text small text-muted fw-bold mb-3"><i class="fas fa-hospital me-1 text-danger"></i> <?= strtoupper($p['penyelenggara']) ?></p>
-                            <div class="progress mb-2" style="height:12px; border-radius: 10px; background: #e2e8f0;"><div class="progress-bar bg-danger shadow-sm" style="width: <?= $p['progress'] ?>%;"></div></div>
+                    <div class="glass-card-global h-100" style="border-top: 4px solid #3b82f6;">
+                        <div class="p-4 d-flex flex-column h-100">
+                            <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
+                            <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
+                            <div class="progress mb-2" style="height:12px; border-radius: 10px; background: rgba(255,255,255,0.2);"><div class="progress-bar shadow-sm" style="background-color: #10b981; width: <?= $p['progress'] ?>%;"></div></div>
                             <div class="d-flex justify-content-between mb-3">
-                                <small class="text-dark fw-bold">PROGRES BELAJAR</small>
-                                <small class="text-danger fw-bold"><?= round($p['progress']) ?>%</small>
+                                <small class="text-white fw-bold opacity-75">PROGRES BELAJAR</small>
+                                <small class="text-warning fw-bold"><?= round($p['progress']) ?>%</small>
                             </div>
                             <?php 
                                 $now = date('Y-m-d H:i:s');
@@ -153,9 +153,9 @@
                                 $waktu_selesai = $p['jadwal_selesai'] . ' ' . ($p['jam_selesai'] ?: '23:59:59');
                                 if ($now >= $mulai && $now <= $waktu_selesai):
                             ?>
-                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn w-100 mt-auto rounded-pill fw-bold shadow-sm" style="background-color: var(--primary-red); color: white;">LANJUTKAN</a>
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-global w-100 mt-auto rounded-pill fw-bold shadow-sm" style="background-color: #2563eb; color: white;">LANJUTKAN</a>
                             <?php else: ?>
-                                <button class="btn btn-secondary w-100 mt-auto rounded-pill fw-bold shadow-sm" disabled>MASA BERAKHIR</button>
+                                <button class="btn btn-secondary w-100 mt-auto rounded-pill fw-bold shadow-sm" disabled style="background: rgba(255,255,255,0.2); border: none;">MASA BERAKHIR</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -168,15 +168,15 @@
             <div class="row g-4">
                 <?php foreach ($selesai as $p): ?>
                 <div class="col-md-4">
-                    <div class="card h-100 border-top border-primary-custom border-4">
-                        <div class="card-body p-4 text-center">
-                            <div class="bg-light p-3 rounded-circle d-inline-block mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-medal text-dark fs-4"></i>
+                    <div class="glass-card-global h-100" style="border-top: 4px solid #8b5cf6;">
+                        <div class="p-4 text-center">
+                            <div class="p-3 rounded-circle d-inline-block mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.15);">
+                                <i class="fas fa-medal text-warning fs-4"></i>
                             </div>
-                            <h5 class="card-title fw-bold text-dark text-uppercase"><?= $p['nama'] ?></h5>
-                            <p class="card-text small text-muted fw-bold mb-3"><?= strtoupper($p['penyelenggara']) ?></p>
-                            <span class="badge bg-dark text-white badge-status fw-bold px-4 py-2 rounded-pill">DIKULIAH SELESAI</span>
-                            <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn btn-primary-custom w-100 mt-4 rounded-pill fw-bold shadow-sm">LIHAT SERTIFIKAT</a>
+                            <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
+                            <p class="small opacity-75 text-white fw-bold mb-3"><?= strtoupper($p['penyelenggara']) ?></p>
+                            <span class="badge bg-warning text-dark badge-status fw-bold px-4 py-2 rounded-pill shadow-sm">DIKLAT SELESAI</span>
+                            <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn btn-action-global w-100 mt-4 rounded-pill fw-bold shadow-sm" style="background-color: #f59e0b; color: white;">LIHAT SERTIFIKAT</a>
                         </div>
                     </div>
                 </div>
@@ -188,12 +188,12 @@
             <div class="row g-4">
                 <?php foreach ($dibatalkan as $p): ?>
                 <div class="col-md-4">
-                    <div class="card h-100 bg-light border-0">
-                        <div class="card-body p-4 text-center opacity-50">
-                            <i class="fas fa-times-circle text-danger fs-1 mb-3"></i>
-                            <h5 class="card-title fw-bold text-dark text-uppercase"><?= $p['nama'] ?></h5>
-                            <p class="card-text small text-muted fw-bold"><?= strtoupper($p['penyelenggara']) ?></p>
-                            <span class="badge bg-danger text-white badge-status fw-bold">DIBATALKAN</span>
+                    <div class="glass-card-global h-100" style="background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.2);">
+                        <div class="p-4 text-center opacity-75">
+                            <i class="fas fa-times-circle text-danger fs-1 mb-3 opacity-75"></i>
+                            <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
+                            <p class="small text-white fw-bold opacity-75"><?= strtoupper($p['penyelenggara']) ?></p>
+                            <span class="badge bg-danger text-white badge-status fw-bold shadow-sm">DIBATALKAN</span>
                         </div>
                     </div>
                 </div>

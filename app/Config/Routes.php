@@ -325,6 +325,7 @@ $routes->group('pelatihan/admin', ['namespace' => 'App\Controllers\Pelatihan\Adm
     $routes->get('verifikasi_pendaftaran/reset/(:num)', 'VerifikasiPendaftaran::reset/$1');
 
     $routes->get('monitoring_peserta', 'ManajemenPeserta::monitoring_peserta');
+    $routes->get('monitoring/export_excel/(:num)', 'ManajemenPeserta::export_excel/$1');
     $routes->get('presensi/(:num)', 'ManajemenPeserta::presensi/$1');
     $routes->get('hapus_pendaftaran/(:num)/(:num)', 'ManajemenPeserta::hapus_pendaftaran/$1/$2');
     $routes->get('add_peserta', 'ManajemenPeserta::add_peserta');

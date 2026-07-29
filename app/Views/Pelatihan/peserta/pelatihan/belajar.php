@@ -978,7 +978,7 @@ if (!function_exists('renderPelatihanFilePreview')) {
                 <?php if ($active_step['tipe'] == 'pre_test' && !empty($pre_test_attempted)) : ?>
                     <div class="alert alert-secondary bg-opacity-10 rounded-4 border-0 p-4">
                         <h5 class="fw-bold mb-2"><i class="fas fa-check-circle me-2 text-success"></i> Pre-Test Sudah Dikerjakan</h5>
-                        <p class="mb-4 text-muted">Pre-Test hanya dapat dikerjakan 1 kali. Nilai Anda: <strong class="fs-5"><?= $pre_test_score ?? 0 ?></strong></p>
+                        <p class="mb-4 text-danger">Pre-Test hanya dapat dikerjakan 1 kali. Nilai Anda: <strong class="fs-5"><?= $pre_test_score ?? 0 ?></strong></p>
                         <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-4 py-2 rounded-pill fw-bold shadow-sm" style="background: var(--primary-red); color: white; border: none;">
                             LANJUT KE TAHAP BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -1361,7 +1361,7 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     <i class="fas fa-star fa-2x"></i>
                                 </div>
                                 <div>
-                                    <h4 class="fw-bold mb-1 text-uppercase">Rating &amp; Saran Keseluruhan</h4>
+                                    <h4 class="fw-bold mb-1 text-uppercase text-dark">Rating &amp; Saran Keseluruhan</h4>
                                     <p class="text-muted small mb-0 fw-bold">Berikan penilaian akhir dan masukan Anda</p>
                                 </div>
                             </div>
@@ -1405,18 +1405,112 @@ if (!function_exists('renderPelatihanFilePreview')) {
 
                             <div class="position-relative" style="z-index: 1;">
                                 <div class="mb-5 text-center">
-                                    <div class="bg-warning bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn">
-                                        <i class="fas fa-hourglass-half fa-4x text-warning"></i>
-                                    </div>
-                                    <h2 class="display-6 fw-bold text-dark mb-2 letter-spacing-1">SERTIFIKAT DALAM PROSES</h2>
-                                    <div class="badge bg-warning bg-opacity-25 text-dark rounded-pill px-4 py-2 mt-2 fw-bold border border-warning border-opacity-50" style="font-size: 0.9rem;"><i class="fas fa-spinner fa-spin me-2"></i> Sedang Menerbitkan...</div>
+                                    <?php if (isset($post_test_status) && $post_test_status == 'Lulus'): ?>
+                                        <div class="bg-warning bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn">
+                                            <i class="fas fa-hourglass-half fa-4x text-warning"></i>
+                                        </div>
+                                        <h2 class="display-6 fw-bold text-dark mb-2 letter-spacing-1">SERTIFIKAT DALAM PROSES</h2>
+                                        <div class="badge bg-warning bg-opacity-25 text-dark rounded-pill px-4 py-2 mt-2 fw-bold border border-warning border-opacity-50" style="font-size: 0.9rem;"><i class="fas fa-spinner fa-spin me-2"></i> Sedang Menerbitkan...</div>
+                                    <?php else: ?>
+                                        <div class="bg-danger bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn">
+                                            <i class="fas fa-times-circle fa-4x text-danger"></i>
+                                        </div>
+                                        <h2 class="display-6 fw-bold text-dark mb-2 letter-spacing-1">PELATIHAN SELESAI</h2>
+                                        <div class="badge bg-danger bg-opacity-25 text-dark rounded-pill px-4 py-2 mt-2 fw-bold border border-danger border-opacity-50" style="font-size: 0.9rem;"><i class="fas fa-info-circle me-2"></i> Sertifikat Tidak Tersedia</div>
+                                    <?php endif; ?>
                                 </div>
 
-                                <div class="p-5 mb-5 rounded-4 text-center shadow-sm" style="background: #f8fafc; border: 1px solid #e2e8f0; position: relative;">
+                                <div class="p-4 mb-4 rounded-4 text-start shadow-sm" style="background: #f8fafc; border: 1px solid #e2e8f0; position: relative;">
                                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--primary-red), #f59e0b); border-radius: 4px 4px 0 0;"></div>
-                                    <i class="fas fa-quote-left fa-2x text-muted opacity-25 mb-3"></i>
-                                    <p class="text-dark fw-bold fs-5 mb-3" style="line-height: 1.6;">Selamat! Anda telah berhasil menyelesaikan pelatihan <br><span class="text-danger"><?= $p['nama'] ?></span></p>
-                                    <p class="text-muted mb-0" style="font-size: 1.05rem;">Sertifikat Anda sedang dalam tahap verifikasi akhir dan proses penandatanganan oleh penyelenggara. Anda akan menerima notifikasi segera setelah sertifikat digital resmi Anda siap untuk diunduh.</p>
+                                    <h5 class="fw-bold text-dark mb-3">Detail Penyelesaian Pelatihan</h5>
+                                    
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3" style="background: #fff; border: 1px solid #e2e8f0;">
+                                                <div class="small text-muted fw-bold text-uppercase mb-1">Status Kelulusan</div>
+                                                <?php if (isset($post_test_status) && $post_test_status == 'Lulus'): ?>
+                                                    <div class="fw-bold text-success fs-5"><i class="fas fa-check-circle me-2"></i> LULUS</div>
+                                                <?php else: ?>
+                                                    <div class="fw-bold text-danger fs-5"><i class="fas fa-times-circle me-2"></i> TIDAK LULUS</div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3" style="background: #fff; border: 1px solid #e2e8f0;">
+                                                <div class="small text-muted fw-bold text-uppercase mb-1">Nilai Akhir (Post-Test)</div>
+                                                <div class="fw-bold text-dark fs-5"><i class="fas fa-star text-warning me-2"></i> <?= number_format($post_test_score ?? 0, 2) ?></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-3 rounded-3 mb-3" style="background: #fff; border: 1px solid #e2e8f0;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="small text-muted fw-bold text-uppercase">Progress Keseluruhan</div>
+                                            <div class="small fw-bold text-dark"><?= count($completed_steps) ?>/<?= count($konten) ?> Selesai (<?= round((count($completed_steps) / count($konten)) * 100) ?>%)</div>
+                                        </div>
+                                        <div class="progress" style="height: 8px; border-radius: 4px; background: #e2e8f0;">
+                                            <div class="progress-bar" style="width: <?= (count($completed_steps) / count($konten)) * 100 ?>%; background: var(--primary-red);"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php
+                                        $missed_sesi = [];
+                                        $missed_materi = [];
+                                        foreach ($konten as $k) {
+                                            // The active step 'sertifikat' is currently not marked completed yet, but we shouldn't show it as missed material/sesi. 
+                                            // Since we filter by 'presensi', 'sesi', 'materi', 'materi_segmen', it's safe.
+                                            if (!in_array($k['id'], $completed_steps)) {
+                                                if (in_array($k['tipe'], ['presensi', 'sesi'])) {
+                                                    $missed_sesi[] = $k['judul'];
+                                                } elseif (in_array($k['tipe'], ['materi', 'materi_segmen'])) {
+                                                    $missed_materi[] = $k['judul'];
+                                                }
+                                            }
+                                        }
+                                    ?>
+                                    
+                                    <?php if (!empty($missed_sesi) || !empty($missed_materi)): ?>
+                                        <div class="p-3 rounded-3" style="background: #fff; border: 1px dashed #cbd5e1;">
+                                            <h6 class="fw-bold text-danger mb-2"><i class="fas fa-exclamation-triangle me-1"></i> Bagian yang Terlewat</h6>
+                                            <?php if (!empty($missed_sesi)): ?>
+                                                <div class="mb-2">
+                                                    <div class="small fw-bold text-muted mb-1">Sesi:</div>
+                                                    <ul class="mb-0 ps-3 text-dark small">
+                                                        <?php foreach ($missed_sesi as $ms): ?>
+                                                            <li><?= esc($ms) ?></li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                </div>
+                                            <?php endif; ?>
+                                            
+                                            <?php if (!empty($missed_materi)): ?>
+                                                <div>
+                                                    <div class="small fw-bold text-muted mb-1">Materi:</div>
+                                                    <ul class="mb-0 ps-3 text-dark small">
+                                                        <?php foreach ($missed_materi as $mm): ?>
+                                                            <li><?= esc($mm) ?></li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="p-3 rounded-3 text-center" style="background: rgba(16, 185, 129, 0.1); border: 1px dashed rgba(16, 185, 129, 0.5);">
+                                            <div class="fw-bold text-success small"><i class="fas fa-check-double me-2"></i> Luar biasa! Anda tidak melewatkan sesi atau materi apa pun.</div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="p-4 mb-5 rounded-4 text-center shadow-sm" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                    <?php if (isset($post_test_status) && $post_test_status == 'Lulus'): ?>
+                                        <i class="fas fa-info-circle fa-2x text-muted opacity-25 mb-3"></i>
+                                        <p class="text-dark fw-bold mb-2">Selamat! Anda telah berhasil menyelesaikan pelatihan <br><span class="text-danger"><?= $p['nama'] ?></span></p>
+                                        <p class="text-muted mb-0 small">Sertifikat Anda sedang dalam tahap verifikasi akhir dan proses penandatanganan oleh penyelenggara. Anda akan menerima notifikasi segera setelah sertifikat digital resmi Anda siap untuk diunduh.</p>
+                                    <?php else: ?>
+                                        <i class="fas fa-info-circle fa-2x text-danger opacity-75 mb-3"></i>
+                                        <p class="text-dark fw-bold mb-2">Anda telah menyelesaikan pelatihan <br><span class="text-danger"><?= $p['nama'] ?></span></p>
+                                        <p class="text-muted mb-0 small text-danger">Maaf, Sertifikat tidak diterbitkan karena nilai akhir Post-Test Anda belum memenuhi KKM.</p>
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <div class="d-flex justify-content-center">

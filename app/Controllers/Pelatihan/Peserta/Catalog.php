@@ -91,25 +91,33 @@ class Catalog extends BaseController
             ->where('pelatihan_id', $id)
             ->countAllResults();
 
-        // Get Narasumber and Penyelenggara
+        // Get Narasumber and Penyelenggara without duplicates
         $narasumberList = $db->table('narasumber_pelatihan')
-            ->select('pejabat_ttd_pelatihan.nama_pejabat, pejabat_ttd_pelatihan.gelar_depan, pejabat_ttd_pelatihan.gelar_belakang')
+            ->select('pejabat_ttd_pelatihan.*')
             ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id', 'left')
             ->where('narasumber_pelatihan.pelatihan_id', $id)
             ->get()->getResultArray();
-        $item['narasumber'] = implode(', ', array_map(function($n) {
-            $nama = $n['nama_pejabat'] ?? '';
-            $depan = $n['gelar_depan'] ?? '';
-            $belakang = $n['gelar_belakang'] ?? '';
-            return trim($depan . ' ' . $nama . ' ' . $belakang);
-        }, $narasumberList));
+            
+        $uniqueNarasumber = [];
+        foreach($narasumberList as $n) {
+            if (empty($n['nama_pejabat'])) continue;
+            $namaLengkap = trim(($n['gelar_depan'] ?? '') . ' ' . $n['nama_pejabat'] . ' ' . ($n['gelar_belakang'] ?? ''));
+            if (!isset($uniqueNarasumber[$namaLengkap])) {
+                $n['nama_lengkap'] = $namaLengkap;
+                $uniqueNarasumber[$namaLengkap] = $n;
+            }
+        }
+        $item['narasumber_data'] = array_values($uniqueNarasumber);
+        
+        $item['narasumber'] = empty($uniqueNarasumber) ? '-' : implode(', ', array_keys($uniqueNarasumber));
         
         $penyelenggaraList = $db->table('penyelenggara_pelatihan')
             ->select('master_penyelenggara.nama')
             ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
             ->where('penyelenggara_pelatihan.pelatihan_id', $id)
             ->get()->getResultArray();
-        $item['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
+        $penyelenggaraNames = array_unique(array_filter(array_column($penyelenggaraList, 'nama')));
+        $item['penyelenggara'] = implode(', ', $penyelenggaraNames);
 
         // Get registration status
         $reg = $db->table('peserta_pelatihan')

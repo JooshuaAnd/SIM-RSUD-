@@ -110,7 +110,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <form action="<?= base_url('pelatihan/admin/pelatihan/simpan_sesi') ?>" method="POST">
+            <form action="<?= base_url('pelatihan/admin/pelatihan/simpan_sesi') ?>" method="POST" onsubmit="showLoading('Menyimpan data sesi...');">
                 <div class="modal-body px-4 py-4" style="max-height: 70vh; overflow-y: auto;">
                     <input type="hidden" name="pelatihan_id" value="<?= $p['id'] ?>">
                     <input type="hidden" name="id_sesi" id="id_sesi" value="">

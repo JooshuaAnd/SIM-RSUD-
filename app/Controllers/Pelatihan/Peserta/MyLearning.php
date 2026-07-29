@@ -41,6 +41,15 @@ class MyLearning extends BaseController
 
             $item['progress'] = $progressVal;
             $item['is_selesai'] = $isSelesai;
+            
+            $penyelenggaraList = $db->table('penyelenggara_pelatihan')
+                ->select('master_penyelenggara.nama')
+                ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
+                ->where('penyelenggara_pelatihan.pelatihan_id', $reg['id'])
+                ->get()->getResultArray();
+            $penyelenggaraNames = array_unique(array_filter(array_column($penyelenggaraList, 'nama')));
+            $item['penyelenggara'] = implode(', ', $penyelenggaraNames);
+            
             $list[] = $item;
         }
 

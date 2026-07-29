@@ -11,16 +11,12 @@
     }
 
     .notif-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--soft-shadow);
-        border: 1px solid #edf2f7;
-        overflow: hidden;
+        /* inline replacement with glass-card-global */
     }
 
     .notif-item {
         padding: 25px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
         transition: all 0.2s ease;
         position: relative;
     }
@@ -30,11 +26,11 @@
     }
 
     .notif-item:hover {
-        background-color: #f8fafc;
+        background-color: rgba(255,255,255,0.05);
     }
 
     .notif-item.unread {
-        background-color: #fff9f9;
+        background-color: rgba(255,255,255,0.1);
     }
 
     .notif-item.unread::before {
@@ -44,7 +40,7 @@
         top: 0;
         bottom: 0;
         width: 4px;
-        background-color: var(--primary-red);
+        background-color: #f59e0b; /* warning/gold indicator for unread */
     }
 
     .notif-icon {
@@ -64,29 +60,30 @@
 
 </style>
 
-<div class="container pt-1 pb-4">
+<div class="pt-1 mb-5 glass-wrapper-global">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
                 <div>
-                    <h3 class="fw-bold mb-1">Notifikasi</h3>
-                    <p class="text-muted small mb-0">Informasi terbaru mengenai aktivitas pelatihan Anda.</p>
+                    <h3 class="fw-bold mb-1 text-white">Notifikasi</h3>
+                    <p class="text-white opacity-75 small mb-0">Informasi terbaru mengenai aktivitas pelatihan Anda.</p>
                 </div>
-                <div class="input-group rounded-pill shadow-sm overflow-hidden" style="max-width: 420px; background: white;">
-                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-danger"></i></span>
-                    <input id="notificationSearch" type="text" class="form-control border-0" placeholder="Cari notifikasi...">
+                <div class="input-group rounded-pill shadow-sm overflow-hidden" style="max-width: 420px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+                    <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-white opacity-50"></i></span>
+                    <input id="notificationSearch" type="text" class="form-control border-0 bg-transparent text-white placeholder-white" placeholder="Cari notifikasi...">
+                    <style>.placeholder-white::placeholder { color: rgba(255,255,255,0.7); }</style>
                 </div>
-                <button class="btn btn-light rounded-pill px-4 fw-bold small" onclick="markAllRead()"><i class="fas fa-check-double me-2"></i> Tandai Semua Terbaca</button>
+                <button class="btn btn-action-global rounded-pill px-4 fw-bold small text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);" onclick="markAllRead()"><i class="fas fa-check-double me-2"></i> Tandai Semua Terbaca</button>
             </div>
 
-            <div class="notif-card">
+            <div class="glass-card-global">
                 <?php if (empty($notifikasi)) : ?>
                     <div class="p-5 text-center">
-                        <div class="bg-light d-inline-flex p-4 rounded-circle mb-3">
-                            <i class="fas fa-bell-slash fa-3x text-muted opacity-50"></i>
+                        <div class="d-inline-flex p-4 rounded-circle mb-3" style="background: rgba(255,255,255,0.1);">
+                            <i class="fas fa-bell-slash fa-3x text-white opacity-50"></i>
                         </div>
-                        <h5 class="fw-bold text-muted">Belum ada notifikasi</h5>
-                        <p class="text-muted small">Kami akan memberitahu Anda jika ada aktivitas terbaru.</p>
+                        <h5 class="fw-bold text-white">Belum ada notifikasi</h5>
+                        <p class="text-white opacity-75 small">Kami akan memberitahu Anda jika ada aktivitas terbaru.</p>
                     </div>
                 <?php else : ?>
                     <?php foreach ($notifikasi as $n) : ?>
@@ -113,10 +110,10 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start mb-1">
-                                        <h6 class="fw-bold mb-0 pe-4"><?= esc($n['title']) ?></h6>
-                                        <small class="text-muted text-nowrap"><?= isset($n['created_at']) ? date('d M Y, H:i', strtotime($n['created_at'])) . ' WIB' : 'Baru saja' ?></small>
+                                        <h6 class="fw-bold mb-0 pe-4 text-white"><?= esc($n['title']) ?></h6>
+                                        <small class="text-white opacity-50 text-nowrap"><?= isset($n['created_at']) ? date('d M Y, H:i', strtotime($n['created_at'])) . ' WIB' : 'Baru saja' ?></small>
                                     </div>
-                                    <p class="text-muted small mb-0"><?= $n['message'] ?></p>
+                                    <p class="text-white opacity-75 small mb-0"><?= $n['message'] ?></p>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +122,7 @@
             </div>
 
             <div class="text-center mt-5">
-                <button class="btn btn-outline-secondary rounded-pill px-5 fw-bold small">Muat Lebih Banyak</button>
+                <button class="btn btn-action-global rounded-pill px-5 fw-bold small text-white border border-white" style="background: rgba(255,255,255,0.1);">Muat Lebih Banyak</button>
             </div>
         </div>
     </div>

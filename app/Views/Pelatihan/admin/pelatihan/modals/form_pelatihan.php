@@ -293,58 +293,78 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3 bg-light">
-                <input type="hidden" id="q_status" value="Narasumber">
+                <div class="row g-2 mb-2">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Status</label>
+                        <select id="q_status" class="form-select form-select-sm rounded-pill border px-3">
+                            <option value="Narasumber">Narasumber</option>
+                            <option value="Pejabat">Pejabat TTD</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" id="q_nama" class="form-control form-control-sm rounded-pill px-3" placeholder="Contoh: Dr. Budi Santoso, Sp.A" required>
+                    </div>
+                </div>
                 <div class="row g-2 mb-2">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
-                        <input type="text" id="q_nama" class="form-control form-control-sm rounded-pill" placeholder="Nama lengkap" required>
-                    </div>
-                    <div class="col-md-3">
                         <label class="form-label small fw-bold">Gelar Depan</label>
-                        <input type="text" id="q_gelar_depan" class="form-control form-control-sm rounded-pill" placeholder="Dr.">
+                        <input type="text" id="q_gelar_depan" class="form-control form-control-sm rounded-pill px-3" placeholder="Dr.">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label class="form-label small fw-bold">Gelar Belakang</label>
-                        <input type="text" id="q_gelar_belakang" class="form-control form-control-sm rounded-pill" placeholder="M.Kes">
+                        <input type="text" id="q_gelar_belakang" class="form-control form-control-sm rounded-pill px-3" placeholder="M.Kes">
                     </div>
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Pendidikan</label>
-                        <input type="text" id="q_pendidikan" class="form-control form-control-sm rounded-pill" placeholder="S.Ked, Sp.PD">
+                        <input type="text" id="q_pendidikan" class="form-control form-control-sm rounded-pill px-3" placeholder="S.Ked, Sp.PD">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Keahlian</label>
-                        <input type="text" id="q_keahlian" class="form-control form-control-sm rounded-pill" placeholder="Kardiologi">
+                        <input type="text" id="q_keahlian" class="form-control form-control-sm rounded-pill px-3" placeholder="Penyakit Dalam, Kardiologi">
                     </div>
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Kontak</label>
-                        <input type="text" id="q_kontak" class="form-control form-control-sm rounded-pill" placeholder="08xxx">
+                        <label class="form-label small fw-bold">Atas Nama Pejabat (a.n)</label>
+                        <input type="text" id="q_an" class="form-control form-control-sm rounded-pill px-3" placeholder="Contoh: a.n Direktur">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Jabatan / Kedudukan</label>
+                        <input type="text" id="q_jabatan" class="form-control form-control-sm rounded-pill px-3" placeholder="Contoh: Direktur RSUD">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold">NIP Pejabat</label>
+                        <input type="text" id="q_nip" class="form-control form-control-sm rounded-pill px-3" placeholder="Contoh: 19690124XXXXXX">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Kontak / No. Telp</label>
+                        <input type="text" id="q_kontak" class="form-control form-control-sm rounded-pill px-3" placeholder="08xxx">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold">Email</label>
-                        <input type="email" id="q_email" class="form-control form-control-sm rounded-pill" placeholder="email@contoh.com">
-                    </div>
-                </div>
-                <div class="row g-2 mb-2">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">Jabatan</label>
-                        <input type="text" id="q_jabatan" class="form-control form-control-sm rounded-pill" placeholder="Direktur RSUD">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold">NIP</label>
-                        <input type="text" id="q_nip" class="form-control form-control-sm rounded-pill" placeholder="19690124XXXXXX">
+                        <input type="email" id="q_email" class="form-control form-control-sm rounded-pill px-3" placeholder="email@contoh.com">
                     </div>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label small fw-bold">Atas Nama Pejabat (a.n)</label>
-                    <input type="text" id="q_an" class="form-control form-control-sm rounded-pill" placeholder="a.n Direktur">
-                </div>
-                <div>
                     <label class="form-label small fw-bold">Riwayat / Bio</label>
-                    <textarea id="q_riwayat" class="form-control form-control-sm" rows="2" placeholder="Riwayat singkat" style="border-radius: 15px;"></textarea>
+                    <textarea id="q_riwayat" class="form-control form-control-sm border p-2" rows="2" placeholder="Riwayat singkat, pengalaman, publikasi, dll." style="border-radius: 15px;"></textarea>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Foto Profil</label>
+                        <input type="file" id="q_foto" class="form-control form-control-sm rounded-pill border px-3" accept="image/*">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Upload TTD (PNG Transparan)</label>
+                        <input type="file" id="q_ttd" class="form-control form-control-sm rounded-pill border px-3" accept=".png">
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 bg-white py-2">
@@ -400,6 +420,9 @@ function showModalTambahNarasumber() {
     document.getElementById('q_nip').value = '';
     document.getElementById('q_an').value = '';
     document.getElementById('q_riwayat').value = '';
+    document.getElementById('q_status').value = 'Narasumber';
+    document.getElementById('q_foto').value = '';
+    document.getElementById('q_ttd').value = '';
     new bootstrap.Modal(document.getElementById('modalQuickNarasumber')).show();
 }
 
@@ -408,6 +431,7 @@ function saveQuickNarasumber() {
     if (!nama) { alert('Nama harus diisi!'); return; }
 
     var fd = new FormData();
+    fd.append('status', document.getElementById('q_status').value);
     fd.append('nama_pejabat', nama);
     fd.append('gelar_depan', document.getElementById('q_gelar_depan').value);
     fd.append('gelar_belakang', document.getElementById('q_gelar_belakang').value);
@@ -419,6 +443,11 @@ function saveQuickNarasumber() {
     fd.append('nip_pejabat', document.getElementById('q_nip').value);
     fd.append('an_pejabat', document.getElementById('q_an').value);
     fd.append('riwayat', document.getElementById('q_riwayat').value);
+
+    var fotoFile = document.getElementById('q_foto').files[0];
+    if (fotoFile) fd.append('foto', fotoFile);
+    var ttdFile = document.getElementById('q_ttd').files[0];
+    if (ttdFile) fd.append('ttd_image', ttdFile);
 
     fetch('<?= base_url('pelatihan/admin/master/simpan_narasumber_ajax') ?>', {
         method: 'POST',

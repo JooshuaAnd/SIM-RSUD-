@@ -10,7 +10,7 @@ $sesiList = $sesiList ?? [];
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <form action="<?= base_url('pelatihan/admin/pelatihan/materi/update') ?>" method="POST" id="formEditMateri" enctype="multipart/form-data">
+                <form action="<?= base_url('pelatihan/admin/pelatihan/materi/update') ?>" method="POST" id="formEditMateri" enctype="multipart/form-data" onsubmit="showLoading('Menyimpan perubahan materi...');">
                     <input type="hidden" name="id_materi" id="edit_id_materi">
                     <input type="hidden" name="pelatihan_id" id="edit_pelatihan_id" value="<?= $p['id'] ?>">
                     <div class="mb-3">

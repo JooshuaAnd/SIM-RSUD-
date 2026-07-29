@@ -15,7 +15,7 @@ $sesiList = $sesiList ?? [];
                 </div>
             </div>
             <div class="modal-body p-4 bg-light">
-                <form action="<?= base_url('pelatihan/admin/pelatihan/materi/simpan') ?>" method="POST" id="formMateri" enctype="multipart/form-data">
+                <form action="<?= base_url('pelatihan/admin/pelatihan/materi/simpan') ?>" method="POST" id="formMateri" enctype="multipart/form-data" onsubmit="showLoading('Menyimpan materi...');">
                     <input type="hidden" name="pelatihan_id" value="<?= $p['id'] ?>">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">Judul Materi</label>

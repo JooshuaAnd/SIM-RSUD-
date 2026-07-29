@@ -48,6 +48,10 @@
         color: var(--text-dark);
     }
 
+    .search-input-group input::placeholder {
+        color: rgba(255, 255, 255, 0.75);
+    }
+
     .nav-pills-kemenkes .nav-link {
         color: #fff !important;
         background: #475569 !important;
@@ -76,10 +80,12 @@
     }
 
     .cert-card-horizontal {
-        background: white;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 24px;
         padding: 30px;
-        border: 2px solid #f1f5f9;
+        border: 1px solid rgba(255,255,255,0.2);
         margin-bottom: 24px;
         display: flex;
         align-items: center;
@@ -88,20 +94,21 @@
     }
 
     .cert-card-horizontal:hover {
-        box-shadow: 0 15px 30px rgba(0,0,0,0.05);
-        border-color: var(--primary-red);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        border-color: rgba(255,255,255,0.5);
     }
 
     .cert-doc-icon {
         width: 100px;
         height: 100px;
-        background: #fff5f5;
+        background: rgba(255,255,255,0.1);
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        border: 1px solid #fee2e2;
+        border: 1px solid rgba(255,255,255,0.2);
     }
 
     .cert-badge-cat {
@@ -154,19 +161,19 @@
     }
 </style>
 
-<div class="pt-1 mb-5">
+<div class="pt-1 mb-5 glass-wrapper-global">
     <!-- Header Section -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 animate__animated animate__fadeIn">
         <div>
-            <h3 class="fw-bold mb-1 text-dark"><i class="fas fa-certificate me-2 text-danger"></i> Sertifikat & Portofolio</h3>
-            <p class="text-muted mb-0 fw-medium">Kelola dokumen sertifikat, capaian JPL, dan surat tugas Anda.</p>
+            <h3 class="fw-bold mb-1 text-white"><i class="fas fa-certificate me-2 text-warning"></i> Sertifikat & Portofolio</h3>
+            <p class="text-white opacity-75 mb-0 fw-medium">Kelola dokumen sertifikat, capaian JPL, dan surat tugas Anda.</p>
         </div>
         <div class="d-flex gap-3 align-items-center flex-wrap">
-            <div class="text-md-end border-end pe-3 border-2 border-light">
-                <div class="small fw-bold text-muted mb-1">CAPAIAN TAHUNAN</div>
-                <span class="fw-bold text-danger fs-5"><?= $capaian_jpl ?></span> <span class="text-dark fw-bold small">/ <?= $target_jpl ?> JPL</span>
+            <div class="text-md-end border-end pe-3 border-2 border-light" style="border-color: rgba(255,255,255,0.2) !important;">
+                <div class="small fw-bold text-white opacity-75 mb-1">CAPAIAN TAHUNAN</div>
+                <span class="fw-bold text-warning fs-5"><?= $capaian_jpl ?></span> <span class="text-white fw-bold small opacity-75">/ <?= $target_jpl ?> JPL</span>
             </div>
-            <a href="<?= base_url('pelatihan/peserta/upload_sertifikat') ?>" class="btn btn-dark rounded-pill fw-bold shadow-sm px-4 py-2 d-flex align-items-center gap-2">
+            <a href="<?= base_url('pelatihan/peserta/upload_sertifikat') ?>" class="btn btn-action-global rounded-pill fw-bold shadow-sm px-4 py-2 d-flex align-items-center gap-2" style="background-color: #2563eb; color: white;">
                 <i class="fas fa-cloud-upload-alt"></i> UPLOAD SERTIFIKAT
             </a>
         </div>
@@ -199,38 +206,38 @@
 
         <div class="row g-2">
             <div class="col-md-6 col-lg-5">
-                <div class="search-input-group h-100">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="form-control border-0 shadow-none fw-bold" id="searchInput" placeholder="Cari sertifikat..." style="background: transparent;">
+                <div class="search-input-group h-100" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="fas fa-search text-warning"></i>
+                    <input type="text" class="form-control border-0 shadow-none fw-bold text-white" id="searchInput" placeholder="Cari sertifikat..." style="background: transparent;">
                 </div>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
-                <div class="search-input-group h-100">
-                    <i class="fas fa-calendar-alt"></i>
-                    <select class="form-select border-0 shadow-none fw-bold text-dark" id="monthFilter" style="background: transparent;">
-                        <option value="all">Bulan</option>
-                        <option value="01">Januari</option>
-                        <option value="02">Februari</option>
-                        <option value="03">Maret</option>
-                        <option value="04">April</option>
-                        <option value="05">Mei</option>
-                        <option value="06">Juni</option>
-                        <option value="07">Juli</option>
-                        <option value="08">Agustus</option>
-                        <option value="09">September</option>
-                        <option value="10">Oktober</option>
-                        <option value="11">November</option>
-                        <option value="12">Desember</option>
+                <div class="search-input-group h-100" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="fas fa-calendar-alt text-warning"></i>
+                    <select class="form-select border-0 shadow-none fw-bold text-white" id="monthFilter" style="background: transparent;">
+                        <option value="all" class="text-dark">Bulan</option>
+                        <option value="01" class="text-dark">Januari</option>
+                        <option value="02" class="text-dark">Februari</option>
+                        <option value="03" class="text-dark">Maret</option>
+                        <option value="04" class="text-dark">April</option>
+                        <option value="05" class="text-dark">Mei</option>
+                        <option value="06" class="text-dark">Juni</option>
+                        <option value="07" class="text-dark">Juli</option>
+                        <option value="08" class="text-dark">Agustus</option>
+                        <option value="09" class="text-dark">September</option>
+                        <option value="10" class="text-dark">Oktober</option>
+                        <option value="11" class="text-dark">November</option>
+                        <option value="12" class="text-dark">Desember</option>
                     </select>
                 </div>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
-                <div class="search-input-group h-100">
-                    <i class="fas fa-filter"></i>
-                    <select class="form-select border-0 shadow-none fw-bold text-dark" id="yearFilter" style="background: transparent;">
-                        <option value="all">Tahun</option>
+                <div class="search-input-group h-100" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2);">
+                    <i class="fas fa-filter text-warning"></i>
+                    <select class="form-select border-0 shadow-none fw-bold text-white" id="yearFilter" style="background: transparent;">
+                        <option value="all" class="text-dark">Tahun</option>
                         <?php foreach($years as $y): ?>
-                            <option value="<?= $y ?>"><?= $y ?></option>
+                            <option value="<?= $y ?>" class="text-dark"><?= $y ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -239,11 +246,11 @@
     </div>
 
     <!-- Tab Content -->
-    <div class="bg-white p-4 rounded-4 shadow-sm border" id="certContainer">
+    <div class="glass-card-global p-4" id="certContainer">
         <?php if (empty($sertifikat)) : ?>
             <div class="text-center py-5">
-                <i class="fas fa-folder-open text-muted fa-3x mb-3 opacity-25"></i>
-                <p class="text-muted fw-bold mb-0">Belum ada data sertifikat yang tercatat.</p>
+                <i class="fas fa-folder-open text-white fa-3x mb-3 opacity-25"></i>
+                <p class="text-white opacity-75 fw-bold mb-0">Belum ada data sertifikat yang tercatat.</p>
             </div>
         <?php else : ?>
             <?php foreach ($sertifikat as $s) : ?>
@@ -259,11 +266,11 @@
 
                     <!-- Info -->
                     <div class="flex-grow-1">
-                        <div class="text-muted small mb-1">
-                            No. Sertifikat: <span class="fw-bold text-dark"><?= esc($s['no_sertifikat'] ?? '-') ?></span>
+                        <div class="text-white opacity-75 small mb-1">
+                            No. Sertifikat: <span class="fw-bold text-white"><?= esc($s['no_sertifikat'] ?? '-') ?></span>
                         </div>
-                        <h5 class="fw-bold text-dark mb-1 lh-sm"><?= esc($s['judul']) ?></h5>
-                        <p class="text-muted small mb-2">Penerbit: <?= esc($s['penerbit'] ?? '-') ?></p>
+                        <h5 class="fw-bold text-white mb-1 lh-sm"><?= esc($s['judul']) ?></h5>
+                        <p class="text-white opacity-75 small mb-2">Penerbit: <?= esc($s['penerbit'] ?? '-') ?></p>
 
                         <!-- Type & Status Badges -->
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
@@ -286,14 +293,14 @@
                             <?php endif; ?>
                         </div>
                         
-                        <div class="mt-2 text-muted small">
-                            <i class="far fa-calendar-alt me-1 text-danger"></i> 
+                        <div class="mt-2 text-white opacity-75 small fw-bold">
+                            <i class="far fa-calendar-alt me-1 text-warning"></i> 
                             Pada <?= tanggal_indo($s['tgl_mulai'] ?? 'now') ?> s/d <?= tanggal_indo($s['tgl_selesai'] ?? 'now') ?>
                         </div>
                         
-                        <div class="jpl-skp-info">
-                            <span><i class="fas fa-user-circle me-1 text-danger"></i> Ranah: <?= esc($s['ranah'] ?? 'Pembelajaran') ?></span>
-                            <span><i class="far fa-file-alt me-1 text-danger"></i> Jumlah <?= number_format($s['skp'], 0) ?> Jam Pelajaran (JPL)</span>
+                        <div class="jpl-skp-info text-white">
+                            <span><i class="fas fa-user-circle me-1 text-warning"></i> Ranah: <?= esc($s['ranah'] ?? 'Pembelajaran') ?></span>
+                            <span><i class="far fa-file-alt me-1 text-warning"></i> Jumlah <?= number_format($s['skp'], 0) ?> Jam Pelajaran (JPL)</span>
                         </div>
                     </div>
 

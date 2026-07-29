@@ -7,17 +7,17 @@ $req = $req ?? [];
 
 <?= $this->section('content') ?>
 
-<div class="pt-1">
+<div class="pt-1 glass-wrapper-global">
     <!-- Header Section -->
     <div class="mb-4 animate__animated animate__fadeIn">
-        <h3 class="fw-bold mb-1 text-dark"><i class="fas fa-graduation-cap me-2 text-danger"></i> Program Diklat & Pelatihan</h3>
-        <p class="text-muted mb-0 fw-medium">Temukan dan ikuti program pelatihan terbaik untuk meningkatkan kompetensi dan profesionalitas Anda.</p>
+        <h3 class="fw-bold mb-1 text-white"><i class="fas fa-graduation-cap me-2 text-warning"></i> Program Diklat & Pelatihan</h3>
+        <p class="text-white opacity-75 mb-0 fw-medium">Temukan dan ikuti program pelatihan terbaik untuk meningkatkan kompetensi dan profesionalitas Anda.</p>
     </div>
 
 
     <!-- Filter & Search Section -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-        <div class="card-body p-4">
+    <div class="glass-card-global mb-4">
+        <div class="p-4">
             <form id="filterForm" onsubmit="event.preventDefault();">
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -55,9 +55,9 @@ $req = $req ?? [];
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-bold text-muted">Target Profesi</label>
+                        <label class="form-label small fw-bold text-white opacity-75">Target Profesi</label>
                         <div class="dropdown">
-                            <button class="btn border bg-white form-select shadow-none text-start text-truncate" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 0.375rem;" id="sasaranDropdownBtn">
+                            <button class="btn btn-dark form-select shadow-none text-start text-truncate" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 0.375rem; border: 1px solid rgba(255,255,255,0.2);" id="sasaranDropdownBtn">
                                 Pilih Profesi
                             </button>
                             <ul class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 250px; overflow-y: auto;" id="sasaranDropdownMenu">
@@ -90,10 +90,10 @@ $req = $req ?? [];
 
     <!-- Grid Layout -->
     <?php if (empty($pelatihan)) : ?>
-        <div class="card border-0 shadow-sm rounded-lg p-5 text-center bg-white animate__animated animate__fadeIn">
-            <div class="py-5 text-muted">
-                <i class="fas fa-folder-open fa-4x mb-3 opacity-25"></i>
-                <h5 class="fw-bold">Belum ada pelatihan tersedia</h5>
+        <div class="glass-card-global p-5 text-center animate__animated animate__fadeIn">
+            <div class="py-5 text-white opacity-75">
+                <i class="fas fa-folder-open fa-4x mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-white">Belum ada pelatihan tersedia</h5>
                 <p class="mb-0">Silakan kembali lagi nanti untuk melihat program pelatihan yang dipublikasikan.</p>
             </div>
         </div>
@@ -112,9 +112,9 @@ $req = $req ?? [];
                      data-mekanisme="<?= esc(strtolower($p['mekanisme'] ?? '')) ?>" 
                      data-sasaran="<?= esc(strtolower(($p['target_profesi'] ?? '') . ' ' . ($p['target_khusus_profesi'] ?? ''))) ?>">
                     <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="text-decoration-none">
-                        <div class="card h-100 border-0 shadow-sm overflow-hidden animate__animated animate__fadeInUp hover-card-premium" style="border-radius: 20px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #f1f5f9 !important;">
+                        <div class="glass-card-global h-100 p-0 overflow-hidden animate__animated animate__fadeInUp hover-card-premium" style="transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
                             <div class="position-relative">
-                                <div class="course-img-wrapper position-relative d-flex align-items-center justify-content-center" style="height: 180px; overflow: hidden; background: radial-gradient(circle at 20% 50%, #ce2127 0%, #8a1318 100%);">
+                                <div class="course-img-wrapper position-relative d-flex align-items-center justify-content-center" style="height: 180px; overflow: hidden; background: radial-gradient(circle at 20% 50%, #1f2937 0%, #0f172a 100%);">
                                     <?php if ($gambarPelatihan): ?>
                                         <img src="<?= $gambarPelatihan ?>" alt="<?= esc($p['nama']) ?>" class="w-100 h-100" style="object-fit: cover;">
                                     <?php else: ?>
@@ -132,25 +132,35 @@ $req = $req ?? [];
                                     <span class="badge bg-danger text-white shadow-lg px-3 py-2 fw-extrabold" style="border-radius: 8px;"><?= strtoupper($p['mekanisme']) ?></span>
                                 </div>
                             </div>
-                            <div class="card-body p-4 d-flex flex-column h-100">
+                            <div class="p-4 d-flex flex-column h-100">
                                 <div class="d-flex align-items-center gap-3 mb-3">
-                                    <span class="text-dark small fw-bold"><i class="fas fa-star me-1 text-warning"></i> <?= $p['rating'] ?? '4.8' ?></span>
-                                    <span class="text-dark small fw-bold">| <i class="fas fa-clock me-1 text-danger"></i> <?= $p['jpl'] ?> JPL</span>
-                                    <span class="badge bg-light text-dark fw-bold border-0 px-3 py-1" style="font-size: 0.65rem; border-radius: 6px;"><?= strtoupper($p['level']) ?></span>
+                                    <?php if (!empty($p['rating'])): ?>
+                                    <span class="text-white opacity-75 small fw-bold"><i class="fas fa-star me-1 text-warning"></i> <?= $p['rating'] ?></span>
+                                    <span class="text-white opacity-75 small fw-bold">|</span>
+                                    <?php endif; ?>
+                                    <span class="text-white opacity-75 small fw-bold"><i class="fas fa-clock me-1 text-warning"></i> <?= $p['jpl'] ?> JPL</span>
+                                    <?php if (!empty($p['level_pelatihan']) || !empty($p['level'])): ?>
+                                    <span class="badge bg-white text-dark fw-bold border-0 px-3 py-1 shadow-sm" style="font-size: 0.65rem; border-radius: 6px;"><?= strtoupper($p['level_pelatihan'] ?? $p['level'] ?? '') ?></span>
+                                    <?php endif; ?>
                                 </div>
-                                <h5 class="fw-bold mb-3 text-dark lh-base card-title-hover" style="min-height: 3rem; font-size: 1.1rem;"><?= $p['nama'] ?></h5>
-                                <div class="small text-muted fw-bold mb-4 d-flex align-items-center">
-                                    <div class="bg-danger bg-opacity-10 p-2 rounded-circle me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-hospital text-danger small"></i>
+                                <h5 class="fw-bold text-white mb-2" style="font-size: 1.15rem; min-height: 2.8rem; line-height: 1.3;"><?= esc($p['nama']) ?></h5>
+                                <?php
+                                    $penyArr = array_map('trim', explode(',', $p['penyelenggara'] ?? 'RSUD Kota Yogyakarta'));
+                                    $penyUnique = array_unique($penyArr);
+                                    $penyStr = implode(', ', $penyUnique);
+                                ?>
+                                <div class="small opacity-75 fw-bold mb-4 d-flex align-items-center text-white">
+                                    <div class="bg-white bg-opacity-10 p-2 rounded-circle me-2" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-hospital text-white small"></i>
                                     </div>
-                                    <?= strtoupper($p['penyelenggara']) ?>
+                                    <?= strtoupper(esc($penyStr)) ?>
                                 </div>
                                 
-                                <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-3">
-                                    <div class="small text-dark fw-bold">
-                                        <i class="fas fa-users-viewfinder me-1 text-danger"></i> <?= $p['peserta'] ?> / <?= $p['kuota'] ?> <span class="text-muted fw-normal ms-1">PESERTA</span>
+                                <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-3" style="border-color: rgba(255,255,255,0.1) !important;">
+                                    <div class="small text-white fw-bold">
+                                        <i class="fas fa-users-viewfinder me-1 text-warning"></i> <?= $p['peserta'] ?> / <?= $p['kuota'] ?> <span class="opacity-75 fw-normal ms-1">PESERTA</span>
                                     </div>
-                                    <span class="btn btn-outline-dark btn-sm rounded-pill px-4 fw-bold shadow-sm btn-select" style="transition: all 0.3s;">Pilih Diklat</span>
+                                    <span class="btn btn-action-global btn-sm rounded-pill px-4 fw-bold shadow-sm btn-select" style="background-color: #2563eb; color: white;">Pilih Diklat</span>
                                 </div>
                             </div>
                         </div>
@@ -159,10 +169,10 @@ $req = $req ?? [];
             <?php endforeach; ?>
         </div>
         <!-- JS Empty State -->
-        <div id="jsEmptyState" class="card border-0 shadow-sm rounded-lg p-5 text-center bg-white animate__animated animate__fadeIn mt-4" style="display: none;">
-            <div class="py-5 text-muted">
-                <i class="fas fa-search fa-4x mb-3 opacity-25"></i>
-                <h5 class="fw-bold">Pelatihan tidak ditemukan</h5>
+        <div id="jsEmptyState" class="glass-card-global p-5 text-center animate__animated animate__fadeIn mt-4" style="display: none;">
+            <div class="py-5 text-white opacity-75">
+                <i class="fas fa-search fa-4x mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-white">Pelatihan tidak ditemukan</h5>
                 <p class="mb-0">Tidak ada pelatihan yang cocok dengan filter pencarian Anda.</p>
             </div>
         </div>

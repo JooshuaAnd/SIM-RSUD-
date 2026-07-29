@@ -84,49 +84,49 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
-<div class="pt-1">
+<div class="pt-1 glass-wrapper-global">
     <div class="row g-4">
         <!-- LEFT COLUMN (70%) -->
         <div class="col-lg-8 animate-fade">
             
             <!-- Header -->
             <div class="mb-4">
-                <h3 class="fw-bold mb-1 text-dark">Halo, <span class="text-danger"><?= $user['nama'] ?? 'Peserta' ?></span> 👋</h3>
-                <p class="text-muted mb-0 fw-medium"><?= $user['profesi'] ?? 'Umum' ?> | <?= $user['instansi'] ?? 'Instansi' ?></p>
+                <h3 class="fw-bold mb-1 text-white">Halo, <span class="text-warning"><?= $user['nama'] ?? 'Peserta' ?></span> 👋</h3>
+                <p class="text-white opacity-75 mb-0 fw-medium"><?= $user['profesi'] ?? 'Umum' ?> | <?= $user['instansi'] ?? 'Instansi' ?></p>
             </div>
 
             <!-- Stats Row -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <div class="dashboard-card p-4 h-100 mb-0 border-top border-4 border-danger">
+                    <div class="glass-card-global p-4 h-100 mb-0">
                         <div class="d-flex justify-content-between align-items-end mb-3">
                             <div>
-                                <div class="text-muted small fw-bold text-uppercase mb-1">Capaian JPL Aktif</div>
-                                <h2 class="fw-bold mb-0 text-dark"><?= $total_jpl ?> <span class="fs-6 text-muted fw-medium">/ <?= $target_jpl ?></span></h2>
+                                <div class="text-white opacity-75 small fw-bold text-uppercase mb-1">Capaian JPL Aktif</div>
+                                <h2 class="fw-bold mb-0 text-white"><?= $total_jpl ?> <span class="fs-6 opacity-75 fw-medium">/ <?= $target_jpl ?></span></h2>
                             </div>
-                            <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold">
+                            <div class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold shadow-sm">
                                 <?= $target_jpl > 0 ? round(($total_jpl / $target_jpl) * 100) : 0 ?>%
                             </div>
                         </div>
-                        <div class="progress-glass">
-                            <div class="progress-fill-jpl h-100" style="width: <?= $target_jpl > 0 ? ($total_jpl / $target_jpl) * 100 : 0 ?>%"></div>
+                        <div class="progress-glass" style="background: rgba(255,255,255,0.2);">
+                            <div class="progress-fill-jpl h-100 shadow-sm" style="background: #10b981; width: <?= $target_jpl > 0 ? ($total_jpl / $target_jpl) * 100 : 0 ?>%"></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="d-flex flex-column gap-3 h-100">
-                        <div class="stat-box flex-grow-1 mb-0">
-                            <div class="stat-icon bg-dark text-white"><i class="fas fa-book-open"></i></div>
+                        <div class="glass-card-global p-3 d-flex align-items-center gap-3 flex-grow-1 mb-0">
+                            <div class="stat-icon bg-white text-danger shadow-sm"><i class="fas fa-book-open"></i></div>
                             <div>
-                                <h4 class="fw-bold mb-0"><?= $total_belajar ?></h4>
-                                <small class="text-muted fw-bold">Total Pelatihan Diikuti</small>
+                                <h4 class="fw-bold mb-0 text-white"><?= $total_belajar ?></h4>
+                                <small class="opacity-75 fw-bold text-white">Total Pelatihan Diikuti</small>
                             </div>
                         </div>
-                        <div class="stat-box flex-grow-1 mb-0">
-                            <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="fas fa-award"></i></div>
+                        <div class="glass-card-global p-3 d-flex align-items-center gap-3 flex-grow-1 mb-0">
+                            <div class="stat-icon bg-warning text-dark shadow-sm"><i class="fas fa-award"></i></div>
                             <div>
-                                <h4 class="fw-bold mb-0"><?= $selesai ?></h4>
-                                <small class="text-muted fw-bold">Sertifikat Diperoleh</small>
+                                <h4 class="fw-bold mb-0 text-white"><?= $selesai ?></h4>
+                                <small class="opacity-75 fw-bold text-white">Sertifikat Diperoleh</small>
                             </div>
                         </div>
                     </div>
@@ -137,18 +137,18 @@
             <?php if(!empty($diklat_aktif)): ?>
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-play-circle text-danger me-2"></i>Sedang Berjalan</h5>
-                    <a href="<?= base_url('pelatihan/peserta/pembelajaran_saya') ?>" class="small text-danger fw-bold text-decoration-none">Lihat Semua</a>
+                    <h5 class="fw-bold mb-0 text-white"><i class="fas fa-play-circle text-warning me-2"></i>Sedang Berjalan</h5>
+                    <a href="<?= base_url('pelatihan/peserta/pembelajaran_saya') ?>" class="small text-warning fw-bold text-decoration-none">Lihat Semua</a>
                 </div>
                 <?php foreach($diklat_aktif as $da): ?>
-                <div class="dashboard-card p-3 mb-3 border-start border-4 border-dark hover-scale">
+                <div class="glass-card-global p-3 mb-3 hover-scale">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="badge bg-light text-dark border mb-2"><?= $da['mekanisme'] ?></span>
-                            <h6 class="fw-bold mb-1"><?= $da['nama'] ?></h6>
-                            <small class="text-muted fw-bold"><i class="fas fa-calendar-alt me-1"></i> Mulai: <?= tanggal_indo($da['jadwal_mulai']) ?></small>
+                            <span class="badge bg-white text-dark border-0 mb-2 shadow-sm"><?= $da['mekanisme'] ?></span>
+                            <h6 class="fw-bold mb-1 text-white"><?= $da['nama'] ?></h6>
+                            <small class="text-white opacity-75 fw-bold"><i class="fas fa-calendar-alt me-1"></i> Mulai: <?= tanggal_indo($da['jadwal_mulai']) ?></small>
                         </div>
-                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$da['id']) ?>" class="btn btn-dark rounded-pill fw-bold px-4">Lanjut Belajar</a>
+                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$da['id']) ?>" class="btn btn-action-global text-white rounded-pill fw-bold px-4" style="background-color: #059669;">Lanjut Belajar</a>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -158,23 +158,23 @@
             <!-- Pembelajaran Populer -->
             <div class="mb-2">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-fire text-danger me-2"></i>Diklat Populer</h5>
+                    <h5 class="fw-bold mb-0 text-white"><i class="fas fa-fire text-warning me-2"></i>Diklat Populer</h5>
                 </div>
                 <div class="d-flex overflow-auto pb-4 gap-3 hide-scroll" style="flex-wrap: nowrap; scrollbar-width: none;">
                     <style>.hide-scroll::-webkit-scrollbar { display: none; }</style>
                     <?php foreach ($pelatihan_populer as $p) : ?>
                     <div style="min-width: 260px; max-width: 260px;">
-                        <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="text-decoration-none text-dark">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; border: 1px solid #f1f5f9 !important; transition: 0.3s;" onmouseover="this.style.borderColor='#ce2127'" onmouseout="this.style.borderColor='#f1f5f9'">
-                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px; border-radius: 16px 16px 0 0; overflow: hidden; background: radial-gradient(circle at 20% 50%, #ce2127 0%, #8a1318 100%);">
+                        <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="text-decoration-none text-white">
+                            <div class="glass-card-global h-100 p-0 overflow-hidden" style="transition: 0.3s;">
+                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px; background: rgba(0,0,0,0.2);">
                                     <div style="position: absolute; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.05); top: -10px; right: -10px;"></div>
                                 </div>
-                                <div class="card-body p-3 bg-white" style="border-radius: 0 0 16px 16px;">
-                                    <span class="badge bg-light text-dark fw-bold mb-2" style="font-size: 0.65rem;"><?= strtoupper($p['kategori']) ?></span>
-                                    <h6 class="fw-bold mb-2 lh-base" style="font-size: 0.9rem; min-height: 2.7rem;"><?= $p['nama'] ?></h6>
-                                    <div class="d-flex justify-content-between align-items-center border-top pt-2">
-                                        <small class="text-muted fw-bold" style="font-size: 0.7rem;"><i class="fas fa-users me-1"></i> <?= $p['peserta'] ?> Peserta</small>
-                                        <small class="text-danger fw-bold text-uppercase" style="font-size: 0.7rem;"><?= $p['biaya'] ?></small>
+                                <div class="p-3">
+                                    <span class="badge bg-white text-dark fw-bold mb-2 shadow-sm" style="font-size: 0.65rem;"><?= strtoupper($p['kategori']) ?></span>
+                                    <h6 class="fw-bold mb-2 lh-base text-white" style="font-size: 0.9rem; min-height: 2.7rem;"><?= $p['nama'] ?></h6>
+                                    <div class="d-flex justify-content-between align-items-center border-top border-light pt-2" style="border-color: rgba(255,255,255,0.1) !important;">
+                                        <small class="opacity-75 fw-bold text-white" style="font-size: 0.7rem;"><i class="fas fa-users me-1"></i> <?= $p['peserta'] ?> Peserta</small>
+                                        <small class="text-warning fw-bold text-uppercase" style="font-size: 0.7rem;"><?= $p['biaya'] ?></small>
                                     </div>
                                 </div>
                             </div>
@@ -186,11 +186,10 @@
 
         </div>
 
-        <!-- RIGHT COLUMN (30%) - CALENDAR -->
         <div class="col-lg-4 animate-fade" style="animation-delay: 0.2s;">
-            <div class="dashboard-card p-3 sticky-top" style="top: 100px;">
-                <h6 class="fw-bold mb-3 px-2 border-start border-3 border-danger"><i class="far fa-calendar-alt me-2 text-danger"></i> Agenda Diklat</h6>
-                <div id='calendar' style="height: 400px; font-size: 0.85rem;"></div>
+            <div class="card p-3 sticky-top border-0 shadow-sm" style="top: 100px; background: #ffffff; border-radius: 16px;">
+                <h6 class="fw-bold mb-3 px-2 border-start border-3 border-danger text-dark"><i class="far fa-calendar-alt me-2 text-danger"></i> Agenda Diklat</h6>
+                <div id='calendar' style="height: 400px; font-size: 0.85rem;" class="text-dark"></div>
             </div>
         </div>
     </div>

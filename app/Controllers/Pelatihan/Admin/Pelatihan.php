@@ -46,10 +46,10 @@ class Pelatihan extends BaseController
     {
         $db = \Config\Database::connect();
         $rows = $db->table('narasumber_pelatihan np')
-            ->select('np.id as pivot_id, pt.id as id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+            ->select('pt.id as id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
             ->join('pejabat_ttd_pelatihan pt', 'pt.id = np.pejabat_ttd_id')
             ->where('np.pelatihan_id', $pelatihanId)
-            ->groupBy('np.id, pt.id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+            ->groupBy('pt.id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
             ->get()->getResultArray();
         return $rows;
     }
@@ -58,10 +58,10 @@ class Pelatihan extends BaseController
     {
         $db = \Config\Database::connect();
         $rows = $db->table('penyelenggara_pelatihan pp')
-            ->select('pp.id as pivot_id, mp.id as id, mp.nama, mp.fokus_bidang')
+            ->select('mp.id as id, mp.nama, mp.fokus_bidang')
             ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id')
             ->where('pp.pelatihan_id', $pelatihanId)
-            ->groupBy('pp.id, mp.id, mp.nama, mp.fokus_bidang')
+            ->groupBy('mp.id, mp.nama, mp.fokus_bidang')
             ->get()->getResultArray();
         return $rows;
     }

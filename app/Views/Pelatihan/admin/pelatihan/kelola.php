@@ -532,6 +532,7 @@ $kuesioner = $kuesioner ?? [];
         let submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
+        showLoading('Menyimpan pertanyaan kuesioner...');
 
         fetch('<?= base_url('pelatihan/admin/pelatihan/kuesioner/simpan') ?>', {
             method: 'POST',
@@ -568,6 +569,7 @@ $kuesioner = $kuesioner ?? [];
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                showLoading('Menghapus pertanyaan...');
                 fetch(`<?= base_url('pelatihan/admin/pelatihan/kuesioner/hapus') ?>/${id}`)
                     .then(res => res.json())
                     .then(data => {
@@ -583,6 +585,7 @@ $kuesioner = $kuesioner ?? [];
     }
 
     function updateKuesioner(id, pertanyaan) {
+        showLoading('Menyimpan perubahan kuesioner...');
         let formData = new FormData();
         formData.append('id', id);
         formData.append('pertanyaan', pertanyaan);
@@ -613,6 +616,7 @@ $kuesioner = $kuesioner ?? [];
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                showLoading('Memuat template kuesioner standar...');
                 let pelatihan_id = <?= $p['id'] ?>;
                 fetch(`<?= base_url('pelatihan/admin/pelatihan/kuesioner/template') ?>/${pelatihan_id}`)
                     .then(res => res.json())
@@ -806,6 +810,18 @@ $kuesioner = $kuesioner ?? [];
         btn.closest('.card').insertAdjacentHTML('afterend', html);
     }
 
+    function showLoading(msg = 'Mohon tunggu sebentar...') {
+        Swal.fire({
+            title: 'Memproses...',
+            html: msg,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
     function simpanSoalAjax(event, formElement) {
         event.preventDefault();
         
@@ -815,6 +831,7 @@ $kuesioner = $kuesioner ?? [];
         
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
+        showLoading('Menyimpan soal...');
         
         fetch(formElement.action, {
             method: 'POST',
@@ -894,6 +911,8 @@ $kuesioner = $kuesioner ?? [];
                         })
                     );
                 });
+
+                showLoading('Menyimpan seluruh soal...');
 
                 Promise.all(promises).then(() => {
                     Swal.fire({
