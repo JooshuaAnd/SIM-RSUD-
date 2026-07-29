@@ -26,10 +26,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => getenv('MYSQLHOST') ?: getenv('MYSQL_HOST') ?: '127.0.0.1',
-        'username'     => getenv('MYSQLUSER') ?: getenv('MYSQL_USER') ?: '',
-        'password'     => getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD') ?: '',
-        'database'     => getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: '',
+        'hostname'     => '127.0.0.1',
+        'username'     => '',
+        'password'     => '',
+        'database'     => '',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
@@ -41,7 +41,7 @@ class Database extends Config
         'compress'     => false,
         'strictOn'     => false,
         'failover'     => [],
-        'port'         => getenv('MYSQLPORT') ?: getenv('MYSQL_PORT') ?: 3306,
+        'port'         => 3306,
         'numberNative' => false,
         'foundRows'    => false,
         'dateFormat'   => [
@@ -199,6 +199,15 @@ class Database extends Config
         // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
+        }
+
+        // Parse Railway Environment Variables at Runtime
+        if (getenv('MYSQLHOST') || getenv('MYSQL_HOST')) {
+            $this->default['hostname'] = getenv('MYSQLHOST') ?: getenv('MYSQL_HOST');
+            $this->default['username'] = getenv('MYSQLUSER') ?: getenv('MYSQL_USER') ?: '';
+            $this->default['password'] = getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD') ?: '';
+            $this->default['database'] = getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: '';
+            $this->default['port']     = getenv('MYSQLPORT') ?: getenv('MYSQL_PORT') ?: 3306;
         }
     }
 }
