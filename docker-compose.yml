@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: simdiklatkp-app
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    # Environment variables ini akan menimpa konfigurasi di .env
+    environment:
+      - CI_ENVIRONMENT=production
+      - app.baseURL=http://localhost:8080/
+      # Konfigurasi database, sesuaikan dengan database server saat deploy
+      # - database.default.hostname=db
+      # - database.default.database=sim_diklat
+      # - database.default.username=root
+      # - database.default.password=
+      # - database.default.DBDriver=MySQLi
+
+  # Uncomment bagian di bawah jika butuh menjalankan MySQL database di container juga
+  # db:
+  #   image: mysql:8.0
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: sim_diklat
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
