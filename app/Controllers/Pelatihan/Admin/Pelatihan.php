@@ -481,7 +481,7 @@ class Pelatihan extends BaseController
             if ($sesiId) {
                 $builder->where('sesi_id', $sesiId);
             } else {
-                $builder->where('sesi_id IS NULL');
+                $builder->where('sesi_id', null);
             }
             $maxRow = $builder->selectMax('segmen')->get()->getRowArray();
             $nextSegmen = ($maxRow && isset($maxRow['segmen'])) ? (int)$maxRow['segmen'] + 1 : 1;
@@ -692,7 +692,7 @@ class Pelatihan extends BaseController
             $unassigned = $this->narasumberPelModel
                 ->where('pelatihan_id', $data['pelatihan_id'])
                 ->where('pejabat_ttd_id', $nid)
-                ->where('sesi_id IS NULL')
+                ->where('sesi_id', null)
                 ->first();
 
             if ($unassigned) {
@@ -746,7 +746,7 @@ class Pelatihan extends BaseController
             $unassigned = $this->penyelenggaraPelModel
                 ->where('pelatihan_id', $data['pelatihan_id'])
                 ->where('penyelenggara_id', $pid)
-                ->where('sesi_id IS NULL')
+                ->where('sesi_id', null)
                 ->first();
 
             if ($unassigned) {
