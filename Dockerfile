@@ -17,45 +17,51 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 4. Pastikan hanya MPM prefork yang aktif (mencegah error "More than one MPM loaded")
-# Ini harus dilakukan SEBELUM a2enmod rewrite atau modifikasi apache lainnya.
-RUN a2dismod mpm_event mpm_worker || true \
+# 4. PEMBERSIHAN MPM (Mencegah "More than one MPM loaded")
+# Alih-alih a2dismod, kita hapus paksa file symlink mpm_ apapun yang terlanjur ter-copy/aktif,
+# lalu mengaktifkan ulang HANYA prefork (yang diwajibkan oleh PHP).
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_*.conf \
     && a2enmod mpm_prefork
 
-# 5. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
+# 5. DIAGNOSTIK BUILD (Hasilnya akan muncul di Railway Deploy Logs)
+RUN echo "=== CEK MODUL MPM YANG AKTIF DI FOLDER ===" \
+    && ls -la /etc/apache2/mods-enabled/ | grep mpm \
+    && echo "=== CEK APACHE MODULE (DUMP) ===" \
+    && apache2ctl -M || true
+
+# 6. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
 RUN a2enmod rewrite
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# 5. Ubah DocumentRoot Apache ke folder public CodeIgniter
+# 7. Ubah DocumentRoot Apache ke folder public CodeIgniter
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 6. Set working directory
+# 8. Set working directory
 WORKDIR /var/www/html
 
-# 7. Install Composer dari image resmi
+# 9. Install Composer dari image resmi
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 8. Copy seluruh file project ke dalam container
+# 10. Copy seluruh file project ke dalam container
 COPY . .
 
-# 9. Install dependencies project (tanpa dev untuk production)
+# 11. Install dependencies project (tanpa dev untuk production)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# 10. Mengatur kepemilikan dan permission agar CodeIgniter bisa menulis ke folder writable
+# 12. Mengatur kepemilikan dan permission agar CodeIgniter bisa menulis ke folder writable
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-
-
-# 12. Definisikan default PORT.
+# 13. Definisikan default PORT. Railway menggunakan dinamis.
 ENV PORT=8080
 EXPOSE 8080
 
-# 13. Masukkan PORT ke envvars Apache agar bisa dibaca di sites-available & ports.conf
+# 14. Masukkan PORT ke envvars Apache agar bisa dibaca di sites-available & ports.conf
 RUN echo 'export PORT=${PORT:-8080}' >> /etc/apache2/envvars
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# 14. CMD kembali ke default
+# 15. CMD kembali ke default
 CMD ["apache2-foreground"]
