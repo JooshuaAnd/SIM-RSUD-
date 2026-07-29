@@ -270,6 +270,8 @@ $routes->group('pelatihan', function ($routes) {
     $routes->get('register', 'Pelatihan\\Auth::register');
     $routes->post('auth/register', 'Pelatihan\\Auth::processRegister');
     $routes->get('logout', 'Pelatihan\\Auth::logout');
+    $routes->get('lupa-password', 'Pelatihan\\Auth::forgotPassword');
+    $routes->post('lupa-password/submit', 'Pelatihan\\Auth::forgotPasswordSubmit');
 });
 
 // Pelatihan - Admin

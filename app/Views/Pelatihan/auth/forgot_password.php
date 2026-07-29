@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SIM-DIKLAT RSUD KOTA YOGYAKARTA</title>
+    <title><?= $title ?? 'Lupa Password' ?> - SIM-DIKLAT RSUD KOTA YOGYAKARTA</title>
     <link rel="shortcut icon" type="image/x-icon" href="<?= get_system_favicon() ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -88,67 +88,6 @@
             letter-spacing: -0.5px;
         }
 
-        .role-card {
-            cursor: pointer;
-            border: 2px solid #f1f5f9;
-            border-radius: 20px;
-            padding: 1.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #fff;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-
-        .role-card:hover {
-            border-color: var(--primary-red);
-            transform: translateX(10px);
-            background: #fffafa;
-        }
-
-        .role-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-dark);
-            transition: all 0.3s;
-        }
-
-        .role-card:hover .role-icon {
-            background: var(--primary-red);
-            color: white;
-        }
-
-        .role-name {
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 0.2rem;
-        }
-
-        .role-desc {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-bottom: 0;
-        }
-
-        .btn-register {
-            color: var(--primary-red);
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .btn-register:hover {
-            color: #a51a1f;
-            text-decoration: underline;
-        }
-
         .tagline {
             font-size: 0.85rem;
             opacity: 0.8;
@@ -189,22 +128,6 @@
             transform: translateY(-2px);
             box-shadow: 0 12px 24px rgba(206, 33, 39, 0.3);
             background: #a51a1f;
-        }
-
-        .btn-back-role {
-            border: 2px solid #cbd5e1;
-            border-radius: 16px;
-            padding: 14px 20px;
-            font-weight: 700;
-            color: #64748b;
-            background: transparent;
-            transition: all 0.3s;
-        }
-
-        .btn-back-role:hover {
-            background: #f1f5f9;
-            color: #334155;
-            border-color: #94a3b8;
         }
 
         .back-home-floating {
@@ -305,13 +228,10 @@
         }
 
         @keyframes bounce {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translateY(-5%);
                 animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
             }
-
             50% {
                 transform: none;
                 animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
@@ -335,9 +255,9 @@
         </div>
 
         <div class="login-form-side">
-            <a href="<?= base_url() ?>" class="back-home-floating">
-                <i class="fas fa-home"></i>
-                <span>Beranda Utama</span>
+            <a href="<?= base_url('pelatihan/login') ?>" class="back-home-floating">
+                <i class="fas fa-arrow-left"></i>
+                <span>Kembali ke Login</span>
             </a>
 
             <!-- Figure-Ground Modal Error Alert -->
@@ -347,7 +267,7 @@
                         <div class="mb-3">
                             <i class="fas fa-exclamation-triangle fa-3x text-danger animate-bounce"></i>
                         </div>
-                        <h5 class="fw-extrabold text-dark mb-2">Login Gagal</h5>
+                        <h5 class="fw-extrabold text-dark mb-2">Gagal</h5>
                         <p class="text-muted small mb-4"><?= session()->getFlashdata('error') ?></p>
                         <button type="button" class="btn btn-login-submit w-100" onclick="closeErrorModal()">
                             Mengerti
@@ -364,34 +284,20 @@
             <?php endif; ?>
 
             <div id="loginHeader" class="mb-5">
-                <h3 class="fw-bold text-dark">Login Portal Pelatihan</h3>
-                <p class="text-muted small" id="loginSub">Silakan masukkan NIK dan Kata Sandi terdaftar Anda untuk mengakses sistem diklat.</p>
+                <h3 class="fw-bold text-dark">Lupa Password</h3>
+                <p class="text-muted small" id="loginSub">Masukkan alamat email aktif yang Anda gunakan saat mendaftar. Kami akan mengirimkan password baru ke email Anda.</p>
             </div>
 
-            <form action="<?= base_url('pelatihan/auth/login') ?>" method="POST" id="loginForm">
+            <form action="<?= base_url('pelatihan/lupa-password/submit') ?>" method="POST" id="loginForm">
                 <div id="credentialsForm">
                     <div class="mb-4">
-                        <label class="form-label small fw-bold">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
-                        <input type="text" name="nik" class="form-control" placeholder="Masukkan 16 digit NIK" required pattern="[0-9]{16}" maxlength="16" inputmode="numeric" title="NIK harus berupa 16 digit angka murni." value="<?= old('nik') ?>">
-                    </div>
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label small fw-bold mb-0">KATA SANDI</label>
-                            <a href="<?= base_url('pelatihan/lupa-password') ?>" class="small text-decoration-none" style="color: var(--primary-red); font-weight: 600;">Lupa Password?</a>
-                        </div>
-                        <div class="position-relative">
-                            <input type="password" name="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right:46px;">
-                            <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0 bg-transparent text-muted" onclick="togglePassword(this)" tabindex="-1"><i class="fas fa-eye"></i></button>
-                        </div>
+                        <label class="form-label small fw-bold">ALAMAT EMAIL</label>
+                        <input type="email" name="email" class="form-control" placeholder="Masukkan alamat email aktif" required value="<?= old('email') ?>">
                     </div>
 
                     <button type="submit" class="btn btn-login-submit w-100 mt-2">
-                        Masuk <i class="fas fa-sign-in-alt ms-2"></i>
+                        Kirim Password Baru <i class="fas fa-paper-plane ms-2"></i>
                     </button>
-                </div>
-
-                <div class="text-center mt-5">
-                    <p class="text-muted small">Belum memiliki akun? <a href="<?= base_url('pelatihan/register') ?>" class="btn-register">Registrasi Baru</a></p>
                 </div>
             </form>
         </div>
@@ -400,16 +306,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const nikInput = document.getElementsByName('nik')[0];
-
-            // Auto-focus NIK input field
-            if (nikInput) {
-                nikInput.focus();
-
-                // Real-time character block to reject non-digits entirely
-                nikInput.addEventListener('input', function(e) {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
+            const emailInput = document.getElementsByName('email')[0];
+            if (emailInput) {
+                emailInput.focus();
             }
         });
 
@@ -420,20 +319,6 @@
                 setTimeout(() => overlay.remove(), 300);
             }
         }
-
-        function togglePassword(btn) {
-            const input = btn.parentElement.querySelector('input');
-            const icon  = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
     </script>
-
 </body>
-
 </html>
