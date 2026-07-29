@@ -2,6 +2,7 @@ FROM php:8.3-apache
 
 # 1. Install system dependencies
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
     libicu-dev \
     libzip-dev \
     libpng-dev \

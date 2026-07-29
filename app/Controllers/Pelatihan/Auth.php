@@ -252,15 +252,10 @@ class Auth extends BaseController
         if ($emailService->send()) {
             return redirect()->to(base_url('pelatihan/login'))->with('success', 'Password baru telah dikirim ke email Anda. Silakan periksa kotak masuk atau folder spam untuk login.');
         } else {
-            // Diagnostic fsockopen test to see the actual connection error
-            $fp = @fsockopen('ssl://smtp.gmail.com', 465, $errno, $errstr, 5);
-            if (!$fp) {
-                die("<h1>DEBUG FSOCKOPEN ERROR</h1><p>Gagal koneksi ke SMTP Google.</p><p>Error $errno: $errstr</p>");
-            } else {
-                fclose($fp);
-                $err = $emailService->printDebugger(['headers']);
-                die("<h1>DEBUG EMAIL ERROR</h1><p>Koneksi SSL sukses, tapi SMTP CodeIgniter gagal.</p><pre>" . htmlspecialchars($err) . "</pre>");
-            }
+            // Log error or display to user for debug (in production, just generic error)
+            $err = $emailService->printDebugger(['headers']);
+            log_message('error', 'Email reset password gagal dikirim: ' . $err);
+            return redirect()->back()->with('error', 'Gagal mengirim email berisi password baru. Pastikan konfigurasi SMTP di server telah diatur.');
         }
     }
 }
