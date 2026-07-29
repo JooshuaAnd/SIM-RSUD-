@@ -70,7 +70,7 @@ class Catalog extends BaseController
             'filters' => $filter_options,
             'req' => $this->request->getGet()
         ];
-        return view('pelatihan/peserta/katalog/index', $data);
+        return view('Pelatihan/peserta/katalog/index', $data);
     }
 
     public function detail($id)
@@ -208,6 +208,6 @@ class Catalog extends BaseController
             'konten' => $konten,
             'has_progress' => $hasProgress,
         ];
-        return view('pelatihan/peserta/katalog/detail', $data);
+        return view('Pelatihan/peserta/katalog/detail', $data);
     }
 }

@@ -74,14 +74,14 @@ class Dashboard extends BaseController
         ];
 
         if ($account_status === 'approved') {
-            return view('pendidikan/institusi/dashboard/index', $data);
+            return view('Pendidikan/Institusi/dashboard/index', $data);
         } elseif ($account_status === 'revision') {
-            return view('pendidikan/institusi/dashboard/revision', $data);
+            return view('Pendidikan/Institusi/dashboard/revision', $data);
         } elseif ($account_status === 'rejected') {
-            return view('pendidikan/institusi/dashboard/rejected', $data);
+            return view('Pendidikan/Institusi/dashboard/rejected', $data);
         } else {
             // Default to pending
-            return view('pendidikan/institusi/dashboard/pending', $data);
+            return view('Pendidikan/Institusi/dashboard/pending', $data);
         }
     }
 

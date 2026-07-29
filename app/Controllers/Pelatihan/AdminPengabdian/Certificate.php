@@ -47,7 +47,7 @@ class Certificate extends BaseController
             'pager' => $sertifikatModel->pager,
             'pending_pengabdian' => $pendingCount
         ];
-        return view('pelatihan/admin_pengabdian/sertifikat/index', $data);
+        return view('Pelatihan/admin_pengabdian/sertifikat/index', $data);
     }
 
     public function updateskp(string $id)

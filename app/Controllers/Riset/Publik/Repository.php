@@ -22,7 +22,7 @@ class Repository extends BaseController
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        return view('riset/publik/repository/catalog', [
+        return view('Riset/publik/repository/catalog', [
             'title'        => 'Katalog Penelitian',
             'publications' => $publications
         ]);
@@ -36,7 +36,7 @@ class Repository extends BaseController
             return redirect()->to(base_url('repository/catalog'))->with('error', 'Publikasi tidak ditemukan.');
         }
 
-        return view('riset/publik/repository/detail', [
+        return view('Riset/publik/repository/detail', [
             'title' => 'Detail Publikasi',
             'data'  => $publikasi
         ]);

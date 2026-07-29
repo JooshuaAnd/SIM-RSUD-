@@ -160,7 +160,7 @@ class Review extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/pengajuan/surat_izin_template', [
+        return view('Riset/peneliti/pengajuan/surat_izin_template', [
             'title'          => 'Cetak Surat Izin Studi Pendahuluan',
             'active_menu'    => 'review',
             'nama_peneliti'  => $pengajuan['nama'] ?? '-',

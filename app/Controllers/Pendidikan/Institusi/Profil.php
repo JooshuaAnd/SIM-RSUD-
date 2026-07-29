@@ -31,7 +31,7 @@ class Profil extends BaseController
             'user' => $user
         ];
 
-        return view('pendidikan/institusi/profil/index', $data);
+        return view('Pendidikan/Institusi/profil/index', $data);
     }
 
     public function update()

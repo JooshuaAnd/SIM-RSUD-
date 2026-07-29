@@ -56,7 +56,7 @@ class Dashboard extends BaseController
         $arsipIzin = $this->pengajuanModel->where('user_riset_id', $userId)->where('status', 'selesai')->where('jenis_pengajuan', 'penelitian')->findAll(3);
         $arsipPublikasi = $this->publikasiModel->where('user_riset_id', $userId)->where('status', 'selesai')->where('no_surat_izin IS NOT NULL')->findAll(3);
 
-        return view('riset/peneliti/dashboard/index', [
+        return view('Riset/peneliti/dashboard/index', [
             'title'       => 'Dashboard Peneliti',
             'active_menu' => 'dashboard',
             'stats'       => [
@@ -79,7 +79,7 @@ class Dashboard extends BaseController
             return redirect()->to(base_url('riset/login'))->with('error', 'Sesi tidak valid, silakan login ulang.');
         }
 
-        return view('riset/peneliti/profil/profil', [
+        return view('Riset/peneliti/profil/profil', [
             'title'       => 'Profil Peneliti',
             'active_menu' => 'profil',
             'user'        => $user
@@ -95,7 +95,7 @@ class Dashboard extends BaseController
             return redirect()->to(base_url('riset/login'))->with('error', 'Sesi tidak valid, silakan login ulang.');
         }
 
-        return view('riset/peneliti/profil/profil_edit', [
+        return view('Riset/peneliti/profil/profil_edit', [
             'title'       => 'Edit Profil Peneliti',
             'active_menu' => 'profil',
             'user'        => $user

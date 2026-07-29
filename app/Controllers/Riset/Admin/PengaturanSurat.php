@@ -24,7 +24,7 @@ class PengaturanSurat extends BaseController
             'pengaturan' => $pengaturan
         ];
 
-        return view('riset/admin/pengaturan_surat/index', $data);
+        return view('Riset/admin/pengaturan_surat/index', $data);
     }
 
     public function save()

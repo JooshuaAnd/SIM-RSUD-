@@ -6,7 +6,7 @@ class Finance extends BaseController
 {
     public function index($id)
     {
-        return view('pelatihan/peserta/pembayaran/index', ['title' => 'Pembayaran Pelatihan', 'id' => $id]);
+        return view('Pelatihan/peserta/pembayaran/index', ['title' => 'Pembayaran Pelatihan', 'id' => $id]);
     }
 
     public function upload($id)

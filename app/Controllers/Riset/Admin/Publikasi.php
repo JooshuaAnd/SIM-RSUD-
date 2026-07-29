@@ -213,7 +213,7 @@ class Publikasi extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/publikasi/surat_izin_publikasi_template', [
+        return view('Riset/peneliti/publikasi/surat_izin_publikasi_template', [
             'title'              => 'Cetak Surat Izin Publikasi',
             'active_menu'        => 'publikasi',
             'nama_peneliti'      => $publikasi['nama'] ?? '-',

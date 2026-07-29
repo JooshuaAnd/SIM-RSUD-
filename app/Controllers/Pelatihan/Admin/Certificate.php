@@ -115,7 +115,7 @@ class Certificate extends BaseController
             'pejabat' => $pejabat,
             'templates' => $templates
         ];
-        return view('pelatihan/admin/sertifikat/index', $data);
+        return view('Pelatihan/admin/sertifikat/index', $data);
     }
 
     public function update()
@@ -500,7 +500,7 @@ class Certificate extends BaseController
             'template' => $template,
             'no_sertifikat' => $template['no_sertifikat'] ?? $this->generateNoSertifikat($pelatihan ?? ['ranah_skp' => 'Pembelajaran', 'jadwal_selesai' => date('Y-m-d'), 'penyelenggara' => 'RSUD'])
         ];
-        return view('pelatihan/admin/sertifikat/template/preview', $data);
+        return view('Pelatihan/admin/sertifikat/template/preview', $data);
     }
 
     public function preview_pelatihan($pelatihanId, $userId = null)
@@ -547,7 +547,7 @@ class Certificate extends BaseController
             'template' => $template,
             'no_sertifikat' => $template['no_sertifikat'] ?? $this->generateNoSertifikat($pelatihan ?? ['ranah_skp' => 'Pembelajaran', 'jadwal_selesai' => date('Y-m-d'), 'penyelenggara' => 'RSUD'])
         ];
-        return view('pelatihan/admin/sertifikat/template/preview', $data);
+        return view('Pelatihan/admin/sertifikat/template/preview', $data);
     }
 
     public function preview_external($id)
@@ -561,7 +561,7 @@ class Certificate extends BaseController
             'cert' => $cert,
             'users' => $user ? [$user] : []
         ];
-        return view('pelatihan/admin/sertifikat/template/preview', $data);
+        return view('Pelatihan/admin/sertifikat/template/preview', $data);
     }
 
     public function peserta_by_pelatihan($pelatihanId)

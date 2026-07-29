@@ -190,6 +190,6 @@ class Feedback extends BaseController
         $data['narasumberStats']   = $narasumberStats;
         $data['penyelenggaraStats'] = $penyelenggaraStats;
 
-        return view('pelatihan/admin/feedback/detail', $data);
+        return view('Pelatihan/admin/feedback/detail', $data);
     }
 }

@@ -160,7 +160,7 @@ class Izin extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/pengajuan/surat_izin_penelitian_template', [
+        return view('Riset/peneliti/pengajuan/surat_izin_penelitian_template', [
             'title'          => 'Cetak Surat Izin Penelitian',
             'active_menu'    => 'izin',
             'nama_peneliti'  => $pengajuan['nama'] ?? '-',

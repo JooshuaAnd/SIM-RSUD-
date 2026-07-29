@@ -99,7 +99,7 @@ class Certificate extends BaseController
             'target_jpl' => $targetJpl,
             'capaian_jpl' => $user['capaian_jpl'] ?? 0
         ];
-        return view('pelatihan/peserta/sertifikat/index', $data);
+        return view('Pelatihan/peserta/sertifikat/index', $data);
     }
 
     public function upload()
@@ -161,6 +161,6 @@ class Certificate extends BaseController
             'no_sertifikat' => $cert['no_sertifikat'] ?? ($template['no_sertifikat'] ?? 'KT.03.02/F/0001/SER/' . date('Y'))
         ];
         
-        return view('pelatihan/admin/sertifikat/template/preview', $data);
+        return view('Pelatihan/admin/sertifikat/template/preview', $data);
     }
 }

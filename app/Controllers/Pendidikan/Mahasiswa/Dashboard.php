@@ -354,7 +354,7 @@ class Dashboard extends BaseController
         $dompdf = new \Dompdf\Dompdf();
         
         // Load view HTML
-        $html = view('pendidikan/institusi/mahasiswa/sertifikat_pdf', $data);
+        $html = view('Pendidikan/Institusi/mahasiswa/sertifikat_pdf', $data);
         
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');

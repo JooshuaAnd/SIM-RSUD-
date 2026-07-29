@@ -79,7 +79,7 @@ class Grading extends BaseController
             'p' => $p,
             'peserta' => $peserta
         ];
-        return view('pelatihan/admin/grading/detail', $data);
+        return view('Pelatihan/admin/grading/detail', $data);
     }
 
     public function log_jawaban($peserta_pelat_id)

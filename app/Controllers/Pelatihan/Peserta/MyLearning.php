@@ -62,7 +62,7 @@ class MyLearning extends BaseController
             'dibatalkan' => array_filter($list, fn($l) => $l['reg_status'] == 'ditolak'),
         ];
         
-        return view('pelatihan/peserta/pembelajaran_saya/index', $data);
+        return view('Pelatihan/peserta/pembelajaran_saya/index', $data);
     }
 
     public function batalkan_pelatihan($id)

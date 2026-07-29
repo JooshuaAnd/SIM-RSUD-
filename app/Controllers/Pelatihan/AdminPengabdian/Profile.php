@@ -25,7 +25,7 @@ class Profile extends BaseController
         $unit_kerja = $db->table('unit_kerja_pelatihan')->get()->getResultArray();
         $profesi = $db->table('profesi_pelatihan')->get()->getResultArray();
 
-        return view('pelatihan/admin_pengabdian/profil/index', [
+        return view('Pelatihan/admin_pengabdian/profil/index', [
             'title' => 'Profil Admin Pengabdian', 
             'user' => $user,
             'unit_kerja' => $unit_kerja,

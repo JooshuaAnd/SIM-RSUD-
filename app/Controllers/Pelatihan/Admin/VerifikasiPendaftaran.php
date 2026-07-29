@@ -40,7 +40,7 @@ class VerifikasiPendaftaran extends BaseController
             'history' => $historyList
         ];
 
-        return view('pelatihan/admin/verifikasi_pendaftaran/index', $data);
+        return view('Pelatihan/admin/verifikasi_pendaftaran/index', $data);
     }
 
     private function checkCompletion($db, $id, $oldPay = null, $oldAccess = null)

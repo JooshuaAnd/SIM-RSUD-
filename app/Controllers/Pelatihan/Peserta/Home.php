@@ -178,7 +178,7 @@ class Home extends BaseController
             'notifikasi' => $notifList
         ];
 
-        return view('pelatihan/peserta/home/index', $data);
+        return view('Pelatihan/peserta/home/index', $data);
     }
 
     public function notifikasi()
@@ -198,7 +198,7 @@ class Home extends BaseController
             'notifikasi' => $notif
         ];
 
-        return view('pelatihan/peserta/home/notifikasi', $data);
+        return view('Pelatihan/peserta/home/notifikasi', $data);
     }
 
     public function mark_read($id)

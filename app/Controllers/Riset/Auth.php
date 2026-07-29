@@ -19,7 +19,7 @@ class Auth extends BaseController
         // Logout user if they navigate back to login page
         session()->destroy();
         
-        return view('riset/auth/login', [
+        return view('Riset/auth/login', [
             'title' => 'Login | Modul Riset'
         ]);
     }
@@ -67,7 +67,7 @@ class Auth extends BaseController
 
     public function register()
     {
-        return view('riset/auth/register', [
+        return view('Riset/auth/register', [
             'title' => 'Daftar Akun Peneliti'
         ]);
     }
@@ -150,7 +150,7 @@ class Auth extends BaseController
 
     public function forgotPassword()
     {
-        return view('riset/auth/forgot_password', [
+        return view('Riset/auth/forgot_password', [
             'title' => 'Lupa Password | Modul Riset'
         ]);
     }

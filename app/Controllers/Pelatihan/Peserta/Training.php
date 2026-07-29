@@ -537,7 +537,7 @@ class Training extends BaseController
             'presensiStatusList' => $presensiStatusList,
             'post_test_kkm' => $postTest ? ($postTest['kkm'] ?? 70) : 70,
         ];
-        return view('pelatihan/peserta/pelatihan/belajar', $data);
+        return view('Pelatihan/peserta/pelatihan/belajar', $data);
     }
 
     private function _countKontenSteps($db, $pelatihanId): int

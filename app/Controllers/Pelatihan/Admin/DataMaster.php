@@ -16,7 +16,7 @@ class DataMaster extends BaseController
             'type'  => 'profesi',
             'list'  => $model->findAll()
         ];
-        return view('pelatihan/admin/data_master/index', $data);
+        return view('Pelatihan/admin/data_master/index', $data);
     }
 
     /**
@@ -31,7 +31,7 @@ class DataMaster extends BaseController
             'type' => 'ruangan',
             'list' => $model->findAll()
         ];
-        return view('pelatihan/admin/data_master/index', $data);
+        return view('Pelatihan/admin/data_master/index', $data);
     }
 
     /**
@@ -49,7 +49,7 @@ class DataMaster extends BaseController
             'type' => 'kategori_evaluasi',
             'list' => $list
         ];
-        return view('pelatihan/admin/data_master/index', $data);
+        return view('Pelatihan/admin/data_master/index', $data);
     }
 
     /**
@@ -71,7 +71,7 @@ class DataMaster extends BaseController
             }
         }
 
-        return view('pelatihan/admin/data_master/kategori_skp', [
+        return view('Pelatihan/admin/data_master/kategori_skp', [
             'title'      => 'Ranah & Kategori SKP',
             'grouped'    => $grouped,
             'ranah_list' => $ranah_list,
@@ -282,7 +282,7 @@ class DataMaster extends BaseController
             'title' => 'Data Master Narasumber',
             'list'  => $model->where('status', 'Narasumber')->orderBy('nama_pejabat', 'ASC')->findAll()
         ];
-        return view('pelatihan/admin/data_master/narasumber', $data);
+        return view('Pelatihan/admin/data_master/narasumber', $data);
     }
 
     public function simpan_narasumber()
@@ -420,7 +420,7 @@ class DataMaster extends BaseController
             'title' => 'Data Master Penyelenggara',
             'list'  => $model->orderBy('nama', 'ASC')->findAll()
         ];
-        return view('pelatihan/admin/data_master/penyelenggara', $data);
+        return view('Pelatihan/admin/data_master/penyelenggara', $data);
     }
 
     public function simpan_penyelenggara()

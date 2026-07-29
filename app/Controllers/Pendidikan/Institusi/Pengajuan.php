@@ -24,7 +24,7 @@ class Pengajuan extends BaseController
             'profil' => $profil,
             'list_profesi' => $list_profesi
         ];
-        return view('pendidikan/institusi/pengajuan/create', $data);
+        return view('Pendidikan/Institusi/pengajuan/create', $data);
     }
 
     public function store()
@@ -228,7 +228,7 @@ class Pengajuan extends BaseController
             'pengajuan_aktif' => $pengajuan_aktif,
             'pengajuan_selesai' => $pengajuan_selesai
         ];
-        return view('pendidikan/institusi/pengajuan/status', $data);
+        return view('Pendidikan/Institusi/pengajuan/status', $data);
     }
 
     public function detail($id)
@@ -298,7 +298,7 @@ class Pengajuan extends BaseController
             'title' => 'Detail Pengajuan',
             'pengajuan' => $data_pengajuan
         ];
-        return view('pendidikan/institusi/pengajuan/detail', $data);
+        return view('Pendidikan/Institusi/pengajuan/detail', $data);
     }
 
     public function edit($id)
@@ -374,7 +374,7 @@ class Pengajuan extends BaseController
             'pengajuan' => $data_pengajuan,
             'list_profesi' => $list_profesi
         ];
-        return view('pendidikan/institusi/pengajuan/edit', $data);
+        return view('Pendidikan/Institusi/pengajuan/edit', $data);
     }
 
     public function update($id)
@@ -625,7 +625,7 @@ class Pengajuan extends BaseController
             'list_mahasiswa' => $list_mahasiswa,
             'list_profesi' => $list_profesi
         ];
-        return view('pendidikan/institusi/mahasiswa/index', $data);
+        return view('Pendidikan/Institusi/mahasiswa/index', $data);
     }
 
     public function get_nilai_mahasiswa($id)
@@ -809,7 +809,7 @@ class Pengajuan extends BaseController
             'active_menu' => 'mahasiswa_lulus',
             'list_mahasiswa' => $list_mahasiswa
         ];
-        return view('pendidikan/institusi/mahasiswa/lulus', $data);
+        return view('Pendidikan/Institusi/mahasiswa/lulus', $data);
     }
 
     public function cetak_sertifikat($id)
@@ -835,7 +835,7 @@ class Pengajuan extends BaseController
         $dompdf = new \Dompdf\Dompdf();
         
         // Load view HTML
-        $html = view('pendidikan/institusi/mahasiswa/sertifikat_pdf', $data);
+        $html = view('Pendidikan/Institusi/mahasiswa/sertifikat_pdf', $data);
         
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');

@@ -13,7 +13,7 @@ class Auth extends BaseController
     {
         session()->remove(['logged_in', 'role', 'user_id', 'nik', 'email']);
         session()->destroy();
-        return view('pelatihan/auth/login');
+        return view('Pelatihan/auth/login');
     }
 
     public function login()
@@ -85,7 +85,7 @@ class Auth extends BaseController
             'profesi'    => $profesiModel->findAll(),
         ];
 
-        return view('pelatihan/auth/register', $data);
+        return view('Pelatihan/auth/register', $data);
     }
 
     public function processRegister()
@@ -201,7 +201,7 @@ class Auth extends BaseController
 
     public function forgotPassword()
     {
-        return view('pelatihan/auth/forgot_password', [
+        return view('Pelatihan/auth/forgot_password', [
             'title' => 'Lupa Password | Modul Pelatihan'
         ]);
     }

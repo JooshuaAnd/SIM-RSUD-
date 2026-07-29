@@ -11,6 +11,6 @@ class User extends BaseController
             'title' => 'Manajemen Akun Peserta',
             'users' => $users
         ];
-        return view('pelatihan/admin/manajemen_peserta/index', $data);
+        return view('Pelatihan/admin/manajemen_peserta/index', $data);
     }
 }

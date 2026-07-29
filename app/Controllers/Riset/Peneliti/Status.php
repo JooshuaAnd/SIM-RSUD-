@@ -66,7 +66,7 @@ class Status extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/status/index', [
+        return view('Riset/peneliti/status/index', [
             'title'              => 'Status Pengajuan',
             'active_menu'        => 'status',
             'studi_pendahuluan'  => $studi_pendahuluan,
@@ -88,7 +88,7 @@ class Status extends BaseController
         $pengajuan['dokumen_upload'] = array_column($dokumen, 'file_path');
         $pengajuan['tanggal'] = date('d F Y, H:i', strtotime($pengajuan['created_at'] ?? 'now')) . ' WIB';
 
-        return view('riset/peneliti/status/detail', [
+        return view('Riset/peneliti/status/detail', [
             'title'       => 'Detail Pengajuan',
             'active_menu' => 'status',
             'data'        => $pengajuan

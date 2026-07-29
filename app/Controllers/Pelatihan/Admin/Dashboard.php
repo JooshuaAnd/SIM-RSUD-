@@ -191,6 +191,6 @@ class Dashboard extends BaseController
             'notifications' => array_slice($notifications, 0, 8)
         ];
 
-        return view('pelatihan/admin/dashboard/index', $data);
+        return view('Pelatihan/admin/dashboard/index', $data);
     }
 }

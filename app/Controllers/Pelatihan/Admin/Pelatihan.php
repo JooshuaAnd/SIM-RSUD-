@@ -153,7 +153,7 @@ class Pelatihan extends BaseController
             'master_narasumber_list' => $masterNarasumberList,
             'master_penyelenggara_list' => $masterPenyelenggaraList,
         ];
-        return view('pelatihan/admin/pelatihan/index', $data);
+        return view('Pelatihan/admin/pelatihan/index', $data);
     }
 
     public function simpan()
@@ -443,7 +443,7 @@ class Pelatihan extends BaseController
             'presensi' => [],
             'kuesioner' => $kuesionerGrouped
         ];
-        return view('pelatihan/admin/pelatihan/kelola', $data);
+        return view('Pelatihan/admin/pelatihan/kelola', $data);
     }
 
     public function simpan_materi()
@@ -1031,7 +1031,7 @@ class Pelatihan extends BaseController
             'title' => 'Pengaturan Logo Sistem',
             'logoSetup' => $logoSetup
         ];
-        return view('pelatihan/admin/pengaturan_logo/index', $data);
+        return view('Pelatihan/admin/pengaturan_logo/index', $data);
     }
 
     public function update_logo()

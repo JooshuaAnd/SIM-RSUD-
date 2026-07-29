@@ -38,7 +38,7 @@ class Publikasi extends BaseController
             $data = $this->publikasiModel->find($id);
         }
 
-        return view('riset/peneliti/publikasi/index', [
+        return view('Riset/peneliti/publikasi/index', [
             'title'         => ($revisi) ? 'Revisi Izin Publikasi' : 'Pengajuan Publikasi',
             'active_menu'   => 'publikasi',
             'data'          => $data,
@@ -196,7 +196,7 @@ class Publikasi extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/publikasi/detail', [
+        return view('Riset/peneliti/publikasi/detail', [
             'title'       => 'Detail Laporan',
             'active_menu' => 'status',
             'data'        => $publikasi,

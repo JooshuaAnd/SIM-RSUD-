@@ -260,7 +260,7 @@ class ManajemenPeserta extends BaseController
             'totalKurangJPL' => $totalKurangJPL,
             'totalTidakAktif' => $totalTidakAktif
         ];
-        return view('pelatihan/admin/monitoring/index', $data);
+        return view('Pelatihan/admin/monitoring/index', $data);
     }
 
     public function set_target($userId)
@@ -607,7 +607,7 @@ class ManajemenPeserta extends BaseController
             'profesi'         => $profesiModel->findAll()
         ];
 
-        return view('pelatihan/admin/manajemen_peserta/index', $data);
+        return view('Pelatihan/admin/manajemen_peserta/index', $data);
     }
 
     public function tambah_akun()
@@ -870,7 +870,7 @@ class ManajemenPeserta extends BaseController
             $list[] = array_merge($p, ['total_peserta' => $count]);
         }
 
-        return view('pelatihan/admin/monitoring/kelas', ['title' => 'Monitoring Progress Diklat', 'list' => $list]);
+        return view('Pelatihan/admin/monitoring/kelas', ['title' => 'Monitoring Progress Diklat', 'list' => $list]);
     }
 
     public function presensi(string $pelatihanId)
@@ -927,7 +927,7 @@ class ManajemenPeserta extends BaseController
             'peserta' => $peserta
         ];
 
-        return view('pelatihan/admin/monitoring/presensi', $data);
+        return view('Pelatihan/admin/monitoring/presensi', $data);
     }
 
     public function toggle_presensi()
@@ -1087,7 +1087,7 @@ class ManajemenPeserta extends BaseController
             'selectedId' => $pelatihanId,
             'registeredNiks' => $registeredNiks
         ];
-        return view('pelatihan/admin/monitoring/add_peserta', $data);
+        return view('Pelatihan/admin/monitoring/add_peserta', $data);
     }
 
     public function save_peserta()

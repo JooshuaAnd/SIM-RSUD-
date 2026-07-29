@@ -29,7 +29,7 @@ class Pengajuan extends BaseController
             $data = $this->pengajuanModel->find($id);
         }
 
-        return view('riset/peneliti/pengajuan/stupen_form', [
+        return view('Riset/peneliti/pengajuan/stupen_form', [
             'title'       => ($id) ? 'Revisi Studi Pendahuluan' : 'Form Studi Pendahuluan',
             'active_menu' => 'riset',
             'data'        => $data,
@@ -62,7 +62,7 @@ class Pengajuan extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/pengajuan/stupen_detail', [
+        return view('Riset/peneliti/pengajuan/stupen_detail', [
             'title'       => 'Detail Pendaftaran Riset',
             'active_menu' => 'status',
             'data'        => $pengajuan,
@@ -219,7 +219,7 @@ class Pengajuan extends BaseController
             $data = $this->pengajuanModel->find($id);
         }
 
-        return view('riset/peneliti/pengajuan/izin_form', [
+        return view('Riset/peneliti/pengajuan/izin_form', [
             'title'       => ($id) ? 'Revisi Izin Penelitian' : 'Form Izin Penelitian',
             'active_menu' => 'izin',
             'data'        => $data,
@@ -251,7 +251,7 @@ class Pengajuan extends BaseController
         $pengaturanModel = new \App\Models\PengaturanSuratRisetModel();
         $pengaturan = $pengaturanModel->first();
 
-        return view('riset/peneliti/pengajuan/izin_detail', [
+        return view('Riset/peneliti/pengajuan/izin_detail', [
             'title'       => 'Detail Izin Penelitian',
             'active_menu' => 'status',
             'data'        => $pengajuan,
