@@ -135,10 +135,10 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Narasumber</label>
-                        <select class="form-select border-light-subtle bg-light" name="narasumber" id="narasumber" style="width: 100%;">
+                        <select class="form-select border-light-subtle bg-light" name="narasumber[]" id="narasumber" style="width: 100%;" multiple>
                             <option value="">-- Pilih Narasumber --</option>
                             <?php if(!empty($master_narasumber)): foreach($master_narasumber as $mn): ?>
-                                <option value="<?= htmlspecialchars($mn['nama_narasumber']) ?>"><?= htmlspecialchars($mn['nama_narasumber']) ?></option>
+                                <option value="<?= $mn['id'] ?>"><?= htmlspecialchars(($mn['gelar_depan'] ? $mn['gelar_depan'].' ' : '').$mn['nama_pejabat'].($mn['gelar_belakang'] ? ', '.$mn['gelar_belakang'] : '')) ?></option>
                             <?php endforeach; endif; ?>
                         </select>
                         <small class="text-muted">Pilih dari daftar narasumber yang terdaftar pada pelatihan ini.</small>
@@ -146,10 +146,10 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Penyelenggara</label>
-                        <select class="form-select border-light-subtle bg-light" name="penyelenggara" id="penyelenggara" style="width: 100%;">
+                        <select class="form-select border-light-subtle bg-light" name="penyelenggara[]" id="penyelenggara" style="width: 100%;" multiple>
                             <option value="">-- Pilih Penyelenggara --</option>
                             <?php if(!empty($master_penyelenggara)): foreach($master_penyelenggara as $mp): ?>
-                                <option value="<?= htmlspecialchars($mp['nama_penyelenggara']) ?>"><?= htmlspecialchars($mp['nama_penyelenggara']) ?></option>
+                                <option value="<?= $mp['id'] ?>"><?= htmlspecialchars($mp['nama']) ?></option>
                             <?php endforeach; endif; ?>
                         </select>
                         <small class="text-muted">Pilih dari daftar penyelenggara yang terdaftar pada pelatihan ini.</small>
@@ -277,20 +277,14 @@
         
         var selectNarasumber = $('#narasumber');
         selectNarasumber.val('');
-        if (sesi.narasumber) {
-            var nList = sesi.narasumber.split(',');
-            if (nList.length > 0) {
-                selectNarasumber.val(nList[0].trim());
-            }
+        if (sesi.narasumber_ids && sesi.narasumber_ids.length > 0) {
+            selectNarasumber.val(sesi.narasumber_ids);
         }
 
         var selectPenyelenggara = $('#penyelenggara');
         selectPenyelenggara.val('');
-        if (sesi.penyelenggara) {
-            var pList = sesi.penyelenggara.split(',');
-            if (pList.length > 0) {
-                selectPenyelenggara.val(pList[0].trim());
-            }
+        if (sesi.penyelenggara_ids && sesi.penyelenggara_ids.length > 0) {
+            selectPenyelenggara.val(sesi.penyelenggara_ids);
         }
 
         toggleSesiFields();
@@ -323,4 +317,7 @@
 
         showToast('Form sesi berhasil diisi dengan data testing!', 'success');
     }
+
 </script>
+
+

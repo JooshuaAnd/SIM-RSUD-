@@ -10,6 +10,8 @@ use App\Models\Pelatihan\PesertaPelatihanModel;
 use App\Models\Pelatihan\KuesionerMasterPelatihanModel;
 use App\Models\Pelatihan\NarasumberPelatihanModel;
 use App\Models\Pelatihan\PenyelenggaraPelatihanModel;
+use App\Models\Pelatihan\PejabatTtdPelatihanModel;
+use App\Models\Pelatihan\MasterPenyelenggaraModel;
 
 class Pelatihan extends BaseController
 {
@@ -20,8 +22,10 @@ class Pelatihan extends BaseController
     protected UjianPelatihanModel $evaluasiModel;
     protected UjianSoalPelatihanModel $evaluasiSoalModel;
     protected KuesionerMasterPelatihanModel $kuesionerModel;
-    protected NarasumberPelatihanModel $narasumberModel;
-    protected PenyelenggaraPelatihanModel $penyelenggaraModel;
+    protected NarasumberPelatihanModel $narasumberPelModel;
+    protected PenyelenggaraPelatihanModel $penyelenggaraPelModel;
+    protected PejabatTtdPelatihanModel $pejabatModel;
+    protected MasterPenyelenggaraModel $masterPenyelenggaraModel;
     
     public function __construct()
     {
@@ -32,15 +36,69 @@ class Pelatihan extends BaseController
         $this->evaluasiSoalModel = new UjianSoalPelatihanModel();
         $this->pesertaModel = new PesertaPelatihanModel();
         $this->kuesionerModel = new KuesionerMasterPelatihanModel();
-        $this->narasumberModel = new NarasumberPelatihanModel();
-        $this->penyelenggaraModel = new PenyelenggaraPelatihanModel();
+        $this->narasumberPelModel = new NarasumberPelatihanModel();
+        $this->penyelenggaraPelModel = new PenyelenggaraPelatihanModel();
+        $this->pejabatModel = new PejabatTtdPelatihanModel();
+        $this->masterPenyelenggaraModel = new MasterPenyelenggaraModel();
+    }
+
+    private function getNarasumberForPelatihan(int $pelatihanId): array
+    {
+        $db = \Config\Database::connect();
+        $rows = $db->table('narasumber_pelatihan np')
+            ->select('np.id as pivot_id, pt.id as id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+            ->join('pejabat_ttd_pelatihan pt', 'pt.id = np.pejabat_ttd_id')
+            ->where('np.pelatihan_id', $pelatihanId)
+            ->groupBy('np.id, pt.id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+            ->get()->getResultArray();
+        return $rows;
+    }
+
+    private function getPenyelenggaraForPelatihan(int $pelatihanId): array
+    {
+        $db = \Config\Database::connect();
+        $rows = $db->table('penyelenggara_pelatihan pp')
+            ->select('pp.id as pivot_id, mp.id as id, mp.nama, mp.fokus_bidang')
+            ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id')
+            ->where('pp.pelatihan_id', $pelatihanId)
+            ->groupBy('pp.id, mp.id, mp.nama, mp.fokus_bidang')
+            ->get()->getResultArray();
+        return $rows;
+    }
+
+    private function getNarasumberForSesi(int $sesiId): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('narasumber_pelatihan np')
+            ->select('np.id as pivot_id, pt.id as id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang')
+            ->join('pejabat_ttd_pelatihan pt', 'pt.id = np.pejabat_ttd_id')
+            ->where('np.sesi_id', $sesiId)
+            ->get()->getResultArray();
+    }
+
+    private function getPenyelenggaraForSesi(int $sesiId): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('penyelenggara_pelatihan pp')
+            ->select('pp.id as pivot_id, mp.id as id, mp.nama')
+            ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id')
+            ->where('pp.sesi_id', $sesiId)
+            ->get()->getResultArray();
+    }
+
+    private function formatNamaLengkap(array $row): string
+    {
+        $nama = '';
+        if (!empty($row['gelar_depan'])) $nama .= $row['gelar_depan'] . ' ';
+        $nama .= $row['nama_pejabat'];
+        if (!empty($row['gelar_belakang'])) $nama .= ', ' . $row['gelar_belakang'];
+        return $nama;
     }
 
     public function index()
     {
         $db = \Config\Database::connect();
         
-        // Auto update status to Selesai if the end date and time have passed
         $db->query("UPDATE master_pelatihan SET status = 'Selesai' WHERE status != 'Selesai' AND jadwal_selesai IS NOT NULL AND jam_selesai IS NOT NULL AND LENGTH(jadwal_selesai) > 5 AND LENGTH(jam_selesai) > 3 AND CONCAT(jadwal_selesai, ' ', jam_selesai) <= NOW()");
 
         $pelatihan = $this->masterPelatihanModel
@@ -49,24 +107,23 @@ class Pelatihan extends BaseController
             ->orderBy('master_pelatihan.id', 'DESC')
             ->findAll();
         
-        // Count participants for each pelatihan to simulate the 'peserta' field needed in view
         foreach ($pelatihan as &$p) {
             $p['peserta'] = $this->pesertaModel->where('pelatihan_id', $p['id'])->countAllResults();
             
-            $narasumberList = $this->narasumberModel->where('id_pelatihan', $p['id'])->findAll();
-            $p['narasumber'] = implode(', ', array_column($narasumberList, 'nama_narasumber'));
-            $p['narasumber_list'] = array_column($narasumberList, 'nama_narasumber');
+            $narasumberList = $this->getNarasumberForPelatihan($p['id']);
+            $p['narasumber'] = implode(', ', array_map(fn($n) => $this->formatNamaLengkap($n), $narasumberList));
+            $p['narasumber_list'] = array_map(fn($n) => $this->formatNamaLengkap($n), $narasumberList);
+            $p['narasumber_ids'] = array_column($narasumberList, 'id');
             
-            $penyelenggaraList = $this->penyelenggaraModel->where('id_pelatihan', $p['id'])->findAll();
-            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama_penyelenggara'));
-            $p['penyelenggara_list'] = array_column($penyelenggaraList, 'nama_penyelenggara');
+            $penyelenggaraList = $this->getPenyelenggaraForPelatihan($p['id']);
+            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
+            $p['penyelenggara_list'] = array_column($penyelenggaraList, 'nama');
+            $p['penyelenggara_ids'] = array_column($penyelenggaraList, 'id');
         }
 
-        $db = \Config\Database::connect();
         $profesi = $db->table('profesi_pelatihan')->get()->getResultArray();
         $unit_kerja = $db->table('unit_kerja_pelatihan')->get()->getResultArray();
 
-        // Build grouped categories from master_kategori_skp_pelatihan for dynamic dropdowns
         $kategoriSkpAll = $db->table('master_kategori_skp_pelatihan')->orderBy('ranah')->orderBy('nama_kategori')->get()->getResultArray();
         $kategori_skp_grouped = [];
         $ranah_skp_list = [];
@@ -77,6 +134,15 @@ class Pelatihan extends BaseController
             }
         }
 
+        $masterNarasumberList = $db->table('pejabat_ttd_pelatihan')
+            ->where('status', 'Narasumber')
+            ->orderBy('nama_pejabat', 'ASC')
+            ->get()->getResultArray();
+        $masterPenyelenggaraList = $db->table('master_penyelenggara')
+            ->where('status', 'Aktif')
+            ->orderBy('nama', 'ASC')
+            ->get()->getResultArray();
+
         $data = [
             'title'               => 'Kelola Pelatihan',
             'pelatihan'           => $pelatihan,
@@ -84,6 +150,8 @@ class Pelatihan extends BaseController
             'unit_kerja'          => $unit_kerja,
             'kategori_skp_grouped' => $kategori_skp_grouped,
             'ranah_skp_list'      => $ranah_skp_list,
+            'master_narasumber_list' => $masterNarasumberList,
+            'master_penyelenggara_list' => $masterPenyelenggaraList,
         ];
         return view('pelatihan/admin/pelatihan/index', $data);
     }
@@ -147,33 +215,29 @@ class Pelatihan extends BaseController
         $this->masterPelatihanModel->insert($insertData);
         $insertedId = $this->masterPelatihanModel->getInsertID();
 
-        // Handle Narasumber
+        // Handle Narasumber (pivot: narasumber_pelatihan)
         $narasumbers = $data['narasumber'] ?? [];
-        if (!is_array($narasumbers)) {
-            $narasumbers = explode(',', $narasumbers);
-        }
-        foreach ($narasumbers as $n) {
-            $n = trim($n);
-            if (!empty($n)) {
-                $this->narasumberModel->insert([
-                    'id_pelatihan' => $insertedId,
-                    'nama_narasumber' => $n,
+        if (!is_array($narasumbers)) $narasumbers = explode(',', $narasumbers);
+        foreach ($narasumbers as $nid) {
+            $nid = trim($nid);
+            if (!empty($nid) && is_numeric($nid)) {
+                $this->narasumberPelModel->insert([
+                    'pelatihan_id' => $insertedId,
+                    'pejabat_ttd_id' => (int)$nid,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
         }
 
-        // Handle Penyelenggara
+        // Handle Penyelenggara (pivot: penyelenggara_pelatihan)
         $penyelenggaras = $data['penyelenggara'] ?? [];
-        if (!is_array($penyelenggaras)) {
-            $penyelenggaras = explode(',', $penyelenggaras);
-        }
-        foreach ($penyelenggaras as $p) {
-            $p = trim($p);
-            if (!empty($p)) {
-                $this->penyelenggaraModel->insert([
-                    'id_pelatihan' => $insertedId,
-                    'nama_penyelenggara' => $p,
+        if (!is_array($penyelenggaras)) $penyelenggaras = explode(',', $penyelenggaras);
+        foreach ($penyelenggaras as $pid) {
+            $pid = trim($pid);
+            if (!empty($pid) && is_numeric($pid)) {
+                $this->penyelenggaraPelModel->insert([
+                    'pelatihan_id' => $insertedId,
+                    'penyelenggara_id' => (int)$pid,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
@@ -262,35 +326,31 @@ class Pelatihan extends BaseController
 
         $this->masterPelatihanModel->update($id, $updateData);
 
-        // Update Narasumber
-        $this->narasumberModel->where('id_pelatihan', $id)->delete();
+        // Update Narasumber (pivot)
+        $this->narasumberPelModel->where('pelatihan_id', $id)->delete();
         $narasumbers = $data['narasumber'] ?? [];
-        if (!is_array($narasumbers)) {
-            $narasumbers = explode(',', $narasumbers);
-        }
-        foreach ($narasumbers as $n) {
-            $n = trim($n);
-            if (!empty($n)) {
-                $this->narasumberModel->insert([
-                    'id_pelatihan' => $id,
-                    'nama_narasumber' => $n,
+        if (!is_array($narasumbers)) $narasumbers = explode(',', $narasumbers);
+        foreach ($narasumbers as $nid) {
+            $nid = trim($nid);
+            if (!empty($nid) && is_numeric($nid)) {
+                $this->narasumberPelModel->insert([
+                    'pelatihan_id' => $id,
+                    'pejabat_ttd_id' => (int)$nid,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
         }
 
-        // Update Penyelenggara
-        $this->penyelenggaraModel->where('id_pelatihan', $id)->delete();
+        // Update Penyelenggara (pivot)
+        $this->penyelenggaraPelModel->where('pelatihan_id', $id)->delete();
         $penyelenggaras = $data['penyelenggara'] ?? [];
-        if (!is_array($penyelenggaras)) {
-            $penyelenggaras = explode(',', $penyelenggaras);
-        }
-        foreach ($penyelenggaras as $p) {
-            $p = trim($p);
-            if (!empty($p)) {
-                $this->penyelenggaraModel->insert([
-                    'id_pelatihan' => $id,
-                    'nama_penyelenggara' => $p,
+        if (!is_array($penyelenggaras)) $penyelenggaras = explode(',', $penyelenggaras);
+        foreach ($penyelenggaras as $pid) {
+            $pid = trim($pid);
+            if (!empty($pid) && is_numeric($pid)) {
+                $this->penyelenggaraPelModel->insert([
+                    'pelatihan_id' => $id,
+                    'penyelenggara_id' => (int)$pid,
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
@@ -329,6 +389,8 @@ class Pelatihan extends BaseController
         if (!empty($pelatihan['gambar_pelatihan']) && file_exists(FCPATH . $pelatihan['gambar_pelatihan'])) {
             unlink(FCPATH . $pelatihan['gambar_pelatihan']);
         }
+        $this->narasumberPelModel->where('pelatihan_id', $id)->delete();
+        $this->penyelenggaraPelModel->where('pelatihan_id', $id)->delete();
         $this->masterPelatihanModel->delete($id);
         return redirect()->to('/pelatihan/admin/pelatihan')->with('success', 'Pelatihan berhasil dihapus.');
     }
@@ -350,13 +412,18 @@ class Pelatihan extends BaseController
             $kuesionerGrouped[$k['kategori']][] = $k;
         }
 
+        $masterNarasumberAll = $this->getNarasumberForPelatihan($id);
+        $masterPenyelenggaraAll = $this->getPenyelenggaraForPelatihan($id);
+
         $sesiList = $this->sesiModel->where('pelatihan_id', $id)->orderBy('tanggal', 'ASC')->orderBy('waktu', 'ASC')->findAll();
         foreach ($sesiList as &$s) {
-            $ns = $this->narasumberModel->where('sesi_id', $s['id'])->findAll();
-            $s['narasumber'] = implode(',', array_column($ns, 'nama_narasumber'));
+            $ns = $this->getNarasumberForSesi($s['id']);
+            $s['narasumber'] = implode(',', array_map(fn($n) => $this->formatNamaLengkap($n), $ns));
+            $s['narasumber_ids'] = array_column($ns, 'id');
             
-            $py = $this->penyelenggaraModel->where('sesi_id', $s['id'])->findAll();
-            $s['penyelenggara'] = implode(',', array_column($py, 'nama_penyelenggara'));
+            $py = $this->getPenyelenggaraForSesi($s['id']);
+            $s['penyelenggara'] = implode(',', array_column($py, 'nama'));
+            $s['penyelenggara_ids'] = array_column($py, 'id');
         }
 
         $data = [
@@ -366,8 +433,8 @@ class Pelatihan extends BaseController
             'sesi_online' => $this->sesiModel->where('pelatihan_id', $id)->where('tipe_sesi', 'online')->findAll(),
             'sesi_offline' => $this->sesiModel->where('pelatihan_id', $id)->where('tipe_sesi', 'offline')->findAll(),
             'sesiList' => $sesiList,
-            'master_narasumber' => $this->narasumberModel->where('id_pelatihan', $id)->where('sesi_id', null)->findAll(),
-            'master_penyelenggara' => $this->penyelenggaraModel->where('id_pelatihan', $id)->where('sesi_id', null)->findAll(),
+            'master_narasumber' => $masterNarasumberAll,
+            'master_penyelenggara' => $masterPenyelenggaraAll,
             'kuis' => [], 
             'presensi' => [],
             'kuesioner' => $kuesionerGrouped
@@ -578,34 +645,114 @@ class Pelatihan extends BaseController
             $msg = 'Sesi berhasil diupdate';
         }
 
-        // Handle Narasumber
-        $this->narasumberModel->where('sesi_id', $idSesi)->delete();
-        $narasumbers = $this->request->getPost('narasumber') ?? [];
-        if (!is_array($narasumbers)) $narasumbers = explode(',', $narasumbers);
-        foreach ($narasumbers as $n) {
-            $n = trim($n);
-            if (!empty($n)) {
-                $this->narasumberModel->insert([
-                    'id_pelatihan' => $data['pelatihan_id'],
-                    'sesi_id' => $idSesi,
-                    'nama_narasumber' => $n,
-                    'created_at' => date('Y-m-d H:i:s')
+        // Handle Narasumber for sesi (unified: narasumber_pelatihan with sesi_id)
+        $narasumberIds = $this->request->getPost('narasumber') ?? [];
+        if (!is_array($narasumberIds)) $narasumberIds = explode(',', $narasumberIds);
+        $narasumberIds = array_filter(array_map('intval', $narasumberIds), fn($n) => $n > 0);
+
+        // Deduplicate: remove existing duplicate rows for same pelatihan+pejabat+sesi
+        $db = \Config\Database::connect();
+        $db->query("DELETE np1 FROM narasumber_pelatihan np1
+            INNER JOIN narasumber_pelatihan np2
+            WHERE np1.id > np2.id
+            AND np1.pejabat_ttd_id = np2.pejabat_ttd_id
+            AND np1.pelatihan_id = np2.pelatihan_id
+            AND np1.sesi_id = np2.sesi_id
+            AND np1.pelatihan_id = ?", [$data['pelatihan_id']]);
+
+        // Release narasumber that are no longer selected for this sesi
+        $existingNarasumber = $this->narasumberPelModel
+            ->where('pelatihan_id', $data['pelatihan_id'])
+            ->where('sesi_id', $idSesi)
+            ->findAll();
+        foreach ($existingNarasumber as $en) {
+            if (!in_array((int)$en['pejabat_ttd_id'], $narasumberIds)) {
+                $this->narasumberPelModel->update($en['id'], ['sesi_id' => null]);
+            }
+        }
+
+        foreach ($narasumberIds as $nid) {
+            // Check exact combo: pelatihan + narasumber + sesi ini
+            $alreadyInSesi = $this->narasumberPelModel
+                ->where('pelatihan_id', $data['pelatihan_id'])
+                ->where('pejabat_ttd_id', $nid)
+                ->where('sesi_id', $idSesi)
+                ->first();
+
+            if ($alreadyInSesi) {
+                // Sudah terisi di sesi ini → skip
+                continue;
+            }
+
+            // Cari row dengan sesi_id kosong untuk override
+            $unassigned = $this->narasumberPelModel
+                ->where('pelatihan_id', $data['pelatihan_id'])
+                ->where('pejabat_ttd_id', $nid)
+                ->where('sesi_id IS NULL')
+                ->first();
+
+            if ($unassigned) {
+                $this->narasumberPelModel->update($unassigned['id'], ['sesi_id' => $idSesi]);
+            } else {
+                $this->narasumberPelModel->insert([
+                    'pejabat_ttd_id' => $nid,
+                    'pelatihan_id'   => $data['pelatihan_id'],
+                    'sesi_id'        => $idSesi,
+                    'created_at'     => date('Y-m-d H:i:s')
                 ]);
             }
         }
 
-        // Handle Penyelenggara
-        $this->penyelenggaraModel->where('sesi_id', $idSesi)->delete();
-        $penyelenggaras = $this->request->getPost('penyelenggara') ?? [];
-        if (!is_array($penyelenggaras)) $penyelenggaras = explode(',', $penyelenggaras);
-        foreach ($penyelenggaras as $p) {
-            $p = trim($p);
-            if (!empty($p)) {
-                $this->penyelenggaraModel->insert([
-                    'id_pelatihan' => $data['pelatihan_id'],
-                    'sesi_id' => $idSesi,
-                    'nama_penyelenggara' => $p,
-                    'created_at' => date('Y-m-d H:i:s')
+        // Handle Penyelenggara for sesi (unified: penyelenggara_pelatihan with sesi_id)
+        $penyelenggaraIds = $this->request->getPost('penyelenggara') ?? [];
+        if (!is_array($penyelenggaraIds)) $penyelenggaraIds = explode(',', $penyelenggaraIds);
+        $penyelenggaraIds = array_filter(array_map('intval', $penyelenggaraIds), fn($p) => $p > 0);
+
+        // Deduplicate existing duplicate rows
+        $db->query("DELETE pp1 FROM penyelenggara_pelatihan pp1
+            INNER JOIN penyelenggara_pelatihan pp2
+            WHERE pp1.id > pp2.id
+            AND pp1.penyelenggara_id = pp2.penyelenggara_id
+            AND pp1.pelatihan_id = pp2.pelatihan_id
+            AND pp1.sesi_id = pp2.sesi_id
+            AND pp1.pelatihan_id = ?", [$data['pelatihan_id']]);
+
+        // Release penyelenggara that are no longer selected for this sesi
+        $existingPenyelenggara = $this->penyelenggaraPelModel
+            ->where('pelatihan_id', $data['pelatihan_id'])
+            ->where('sesi_id', $idSesi)
+            ->findAll();
+        foreach ($existingPenyelenggara as $ep) {
+            if (!in_array((int)$ep['penyelenggara_id'], $penyelenggaraIds)) {
+                $this->penyelenggaraPelModel->update($ep['id'], ['sesi_id' => null]);
+            }
+        }
+
+        foreach ($penyelenggaraIds as $pid) {
+            $alreadyInSesi = $this->penyelenggaraPelModel
+                ->where('pelatihan_id', $data['pelatihan_id'])
+                ->where('penyelenggara_id', $pid)
+                ->where('sesi_id', $idSesi)
+                ->first();
+
+            if ($alreadyInSesi) {
+                continue;
+            }
+
+            $unassigned = $this->penyelenggaraPelModel
+                ->where('pelatihan_id', $data['pelatihan_id'])
+                ->where('penyelenggara_id', $pid)
+                ->where('sesi_id IS NULL')
+                ->first();
+
+            if ($unassigned) {
+                $this->penyelenggaraPelModel->update($unassigned['id'], ['sesi_id' => $idSesi]);
+            } else {
+                $this->penyelenggaraPelModel->insert([
+                    'penyelenggara_id' => $pid,
+                    'pelatihan_id'     => $data['pelatihan_id'],
+                    'sesi_id'          => $idSesi,
+                    'created_at'       => date('Y-m-d H:i:s')
                 ]);
             }
         }
@@ -617,6 +764,8 @@ class Pelatihan extends BaseController
     {
         $sesi = $this->sesiModel->find($id);
         if ($sesi) {
+            $this->narasumberPelModel->where('sesi_id', $id)->delete();
+            $this->penyelenggaraPelModel->where('sesi_id', $id)->delete();
             $this->sesiModel->delete($id);
             return redirect()->back()->with('success', 'Sesi berhasil dihapus');
         }
@@ -827,7 +976,13 @@ class Pelatihan extends BaseController
             ['kategori' => 'Materi', 'pertanyaan' => 'Kesesuaian materi dengan kebutuhan pekerjaan'],
             ['kategori' => 'Materi', 'pertanyaan' => 'Kelengkapan dan relevansi materi pelatihan'],
             ['kategori' => 'Modul', 'pertanyaan' => 'Kemudahan memahami bahasa dan sistematika modul'],
-            ['kategori' => 'Modul', 'pertanyaan' => 'Kualitas visual slide presentasi dan materi ajar']
+            ['kategori' => 'Modul', 'pertanyaan' => 'Kualitas visual slide presentasi dan materi ajar'],
+            ['kategori' => 'Narasumber', 'pertanyaan' => 'Penguasaan materi oleh narasumber'],
+            ['kategori' => 'Narasumber', 'pertanyaan' => 'Kemampuan interaksi dan penyampaian narasumber'],
+            ['kategori' => 'Narasumber', 'pertanyaan' => 'Ketepatan waktu penyampaian materi oleh narasumber'],
+            ['kategori' => 'Penyelenggara', 'pertanyaan' => 'Kinerja penyelenggara dalam pelaksanaan pelatihan'],
+            ['kategori' => 'Penyelenggara', 'pertanyaan' => 'Kepuasan terhadap layanan penyelenggara'],
+            ['kategori' => 'Penyelenggara', 'pertanyaan' => 'Ketepatan informasi dan koordinasi penyelenggara'],
         ];
 
         // Hapus yang lama jika ada (agar tidak double jika dipanggil ulang)

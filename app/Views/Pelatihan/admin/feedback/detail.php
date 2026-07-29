@@ -59,6 +59,107 @@
 </div>
 
     <div class="col-12">
+        
+
+        <?php // ─── Materi Stats ─────────────────────────────────────────────── ?>
+        <?php if (!empty($materiStats)): ?>
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-book me-2 text-primary"></i> Rata-rata Penilaian Materi</h5>
+            <div class="row g-3">
+                <?php foreach ($materiStats as $ms): ?>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-primary text-uppercase"><i class="fas fa-book-open me-2"></i><?= esc($ms['judul']) ?></h6>
+                            <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: #1e3a5f; color: white;">
+                                <i class="fas fa-star me-1"></i><?= $ms['avg_overall'] ?> / 5.0
+                            </span>
+                        </div>
+                        <?php foreach ($ms['pertanyaan'] as $pq): ?>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                            </div>
+                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                <div class="progress-bar bg-primary" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <hr class="my-4">
+        <?php endif; ?>
+
+        <?php // ─── Narasumber Stats ─────────────────────────────────────────── ?>
+        <?php if (!empty($narasumberStats)): ?>
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-chalkboard-teacher me-2 text-success"></i> Rata-rata Penilaian Narasumber</h5>
+            <div class="row g-3">
+                <?php foreach ($narasumberStats as $ns): ?>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-success text-uppercase"><i class="fas fa-user-tie me-2"></i><?= esc($ns['nama']) ?></h6>
+                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-success text-white">
+                                <i class="fas fa-star me-1"></i><?= $ns['avg_overall'] ?> / 5.0
+                            </span>
+                        </div>
+                        <?php foreach ($ns['pertanyaan'] as $pq): ?>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                            </div>
+                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                <div class="progress-bar bg-success" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <hr class="my-4">
+        <?php endif; ?>
+
+        <?php // ─── Penyelenggara Stats ──────────────────────────────────────── ?>
+        <?php if (!empty($penyelenggaraStats)): ?>
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-users-cog me-2 text-warning"></i> Rata-rata Penilaian Penyelenggara</h5>
+            <div class="row g-3">
+                <?php foreach ($penyelenggaraStats as $ps): ?>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-warning text-uppercase"><i class="fas fa-building me-2"></i><?= esc($ps['nama']) ?></h6>
+                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i><?= $ps['avg_overall'] ?> / 5.0
+                            </span>
+                        </div>
+                        <?php foreach ($ps['pertanyaan'] as $pq): ?>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                            </div>
+                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                <div class="progress-bar bg-warning" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <hr class="my-4">
+        <?php endif; ?>
+
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold text-dark mb-0">Rincian Feedback per Peserta</h5>
             <span class="badge bg-dark text-white rounded-pill px-3 py-2"><?= count($feedbacks) ?> Peserta</span>

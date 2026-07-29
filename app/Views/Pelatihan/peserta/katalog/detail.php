@@ -10,6 +10,7 @@ $reg_buka = $reg_buka ?? null;
 $reg_tutup = $reg_tutup ?? null;
 $jadwal_mulai = $jadwal_mulai ?? null;
 $jadwal_selesai = $jadwal_selesai ?? null;
+$has_progress = $has_progress ?? false;
 ?>
 
 <?= $this->extend('pelatihan/layout/peserta_layout') ?>
@@ -244,7 +245,7 @@ $jadwal_selesai = $jadwal_selesai ?? null;
                             </div>
                         <?php elseif ($is_learning_open): ?>
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn w-100 py-3 rounded-pill fw-bold text-white shadow-lg" style="background-color: #0f766e; transition: all 0.3s;">
-                                MULAI BELAJAR <i class="fas fa-play-circle ms-2"></i>
+                                <?= !empty($has_progress) ? 'LANJUTKAN BELAJAR' : 'MULAI BELAJAR' ?> <i class="fas fa-play-circle ms-2"></i>
                             </a>
                         <?php else: ?>
                             <div class="alert alert-success border-0 text-center py-3 mb-0 rounded-3 shadow-sm">

@@ -151,11 +151,25 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-dark">NARASUMBER</label>
-                            <select name="narasumber[]" id="f_narasumber" class="form-select border shadow-sm" multiple="multiple" required></select>
+                            <div class="input-group">
+                                <select name="narasumber[]" id="f_narasumber" class="form-select border shadow-sm" multiple="multiple" required>
+                                    <?php if(!empty($master_narasumber_list)): foreach($master_narasumber_list as $mn): ?>
+                                        <option value="<?= $mn['id'] ?>"><?= htmlspecialchars(($mn['gelar_depan'] ? $mn['gelar_depan'].' ' : '').$mn['nama_pejabat'].($mn['gelar_belakang'] ? ', '.$mn['gelar_belakang'] : '')) ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <button type="button" class="btn btn-outline-success" onclick="showModalTambahNarasumber()" title="Tambah Narasumber Baru"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-dark">PENYELENGGARA</label>
-                            <select name="penyelenggara[]" id="f_penyelenggara" class="form-select border shadow-sm" multiple="multiple" required></select>
+                            <div class="input-group">
+                                <select name="penyelenggara[]" id="f_penyelenggara" class="form-select border shadow-sm" multiple="multiple" required>
+                                    <?php if(!empty($master_penyelenggara_list)): foreach($master_penyelenggara_list as $mp): ?>
+                                        <option value="<?= $mp['id'] ?>"><?= htmlspecialchars($mp['nama']) ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <button type="button" class="btn btn-outline-success" onclick="showModalTambahPenyelenggara()" title="Tambah Penyelenggara Baru"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                         <div class="col-md-9">
                             <label class="form-label small fw-bold text-dark">KONTAK PENYEDIA</label>
@@ -269,3 +283,189 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Quick Tambah Narasumber -->
+<div class="modal fade" id="modalQuickNarasumber" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="fas fa-user-plus me-2"></i> TAMBAH NARASUMBER BARU</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 bg-light">
+                <input type="hidden" id="q_status" value="Narasumber">
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
+                        <input type="text" id="q_nama" class="form-control form-control-sm rounded-pill" placeholder="Nama lengkap" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Gelar Depan</label>
+                        <input type="text" id="q_gelar_depan" class="form-control form-control-sm rounded-pill" placeholder="Dr.">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Gelar Belakang</label>
+                        <input type="text" id="q_gelar_belakang" class="form-control form-control-sm rounded-pill" placeholder="M.Kes">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Pendidikan</label>
+                        <input type="text" id="q_pendidikan" class="form-control form-control-sm rounded-pill" placeholder="S.Ked, Sp.PD">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Keahlian</label>
+                        <input type="text" id="q_keahlian" class="form-control form-control-sm rounded-pill" placeholder="Kardiologi">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Kontak</label>
+                        <input type="text" id="q_kontak" class="form-control form-control-sm rounded-pill" placeholder="08xxx">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email</label>
+                        <input type="email" id="q_email" class="form-control form-control-sm rounded-pill" placeholder="email@contoh.com">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Jabatan</label>
+                        <input type="text" id="q_jabatan" class="form-control form-control-sm rounded-pill" placeholder="Direktur RSUD">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">NIP</label>
+                        <input type="text" id="q_nip" class="form-control form-control-sm rounded-pill" placeholder="19690124XXXXXX">
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Atas Nama Pejabat (a.n)</label>
+                    <input type="text" id="q_an" class="form-control form-control-sm rounded-pill" placeholder="a.n Direktur">
+                </div>
+                <div>
+                    <label class="form-label small fw-bold">Riwayat / Bio</label>
+                    <textarea id="q_riwayat" class="form-control form-control-sm" rows="2" placeholder="Riwayat singkat" style="border-radius: 15px;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-white py-2">
+                <button type="button" class="btn btn-light btn-sm rounded-pill fw-bold" data-bs-dismiss="modal">BATAL</button>
+                <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold" onclick="saveQuickNarasumber()"><i class="fas fa-check me-1"></i> SIMPAN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Quick Tambah Penyelenggara -->
+<div class="modal fade" id="modalQuickPenyelenggara" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="fas fa-building me-2"></i> TAMBAH PENYELENGGARA BARU</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 bg-light">
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Nama Penyelenggara <span class="text-danger">*</span></label>
+                    <input type="text" id="q_nama_penyelenggara" class="form-control form-control-sm rounded-pill" placeholder="Nama instansi/organisasi" required>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Fokus Bidang</label>
+                        <input type="text" id="q_fokus_bidang" class="form-control form-control-sm rounded-pill" placeholder="Kesehatan">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Kontak</label>
+                        <input type="text" id="q_kontak_penyelenggara" class="form-control form-control-sm rounded-pill" placeholder="021-xxxx">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-white py-2">
+                <button type="button" class="btn btn-light btn-sm rounded-pill fw-bold" data-bs-dismiss="modal">BATAL</button>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold" onclick="saveQuickPenyelenggara()"><i class="fas fa-check me-1"></i> SIMPAN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showModalTambahNarasumber() {
+    document.getElementById('q_nama').value = '';
+    document.getElementById('q_gelar_depan').value = '';
+    document.getElementById('q_gelar_belakang').value = '';
+    document.getElementById('q_pendidikan').value = '';
+    document.getElementById('q_keahlian').value = '';
+    document.getElementById('q_kontak').value = '';
+    document.getElementById('q_email').value = '';
+    document.getElementById('q_jabatan').value = '';
+    document.getElementById('q_nip').value = '';
+    document.getElementById('q_an').value = '';
+    document.getElementById('q_riwayat').value = '';
+    new bootstrap.Modal(document.getElementById('modalQuickNarasumber')).show();
+}
+
+function saveQuickNarasumber() {
+    var nama = document.getElementById('q_nama').value.trim();
+    if (!nama) { alert('Nama harus diisi!'); return; }
+
+    var fd = new FormData();
+    fd.append('nama_pejabat', nama);
+    fd.append('gelar_depan', document.getElementById('q_gelar_depan').value);
+    fd.append('gelar_belakang', document.getElementById('q_gelar_belakang').value);
+    fd.append('pendidikan', document.getElementById('q_pendidikan').value);
+    fd.append('keahlian', document.getElementById('q_keahlian').value);
+    fd.append('kontak', document.getElementById('q_kontak').value);
+    fd.append('email', document.getElementById('q_email').value);
+    fd.append('jabatan', document.getElementById('q_jabatan').value);
+    fd.append('nip_pejabat', document.getElementById('q_nip').value);
+    fd.append('an_pejabat', document.getElementById('q_an').value);
+    fd.append('riwayat', document.getElementById('q_riwayat').value);
+
+    fetch('<?= base_url('pelatihan/admin/master/simpan_narasumber_ajax') ?>', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(res => {
+        if (res.status === 'success') {
+            var sel = document.getElementById('f_narasumber');
+            var opt = document.createElement('option');
+            opt.value = res.data.id;
+            var displayName = (res.data.gelar_depan ? res.data.gelar_depan + ' ' : '') + res.data.nama_pejabat + (res.data.gelar_belakang ? ', ' + res.data.gelar_belakang : '');
+            opt.text = displayName;
+            opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('modalQuickNarasumber')).hide();
+        }
+    });
+}
+
+function showModalTambahPenyelenggara() {
+    document.getElementById('q_nama_penyelenggara').value = '';
+    document.getElementById('q_fokus_bidang').value = '';
+    document.getElementById('q_kontak_penyelenggara').value = '';
+    new bootstrap.Modal(document.getElementById('modalQuickPenyelenggara')).show();
+}
+
+function saveQuickPenyelenggara() {
+    var nama = document.getElementById('q_nama_penyelenggara').value.trim();
+    if (!nama) { alert('Nama harus diisi!'); return; }
+
+    var fd = new FormData();
+    fd.append('nama', nama);
+    fd.append('fokus_bidang', document.getElementById('q_fokus_bidang').value);
+    fd.append('kontak', document.getElementById('q_kontak_penyelenggara').value);
+
+    fetch('<?= base_url('pelatihan/admin/master/simpan_penyelenggara_ajax') ?>', {
+        method: 'POST',
+        body: fd
+    }).then(r => r.json()).then(res => {
+        if (res.status === 'success') {
+            var sel = document.getElementById('f_penyelenggara');
+            var opt = document.createElement('option');
+            opt.value = res.data.id;
+            opt.text = res.data.nama;
+            opt.selected = true;
+            sel.appendChild(opt);
+            bootstrap.Modal.getInstance(document.getElementById('modalQuickPenyelenggara')).hide();
+        }
+    });
+}
+</script>

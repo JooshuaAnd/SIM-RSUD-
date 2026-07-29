@@ -336,14 +336,22 @@ class Certificate extends BaseController
     {
         $id = $this->request->getPost('id');
         $data = [
-            'an_pejabat' => $this->request->getPost('an_pejabat'),
-            'jabatan' => $this->request->getPost('jabatan'),
-            'nama_pejabat' => $this->request->getPost('nama_pejabat'),
-            'nip_pejabat' => $this->request->getPost('nip_pejabat'),
-
+            'status'         => $this->request->getPost('status') ?? 'Narasumber',
+            'an_pejabat'     => $this->request->getPost('an_pejabat'),
+            'jabatan'        => $this->request->getPost('jabatan'),
+            'nama_pejabat'   => $this->request->getPost('nama_pejabat'),
+            'nip_pejabat'    => $this->request->getPost('nip_pejabat'),
+            'gelar_depan'    => $this->request->getPost('gelar_depan') ?? null,
+            'gelar_belakang' => $this->request->getPost('gelar_belakang') ?? null,
+            'pendidikan'     => $this->request->getPost('pendidikan') ?? null,
+            'keahlian'       => $this->request->getPost('keahlian') ?? null,
+            'kontak'         => $this->request->getPost('kontak') ?? null,
+            'email'          => $this->request->getPost('email') ?? null,
+            'riwayat'        => $this->request->getPost('riwayat') ?? null,
+            'updated_at'     => date('Y-m-d H:i:s'),
         ];
 
-        // Handle image upload
+        // Handle ttd_image upload
         $file = $this->request->getFile('ttd_image');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/ttd')) {
@@ -355,10 +363,27 @@ class Certificate extends BaseController
             $data['ttd_image'] = 'ttd/' . $newName;
         }
 
+        // Handle foto upload
+        $fotoFile = $this->request->getFile('foto');
+        if ($fotoFile && $fotoFile->isValid() && !$fotoFile->hasMoved()) {
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            $extension = strtolower($fotoFile->getExtension());
+            if (in_array($extension, $allowedExtensions, true) && $fotoFile->getSize() <= 2 * 1024 * 1024) {
+                if (!is_dir(ROOTPATH . 'public/uploads/pelatihan/foto')) {
+                    mkdir(ROOTPATH . 'public/uploads/pelatihan/foto', 0777, true);
+                }
+                $namaPejabat = preg_replace('/[^A-Za-z0-9]/', '_', $this->request->getPost('nama_pejabat') ?: 'Narasumber');
+                $newName = "Foto_{$namaPejabat}_" . date('Ymd_His') . "." . $extension;
+                $fotoFile->move(ROOTPATH . 'public/uploads/pelatihan/foto', $newName);
+                $data['foto'] = 'uploads/pelatihan/foto/' . $newName;
+            }
+        }
+
         if ($id) {
             $this->pejabatModel->update($id, $data);
             $msg = 'Pejabat penandatangan berhasil diperbarui.';
         } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
             $this->pejabatModel->insert($data);
             $msg = 'Pejabat penandatangan berhasil ditambahkan.';
         }
