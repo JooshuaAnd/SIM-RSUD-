@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# 1. System dependencies
+# 1. Install system dependencies
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -12,62 +12,67 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. PHP extensions untuk CI4
+# 2. Install PHP extensions untuk CI4
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 3. Enable Apache rewrite
+# 3. Disable mpm_event & mpm_worker, lalu pastikan prefork aktif (BUILD TIME)
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork
+
+# 4. Validasi Build Time
+RUN echo "=== DIAGNOSTIK BUILD: MPM AKTIF ===" \
+    && ls -la /etc/apache2/mods-enabled | grep mpm
+
+# 5. Enable Apache rewrite
 RUN a2enmod rewrite
 
-# 4. Set CodeIgniter DocumentRoot (Tanpa menyentuh konfigurasi port atau MPM)
+# 6. Set CodeIgniter DocumentRoot (mengubah konfigurasi bawaan secara aman tanpa echo manual)
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN echo '<Directory /var/www/html/public>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/apache2.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 5. Working Directory & Composer
+# 7. Working Directory & Composer
 WORKDIR /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# 6. Permissions
+# 8. Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
 EXPOSE 80
 
-# 7. EXHAUSTIVE RUNTIME DIAGNOSTIC WRAPPER
+# 9. RUNTIME SCRIPT (AUTO-HEAL & DIAGNOSTIC)
 RUN printf '#!/bin/bash\n\
-echo "=================================================="\n\
-echo " INVESTIGASI ROOT CAUSE APACHE RUNTIME"\n\
-echo "=================================================="\n\
+echo "=========================================="\n\
+echo "=== APACHE RUNTIME DIAGNOSTIC & HEAL ==="\n\
+echo "=========================================="\n\
+echo "[*] Modul MPM di mods-enabled saat runtime:"\n\
+ls -la /etc/apache2/mods-enabled | grep mpm || true\n\
 \n\
-echo "--- 1. SEMUA FILE KONFIGURASI APACHE ---"\n\
-find /etc/apache2 -type f -name "*.conf" -print || true\n\
+# Auto-Heal: Deteksi jika ada mpm_event atau mpm_worker yang menyusup masuk saat runtime\n\
+if ls /etc/apache2/mods-enabled/mpm_*.load | wc -l | grep -v "^1$" > /dev/null; then\n\
+    echo "[!] PERINGATAN: Ditemukan lebih dari satu MPM! Melakukan AUTO-HEAL..."\n\
+    rm -f /etc/apache2/mods-enabled/mpm_event.load\n\
+    rm -f /etc/apache2/mods-enabled/mpm_event.conf\n\
+    rm -f /etc/apache2/mods-enabled/mpm_worker.load\n\
+    rm -f /etc/apache2/mods-enabled/mpm_worker.conf\n\
+    a2enmod mpm_prefork\n\
+    echo "[+] AUTO-HEAL selesai. Modul MPM aktif saat ini:"\n\
+    ls -la /etc/apache2/mods-enabled | grep mpm\n\
+else\n\
+    echo "[+] MPM aman (hanya 1 modul aktif)."\n\
+fi\n\
 \n\
-echo "--- 2. GREP SEMUA KEYWORD MPM ---"\n\
-grep -Ri "mpm" /etc/apache2 || true\n\
-\n\
-echo "--- 3. GREP SEMUA LOADMODULE ---"\n\
-grep -R "LoadModule" /etc/apache2 || true\n\
-\n\
-echo "--- 4. SYNTAX TEST (apache2ctl -t) ---"\n\
-apache2ctl -t || true\n\
-\n\
-echo "--- 5. LOADED MODULES (apache2ctl -M) ---"\n\
+echo "--- LOADED MODULES (apache2ctl -M) ---"\n\
 apache2ctl -M 2>/dev/null | grep mpm || true\n\
 \n\
-echo "--- 6. VIRTUAL HOSTS (apache2ctl -S) ---"\n\
-apache2ctl -S || true\n\
-\n\
-echo "=================================================="\n\
-echo " STARTING APACHE-FOREGROUND"\n\
-echo "=================================================="\n\
+echo "=========================================="\n\
+echo "=== STARTING APACHE ==="\n\
+echo "=========================================="\n\
 exec apache2-foreground\n' > /usr/local/bin/start-apache.sh \
 && chmod +x /usr/local/bin/start-apache.sh
 
-# 8. Start Container
 CMD ["/usr/local/bin/start-apache.sh"]
