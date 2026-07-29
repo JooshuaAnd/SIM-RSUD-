@@ -98,8 +98,9 @@
                             <div class="col-md-12">
                                 <label class="form-label small fw-bold" id="label_dokumen_utama">DOKUMEN SERTIFIKAT / BUKTI</label>
                                 <?php if (!empty($cert['file_path'])): ?>
-                                    <div class="mb-2">
-                                        <a href="<?= base_url($cert['file_path']) ?>" target="_blank" class="badge bg-primary rounded-pill px-3 py-2"><i class="fas fa-eye me-1"></i> Lihat File Saat Ini</a>
+                                    <div class="mb-3">
+                                        <div class="fw-bold mb-2">Pratinjau Dokumen Saat Ini:</div>
+                                        <?= renderPelatihanFilePreview($cert['file_path'], 'Sertifikat', base_url($cert['file_path'])) ?>
                                     </div>
                                 <?php endif; ?>
                                 <div class="bg-light p-4 rounded-4 border-2 border-dashed text-center mb-3">
@@ -112,8 +113,9 @@
                             <div id="container_surat_tugas" class="col-md-12 <?= ($cert['jenis_dokumen'] ?? '') == 'Surat Tugas' ? '' : 'd-none' ?>">
                                 <label class="form-label small fw-bold text-danger">UNGGAH SURAT TUGAS BARU</label>
                                 <?php if (!empty($cert['surat_tugas_path'])): ?>
-                                    <div class="mb-2">
-                                        <a href="<?= base_url($cert['surat_tugas_path']) ?>" target="_blank" class="badge bg-danger rounded-pill px-3 py-2"><i class="fas fa-eye me-1"></i> Lihat File Surat Tugas Saat Ini</a>
+                                    <div class="mb-3">
+                                        <div class="fw-bold mb-2 text-danger">Pratinjau Surat Tugas Saat Ini:</div>
+                                        <?= renderPelatihanFilePreview($cert['surat_tugas_path'], 'Surat Tugas', base_url($cert['surat_tugas_path'])) ?>
                                     </div>
                                 <?php endif; ?>
                                 <div class="bg-danger bg-opacity-10 p-4 rounded-4 border-2 border-dashed text-center mb-3 border-danger">

@@ -145,54 +145,16 @@ class Certificate extends BaseController
         $cert = $this->certModel->where('id', $id)->where('user_id', $userId)->first();
         if (!$cert) return redirect()->to('pelatihan/peserta/sertifikat')->with('error', 'Sertifikat tidak ditemukan.');
 
-        $categories = [
-            'pembelajaran' => [
-                'Peserta Seminar',
-                'Moderator Pada Seminar / Webinar',
-                'Peserta Konferensi/Simposium',
-                'Pembicara/ Narasumber dalam kegiatan Konferensi/Simposium',
-                'Moderator Konferensi/Simposium',
-                'Pembicara/Narasumber dalam Kegiatan Seminar',
-                'Peserta Pelatihan/Workshop',
-                'Pembicara/Narasumber dalam kegiatan Pelatihan/Workshop'
-            ],
-            'pelayanan' => [
-                'Program penanggulangan TBC',
-                'Program pemeriksaan kesehatan gratis (PKG)',
-                'Pemeriksaan/Diagnosis',
-                'Pemeriksaan Laboratorium / penunjang lainnya',
-                'Melakukan tindakan Intervensi keprofesi-an tertentu',
-                'pelayanan Administratif Keprofesian',
-                'Pemberian Pelayanan Keprofesian tertentu',
-                'Melakukan penapisan/pemeriksaan kesehatan(MCU)/pemeriksaan penunjang lainya yang mendukung',
-                'Membuat Ekspertise di bidang keprofesiannya',
-                'Pembuatan Visum etrepertum/Surat keterangan untuk kepentingan hukum Medikolegal',
-                'Kegiatan yang berhubungan dengan medikolegal/keterangan ahli/saksi ahli/beracara',
-                'pengamatan epidemilogi(surveilance)',
-                'Penanggulangan Kejadian Luar Biasa (KLB)/Wabah/Bencana',
-                'Laporan kasus baik ilmiah maupun keprofesian',
-                'Pendidikan lanjut tidak sejalur dengan gelar',
-                'Pendidikan Lanjut Sejalur/keprofesian dengan gelar',
-                'Pendidikan lanjut tanpa gelar',
-                'penelitian',
-                'Publikasi',
-                'Mengikuti diskusi kasus internal',
-                'Kegiatan Manajerial pelayanan kesehatan',
-                'Kegiatan lain berkaitan dengan keprofesian'
-            ],
-            'pengabdian' => [
-                'Program pengabdian penanggulangan TBC',
-                'Program pengabdian pemeriksaan kesehatan gratis (PKG)',
-                'Kegiatan pelayanan medis, pengobatan massal untuk masyarakat',
-                'Penyuluhan kesehatan/edukasi medis keprofesian',
-                'Penugasan (Khusus) pemerintah',
-                'Keterlibatan dalam tim khusus (relawan bencana, tim haji dll)',
-                'Terlibat dalam organisasi keilmuan atau organisasi masyarakat',
-                'Penyuluhan melalui media Sosial',
-                'Narasumber rubrik kesehatan/wawancara/edukasi di TV/Media massa'
-            ]
-        ];
+        $kategoriModel = new \App\Models\Pelatihan\MasterKategoriSkpPelatihanModel();
+        $allKategori = $kategoriModel->orderBy('ranah', 'ASC')->orderBy('nama_kategori', 'ASC')->findAll();
 
+        $categories = [];
+        foreach ($allKategori as $k) {
+            $ranahKey = strtolower($k['ranah']);
+            $categories[$ranahKey][] = $k['nama_kategori'];
+        }
+
+        helper('pelatihan');
         return view('Pelatihan/peserta/sertifikat/edit', [
             'title' => 'Edit Sertifikat Kegiatan',
             'categories' => $categories,
