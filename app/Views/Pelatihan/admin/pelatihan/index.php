@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 
@@ -102,7 +102,7 @@
     </div>
 </div>
 
-<?= $this->include('pelatihan/admin/pelatihan/modals/form_pelatihan') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/form_pelatihan') ?>
 
 <?= $this->endSection() ?>
 

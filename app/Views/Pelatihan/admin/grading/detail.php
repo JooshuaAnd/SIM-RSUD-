@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 <?php 
 /** 
  * @var array $p 

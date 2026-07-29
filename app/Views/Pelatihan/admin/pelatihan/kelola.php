@@ -9,7 +9,7 @@ $presensi = $presensi ?? [];
 $kuesioner = $kuesioner ?? [];
 ?>
 
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 
@@ -117,21 +117,21 @@ $kuesioner = $kuesioner ?? [];
     <div class="col-lg-9">
         <div class="tab-content" id="manageTabsContent">
             
-<?= $this->include('pelatihan/admin/pelatihan/tabs/tab_materi') ?>
-<?= $this->include('pelatihan/admin/pelatihan/tabs/tab_sesi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/tabs/tab_materi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/tabs/tab_sesi') ?>
 
-<?= $this->include('pelatihan/admin/pelatihan/tabs/tab_evaluasi') ?>
-<?= $this->include('pelatihan/admin/pelatihan/tabs/tab_feedback') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/tabs/tab_evaluasi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/tabs/tab_feedback') ?>
         </div>
     </div>
 </div>
 
 <!-- Modal Tambah Materi -->
-<?= $this->include('pelatihan/admin/pelatihan/modals/kelola/modal_tambah_materi') ?>
-<?= $this->include('pelatihan/admin/pelatihan/modals/kelola/modal_edit_materi') ?>
-<?= $this->include('pelatihan/admin/pelatihan/modals/kelola/modal_kelola_quiz') ?>
-<?= $this->include('pelatihan/admin/pelatihan/modals/kelola/modal_kelola_feedback') ?>
-<?= $this->include('pelatihan/admin/pelatihan/modals/kelola/modal_preview_kuesioner') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_tambah_materi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_edit_materi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_kelola_quiz') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_kelola_feedback') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_preview_kuesioner') ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

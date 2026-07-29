@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_pengabdian_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_pengabdian_layout') ?>
 
 <?= $this->section('content') ?>
 

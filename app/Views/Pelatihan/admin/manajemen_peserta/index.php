@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 
@@ -191,9 +191,9 @@ $users_non_named = $users_non_named ?? [];
     </div>
 </div>
 
-<?= $this->include('pelatihan/admin/manajemen_peserta/modals/modal_detail_user') ?>
-<?= $this->include('pelatihan/admin/manajemen_peserta/modals/modal_registrasi') ?>
-<?= $this->include('pelatihan/admin/manajemen_peserta/modals/modal_edit_user') ?>
+<?= $this->include('Pelatihan/admin/manajemen_peserta/modals/modal_detail_user') ?>
+<?= $this->include('Pelatihan/admin/manajemen_peserta/modals/modal_registrasi') ?>
+<?= $this->include('Pelatihan/admin/manajemen_peserta/modals/modal_edit_user') ?>
 
 <?= $this->endSection() ?>
 

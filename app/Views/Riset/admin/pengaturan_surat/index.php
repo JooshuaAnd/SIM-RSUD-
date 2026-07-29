@@ -1,4 +1,4 @@
-<?= $this->extend('riset/admin/layout/template') ?>
+<?= $this->extend('Riset/admin/layout/template') ?>
 
 <?= $this->section('content') ?>
 <div class="container-fluid">

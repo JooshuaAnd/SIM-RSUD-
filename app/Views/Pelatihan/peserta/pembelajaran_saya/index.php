@@ -1,4 +1,4 @@
-<?php echo $this->extend('pelatihan/layout/peserta_layout'); ?>
+<?php echo $this->extend('Pelatihan/layout/peserta_layout'); ?>
 <?php echo $this->section('content'); ?>
 <?php
 /**

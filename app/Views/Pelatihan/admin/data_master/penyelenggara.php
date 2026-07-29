@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 <div class="card border-0 shadow-sm rounded-lg overflow-hidden mt-1">

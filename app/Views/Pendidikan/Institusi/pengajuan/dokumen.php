@@ -1,5 +1,5 @@
-<?= $this->include('pendidikan/institusi/layout/header') ?>
-<?= $this->include('pendidikan/institusi/layout/sidebar') ?>
+<?= $this->include('Pendidikan/Institusi/layout/header') ?>
+<?= $this->include('Pendidikan/Institusi/layout/sidebar') ?>
 
 <div class="row">
     <div class="col-12 mb-4">
@@ -113,4 +113,4 @@
     </div>
 </form>
 
-<?= $this->include('pendidikan/institusi/layout/footer') ?>
+<?= $this->include('Pendidikan/Institusi/layout/footer') ?>

@@ -46,11 +46,6 @@ if (getcwd() . DIRECTORY_SEPARATOR !== FCPATH) {
  * and fires up an environment-specific bootstrapping.
  */
 
-// Force Development Environment for Debugging
-if (! isset($_SERVER['CI_ENVIRONMENT'])) {
-    $_SERVER['CI_ENVIRONMENT'] = 'development';
-}
-
 // LOAD OUR PATHS CONFIG FILE
 // This is the line that might need to be changed, depending on your folder structure.
 require FCPATH . '../app/Config/Paths.php';

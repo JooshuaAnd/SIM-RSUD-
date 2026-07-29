@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 <div class="row align-items-center mb-1"></div>

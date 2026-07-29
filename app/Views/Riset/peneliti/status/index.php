@@ -5,7 +5,7 @@
  * @var array<array{id: string, judul: string, status: string, tanggal: string}> $publikasi
  */
 ?>
-<?= $this->extend('riset/peneliti/layout/template') ?>
+<?= $this->extend('Riset/peneliti/layout/template') ?>
 
 <?= $this->section('content') ?>
 

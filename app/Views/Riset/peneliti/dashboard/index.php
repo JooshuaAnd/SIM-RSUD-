@@ -13,7 +13,7 @@ $bulanIndo = [
     '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
 ];
 ?>
-<?= $this->extend('riset/peneliti/layout/template') ?>
+<?= $this->extend('Riset/peneliti/layout/template') ?>
 
 <?= $this->section('content') ?>
 

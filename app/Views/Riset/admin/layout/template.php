@@ -1,6 +1,6 @@
-<?= $this->include('riset/admin/layout/header') ?>
+<?= $this->include('Riset/admin/layout/header') ?>
 
-<?= $this->include('riset/admin/layout/sidebar') ?>
+<?= $this->include('Riset/admin/layout/sidebar') ?>
 
 <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
     <div class="d-flex align-items-center">
@@ -58,4 +58,4 @@
 
 <?= $this->renderSection('content') ?>
 
-<?= $this->include('riset/admin/layout/footer') ?>
+<?= $this->include('Riset/admin/layout/footer') ?>

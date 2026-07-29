@@ -1,7 +1,7 @@
-<?= $this->include('riset/peneliti/layout/header') ?>
+<?= $this->include('Riset/peneliti/layout/header') ?>
 
-<?= $this->include('riset/peneliti/layout/sidebar') ?>
+<?= $this->include('Riset/peneliti/layout/sidebar') ?>
 
 <?= $this->renderSection('content') ?>
 
-<?= $this->include('riset/peneliti/layout/footer') ?>
+<?= $this->include('Riset/peneliti/layout/footer') ?>

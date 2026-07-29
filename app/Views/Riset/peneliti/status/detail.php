@@ -3,7 +3,7 @@
  * @var array $data
  */
 ?>
-<?= $this->extend('riset/peneliti/layout/template') ?>
+<?= $this->extend('Riset/peneliti/layout/template') ?>
 
 <?= $this->section('content') ?>
 

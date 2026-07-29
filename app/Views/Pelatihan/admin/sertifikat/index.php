@@ -1,4 +1,4 @@
-<?= $this->extend('pelatihan/layout/admin_layout') ?>
+<?= $this->extend('Pelatihan/layout/admin_layout') ?>
 
 <?= $this->section('content') ?>
 
@@ -473,7 +473,7 @@ $templates = $templates ?? [];
                     $showTtd = true;
                     $showRiwayat = true;
                     ?>
-                    <?= $this->include('pelatihan/admin/_partials/form_pejabat_fields') ?>
+                    <?= $this->include('Pelatihan/admin/_partials/form_pejabat_fields') ?>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
