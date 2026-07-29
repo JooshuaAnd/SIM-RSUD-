@@ -97,7 +97,11 @@ try {
         }
 
         /* Visibility Fixes */
-        .text-muted {
+        .glass-wrapper-global .text-muted,
+        .glass-card-global .text-muted,
+        .glass-wrapper .text-muted,
+        .glass-card .text-muted,
+        .detail-header .text-muted {
             color: #ffffff !important;
             opacity: 0.85 !important;
         }
