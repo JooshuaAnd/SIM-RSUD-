@@ -148,14 +148,15 @@ if (!function_exists('renderPelatihanFilePreview')) {
     }
 
     .content-card {
-        background: white;
+        background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
         border-radius: 24px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        padding: 50px;
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.3);
+        padding: 40px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        border: 1px solid #f1f5f9;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: white;
     }
 
     .material-viewer {
@@ -295,6 +296,12 @@ if (!function_exists('renderPelatihanFilePreview')) {
         margin-bottom: 30px;
     }
 
+    .rating-row > label {
+        color: #ce2127 !important;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+    }
+
     .rating-options {
         display: flex;
         gap: 10px;
@@ -313,27 +320,28 @@ if (!function_exists('renderPelatihanFilePreview')) {
     .rating-btn label {
         display: block;
         padding: 12px;
-        background: #f8fafc;
+        background: rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s;
-        border: 2px solid #edf2f7;
+        border: 2px solid rgba(255, 255, 255, 0.15);
         font-weight: 800;
+        color: white !important;
     }
 
     .rating-btn input:checked + label {
-        background: #fff1f2;
-        border-color: var(--primary-red);
-        color: var(--primary-red);
+        background: #ce2127;
+        border-color: #ce2127;
+        color: white !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.1);
+        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.4);
     }
 
     /* Quiz Interactivity */
     .quiz-option {
         padding: 20px;
-        background: white;
-        border: 2px solid #edf2f7;
+        background: rgba(0, 0, 0, 0.35);
+        border: 2px solid rgba(255, 255, 255, 0.15);
         border-radius: 16px;
         cursor: pointer;
         transition: all 0.2s;
@@ -341,11 +349,12 @@ if (!function_exists('renderPelatihanFilePreview')) {
         align-items: center;
         gap: 15px;
         position: relative;
+        color: white !important;
     }
 
     .quiz-option:hover {
-        border-color: var(--primary-red);
-        background: #fff1f2;
+        border-color: #ce2127 !important;
+        background: rgba(255, 255, 255, 0.08);
     }
 
     .quiz-option input {
@@ -353,16 +362,16 @@ if (!function_exists('renderPelatihanFilePreview')) {
     }
 
     .quiz-option.selected {
-        border-color: var(--primary-red);
-        background: #fff1f2;
-        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.1);
+        border-color: #ce2127 !important;
+        background: rgba(206, 33, 39, 0.25);
+        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.3);
     }
 
     .quiz-option-circle {
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        border: 2px solid #cbd5e0;
+        border: 2px solid rgba(255, 255, 255, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -370,8 +379,8 @@ if (!function_exists('renderPelatihanFilePreview')) {
     }
 
     .quiz-option.selected .quiz-option-circle {
-        border-color: var(--primary-red);
-        background: var(--primary-red);
+        border-color: #ce2127;
+        background: #ce2127;
     }
 
     .quiz-option.selected .quiz-option-circle::after {
@@ -475,450 +484,277 @@ if (!function_exists('renderPelatihanFilePreview')) {
     <div class="learning-content">
         
         <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
                 <div>
-                    <h2 class="fw-bold mb-0 text-dark"><?= strtoupper($active_step['judul']) ?></h2>
+                    <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
                     <?php if ($active_step['tipe'] == 'presensi') : ?>
-                        <p class="text-muted small mb-0 mt-2 fw-bold"><i class="fas fa-map-marker-alt me-1 text-dark"></i> LOKASI: RSUD KOTA YOGYAKARTA</p>
+                        <p class="text-white-50 small mb-0 mt-2 fw-bold"><i class="fas fa-map-marker-alt me-1 text-warning"></i> LOKASI: RSUD KOTA YOGYAKARTA</p>
                     <?php endif; ?>
                 </div>
-                <div class="badge bg-dark text-white px-4 py-2 rounded-pill fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;"><?= strtoupper(str_replace('_', ' ', $active_step['tipe'])) ?></div>
+                <div class="badge bg-white text-dark px-4 py-2 rounded-pill fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;"><?= strtoupper(str_replace('_', ' ', $active_step['tipe'])) ?></div>
             </div>
 
-            <?php if ($active_step['tipe'] == 'presensi') : ?>
+            <?php if ($active_step['tipe'] == 'presensi' || $active_step['tipe'] == 'sesi') : ?>
                 <?php
-                    $presensiOpen = isset($active_step['available']) ? (bool)$active_step['available'] : true;
-                    $presensiOpenAt = !empty($active_step['open_at']) ? date('d M Y H:i', strtotime($active_step['open_at'])) : null;
-                    $presensiCloseAt = !empty($active_step['close_at']) ? date('d M Y H:i', strtotime($active_step['close_at'])) : null;
-                    $nowLabel = date('d M Y | H:i:s');
-                ?>
-                <div class="text-center py-4 animate__animated animate__fadeIn">
-                    <?php
-                        $presensiSesiId = $active_step['sesi_id'] ?? 0;
-                        $materiForPresensi = array_values(array_filter($materiList ?? [], fn($m) => (int)($m['sesi_id'] ?? 0) === (int)$presensiSesiId));
-                        $narasumberForPresensi = array_values(array_filter($narasumberList ?? [], fn($n) => (int)($n['sesi_id'] ?? 0) === (int)$presensiSesiId));
-                        $penyelenggaraForPresensi = array_values(array_filter($penyelenggaraList ?? [], fn($p) => (int)($p['sesi_id'] ?? 0) === (int)$presensiSesiId));
-                        $presensiDatePassed = !empty($active_step['close_at']) && $nowTs > strtotime($active_step['close_at']);
-                    ?>
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center justify-content-center gap-2 mb-4 flex-wrap">
-                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-bold border border-danger border-opacity-25">
-                                <i class="fas fa-users me-1"></i> SESI TATAP MUKA
-                            </span>
-                            <span class="badge <?= $presensiOpen ? 'bg-success' : 'bg-danger' ?> px-3 py-2 rounded-pill fw-bold border border-opacity-25">
-                                <i class="fas <?= $presensiOpen ? 'fa-door-open' : 'fa-lock' ?> me-1"></i> <?= $presensiOpen ? 'SESI DIBUKA' : 'SESI DITUTUP' ?>
-                            </span>
-                        </div>
-
-                        <!-- Single Info Card -->
-                        <div class="card bg-white border-0 p-4 rounded-4 shadow-sm mx-auto text-start" style="max-width: 600px;">
-                            <!-- Jadwal -->
-                            <div class="mb-3 pb-3 border-bottom">
-                                <div class="fw-bold text-secondary small mb-2 text-uppercase"><i class="fas fa-calendar-alt me-1"></i> Jadwal Pelaksanaan</div>
-                                <div class="row g-1 small">
-                                    <div class="col-4 text-muted fw-bold">Tanggal</div>
-                                    <div class="col-8 text-dark fw-bold">: <?= !empty($active_step['tanggal']) ? tanggal_indo($active_step['tanggal']) : '-' ?></div>
-                                    <div class="col-4 text-muted fw-bold">Jam Sesi</div>
-                                    <div class="col-8 text-dark fw-bold">: <?= !empty($active_step['waktu']) ? date('H:i', strtotime($active_step['waktu'])) : '00:00' ?> s.d <?= !empty($active_step['jam_tutup']) ? date('H:i', strtotime($active_step['jam_tutup'])) : 'Selesai' ?> WIB</div>
-                                    <?php if (!empty($active_step['tempat'])): ?>
-                                        <div class="col-4 text-muted fw-bold">Lokasi</div>
-                                        <div class="col-8 text-dark fw-bold">: <?= esc($active_step['lokasi_ruang'] ? $active_step['lokasi_ruang'].', ' : '').esc($active_step['tempat']) ?></div>
-                                    <?php endif; ?>
-                                    <?php if (!empty($active_step['alamat'])): ?>
-                                        <div class="col-4 text-muted fw-bold">Alamat</div>
-                                        <div class="col-8 text-dark" style="font-size:0.8rem;">: <?= esc($active_step['alamat']) ?></div>
-                                    <?php endif; ?>
-                                    <?php if (!empty($active_step['maps_url'])): ?>
-                                        <div class="col-4 text-muted fw-bold">Maps</div>
-                                        <div class="col-8"><a href="<?= $active_step['maps_url'] ?>" target="_blank" class="text-primary fw-bold small text-decoration-none"><i class="fas fa-map-marked-alt me-1"></i> Lihat Maps</a></div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <!-- Materi -->
-                            <?php if (!empty($materiForPresensi)): ?>
-                            <div class="mb-3 pb-3 border-bottom">
-                                <div class="fw-bold text-secondary small mb-2 text-uppercase"><i class="fas fa-book me-1"></i> Materi Pembelajaran</div>
-                                <?php foreach ($materiForPresensi as $mPr): ?>
-                                    <div class="d-flex align-items-start gap-2 mb-1">
-                                        <i class="fas fa-file-alt text-primary mt-1" style="font-size:0.7rem;"></i>
-                                        <span class="text-dark small fw-bold"><?= esc($mPr['judul']) ?></span>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <?php endif; ?>
-
-                            <!-- Narasumber & Penyelenggara -->
-                            <?php if (!empty($narasumberForPresensi) || !empty($penyelenggaraForPresensi)): ?>
-                            <div class="mb-0">
-                                <?php if (!empty($narasumberForPresensi)): ?>
-                                <div class="mb-2">
-                                    <div class="fw-bold text-secondary small mb-1 text-uppercase"><i class="fas fa-user-tie me-1"></i> Narasumber</div>
-                                    <?php foreach ($narasumberForPresensi as $nPr): ?>
-                                        <div class="text-dark small fw-bold ms-3">• <?= esc(($nPr['gelar_depan'] ? $nPr['gelar_depan'].' ' : '').$nPr['nama_pejabat'].($nPr['gelar_belakang'] ? ', '.$nPr['gelar_belakang'] : '')) ?></div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php endif; ?>
-                                <?php if (!empty($penyelenggaraForPresensi)): ?>
-                                <div class="mb-0">
-                                    <div class="fw-bold text-secondary small mb-1 text-uppercase"><i class="fas fa-building me-1"></i> Penyelenggara</div>
-                                    <?php foreach ($penyelenggaraForPresensi as $pPr): ?>
-                                        <div class="text-dark small fw-bold ms-3">• <?= esc($pPr['nama']) ?></div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                    $sessionOpen = isset($active_step['available']) ? (bool)$active_step['available'] : true;
+                    $currSesiId = $active_step['sesi_id'] ?? 0;
+                    $statusHadirSesi = $active_step['status_hadir'] ?? ($presensiStatusList[$currSesiId] ?? null);
+                    $isAlfaSesi = ($statusHadirSesi === 'Alfa');
+                    $isHadirSesi = ($statusHadirSesi === 'Hadir');
+                    $isIzinSesi = ($statusHadirSesi === 'Izin');
                     
-                    <?php
-                        $statusHadirPresensi = $active_step['status_hadir'] ?? null;
-                        $isAlfaPresensi = ($statusHadirPresensi === 'Alfa');
-                    ?>
-                    <?php if (isset($active_step['is_attended']) && $active_step['is_attended'] && $isAlfaPresensi && $presensiOpen): ?>
-                        <!-- Alfa tapi sesi masih buka: bisa override presensi sendiri -->
-                        <div class="text-center">
-                            <div class="mb-3"><span class="badge bg-danger px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA</span></div>
-                            <p class="text-danger small fw-bold">Status Anda saat ini ALFA. Sesi masih buka — Anda dapat presensi sekarang untuk mengubah status.</p>
-                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id) ?><?= isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '' ?>" class="btn px-5 py-4 rounded-4 shadow-lg fw-bold fs-5 border-0 hover-scale" style="background: #0f766e !important; color: white !important; min-width: 300px;">
-                                PRESENSI SEKARANG <i class="fas fa-check-circle ms-2 text-warning"></i>
-                            </a>
+                    $tipeSesiVal = strtolower($active_step['tipe_sesi'] ?? ($active_step['tipe'] == 'presensi' ? 'offline' : 'online'));
+                    if ($tipeSesiVal === 'offline') {
+                        $badgeTipeText = 'SESI OFFLINE (TATAP MUKA)';
+                        $badgeTipeIcon = 'fa-users';
+                        $badgeTipeClass = 'bg-danger text-white';
+                    } elseif ($tipeSesiVal === 'hybrid') {
+                        $badgeTipeText = 'SESI HYBRID';
+                        $badgeTipeIcon = 'fa-headset';
+                        $badgeTipeClass = 'bg-warning text-dark';
+                    } else {
+                        $badgeTipeText = 'SESI ONLINE';
+                        $badgeTipeIcon = 'fa-video';
+                        $badgeTipeClass = 'bg-info text-white';
+                    }
+
+                    $materiForSesi = array_values(array_filter($materiList ?? [], fn($m) => (int)($m['sesi_id'] ?? 0) === (int)$currSesiId));
+                    $narasumberForSesi = array_values(array_filter($narasumberList ?? [], fn($n) => (int)($n['sesi_id'] ?? 0) === (int)$currSesiId));
+                    $penyelenggaraForSesi = array_values(array_filter($penyelenggaraList ?? [], fn($p) => (int)($p['sesi_id'] ?? 0) === (int)$currSesiId));
+                ?>
+
+                <div class="py-2 animate__animated animate__fadeIn">
+                    <!-- Sesi Header Badges -->
+                    <div class="d-flex align-items-center justify-content-center gap-3 mb-4 flex-wrap">
+                        <span class="badge <?= $badgeTipeClass ?> fs-6 px-4 py-2 rounded-pill fw-bold shadow-sm">
+                            <i class="fas <?= $badgeTipeIcon ?> me-2"></i> <?= $badgeTipeText ?>
+                        </span>
+                        <span class="badge <?= $sessionOpen ? 'bg-success text-white' : 'bg-secondary text-white' ?> fs-6 px-4 py-2 rounded-pill fw-bold shadow-sm">
+                            <i class="fas <?= $sessionOpen ? 'fa-door-open' : 'fa-lock' ?> me-2"></i> <?= $sessionOpen ? 'SESI DIBUKA' : 'SESI DITUTUP' ?>
+                        </span>
+                    </div>
+
+                    <!-- Clean Structured Info Box (Full Page) -->
+                    <div class="p-4 p-md-5 rounded-4 shadow-lg w-100 text-start mb-4 text-white" style="background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
+                        
+                        <!-- 1. JADWAL PELAKSANAAN -->
+                        <div class="mb-4 pb-4 border-bottom border-white border-opacity-20">
+                            <div class="fw-bold text-uppercase fs-5 mb-3 tracking-wider" style="color: #fca5a5;">
+                                <i class="fas fa-calendar-alt me-2 text-danger"></i>JADWAL PELAKSANAAN
+                            </div>
+                            <div class="row g-3 fs-5 ps-2">
+                                <div class="col-12 col-md-4 text-white-50 fw-semibold">Tanggal</div>
+                                <div class="col-12 col-md-8 text-white fw-bold">: <?= !empty($active_step['tanggal']) ? tanggal_indo($active_step['tanggal']) : '-' ?></div>
+                                
+                                <div class="col-12 col-md-4 text-white-50 fw-semibold">Jam Sesi</div>
+                                <div class="col-12 col-md-8 text-white fw-bold">: <?= (!empty($active_step['waktu']) ? date('H:i', strtotime($active_step['waktu'])) : '00:00') ?> s.d <?= (!empty($active_step['jam_tutup']) ? date('H:i', strtotime($active_step['jam_tutup'])) : 'Selesai') ?> WIB</div>
+                                
+                                <?php if (!empty($active_step['tempat'])): ?>
+                                    <div class="col-12 col-md-4 text-white-50 fw-semibold">Tempat</div>
+                                    <div class="col-12 col-md-8 text-white fw-bold">: <?= esc($active_step['tempat']) ?></div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($active_step['lokasi_ruang'])): ?>
+                                    <div class="col-12 col-md-4 text-white-50 fw-semibold">Ruang</div>
+                                    <div class="col-12 col-md-8 text-white fw-bold">: <?= esc($active_step['lokasi_ruang']) ?></div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($active_step['alamat'])): ?>
+                                    <div class="col-12 col-md-4 text-white-50 fw-semibold">Alamat</div>
+                                    <div class="col-12 col-md-8 text-white-50 fs-6">: <?= esc($active_step['alamat']) ?></div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($active_step['maps_url'])): ?>
+                                    <div class="col-12 col-md-4 text-white-50 fw-semibold">Maps</div>
+                                    <div class="col-12 col-md-8"><a href="<?= $active_step['maps_url'] ?>" target="_blank" class="btn btn-sm btn-outline-warning text-white fw-bold fs-6 rounded-pill px-3"><i class="fas fa-map-marked-alt me-1"></i> Buka Google Maps</a></div>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    <?php elseif (isset($active_step['is_attended']) && $active_step['is_attended']): ?>
-                        <div class="text-center">
-                            <?php if ($statusHadirPresensi === 'Hadir'): ?>
-                                <div class="mb-3"><span class="badge bg-success px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS: HADIR</span></div>
-                            <?php elseif ($statusHadirPresensi === 'Izin'): ?>
-                                <div class="mb-3"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS: IZIN</span></div>
-                            <?php elseif ($isAlfaPresensi): ?>
-                                <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA</span></div>
-                                <p class="text-danger small fw-bold">Status kehadiran Anda tercatat ALFA. Materi pada sesi ini tidak dapat diakses.</p>
-                            <?php elseif ($statusHadirPresensi !== null): ?>
-                                <div class="mb-3"><span class="badge bg-secondary px-4 py-2 rounded-pill fs-6 fw-bold"><?= esc($statusHadirPresensi) ?></span></div>
-                            <?php endif; ?>
-                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.(isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none; min-width: 300px;">
-                                SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
+
+                        <!-- 2. LINK MEETING & PASSWORD -->
+                        <?php if ($tipeSesiVal !== 'offline' || !empty($active_step['meeting_link']) || !empty($active_step['meeting_pass'])): ?>
+                        <div class="mb-4 pb-4 border-bottom border-white border-opacity-20">
+                            <div class="fw-bold text-uppercase fs-5 mb-3 tracking-wider" style="color: #67e8f9;">
+                                <i class="fas fa-video me-2"></i>LINK MEETING &amp; PASSCODE
+                            </div>
+                            <div class="ps-2 fs-5">
+                                <?php if (!empty($active_step['meeting_link'])): ?>
+                                    <div class="mb-3">
+                                        <a href="<?= esc($active_step['meeting_link']) ?>" target="_blank" class="btn btn-info text-white fw-bold fs-5 rounded-pill px-4 py-2 shadow-lg">
+                                            <i class="fas fa-external-link-alt me-2"></i> Buka Link Meeting
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="text-white fw-bold mt-2 d-flex align-items-center flex-wrap gap-2 fs-5">
+                                    <span class="text-white-50 fw-semibold">Password / Passcode:</span>
+                                    <?php if (!empty($active_step['meeting_pass'])): ?>
+                                        <span class="badge bg-warning text-dark fs-5 fw-extrabold px-4 py-2 rounded-pill shadow-sm border border-warning">
+                                            <i class="fas fa-key me-1"></i> <?= esc($active_step['meeting_pass']) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-white-50 fs-6 fst-italic">(Tidak ada passcode)</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
-                    <?php elseif ($presensiOpen): ?>
-                        <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id) ?><?= isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '' ?>" class="btn px-5 py-4 rounded-4 shadow-lg fw-bold fs-5 border-0 hover-scale" style="background: #0f766e !important; color: white !important; min-width: 300px;">
-                            PRESENSI SEKARANG <i class="fas fa-check-circle ms-2 text-warning"></i>
-                        </a>
-                    <?php else: ?>
-                        <?php if ($statusHadirPresensi === 'Alfa'): ?>
-                            <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA (dipresensi admin)</span></div>
-                            <p class="text-danger small fw-bold">Status kehadiran Anda tercatat ALFA. Materi pada sesi ini tidak dapat diakses.</p>
-                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.(isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2" style="background: var(--primary-red); color: white; border: none; min-width: 300px;">
+                        <?php endif; ?>
+
+                        <!-- 3. MATERI PEMBELAJARAN -->
+                        <div class="mb-4 pb-4 border-bottom border-white border-opacity-20">
+                            <div class="fw-bold text-uppercase fs-5 mb-3 tracking-wider" style="color: #fde047;">
+                                <i class="fas fa-book me-2"></i>MATERI PEMBELAJARAN
+                            </div>
+                            <div class="ps-2 fs-5">
+                                <?php if (!empty($materiForSesi)): ?>
+                                    <?php foreach ($materiForSesi as $mIndex => $mSesi): ?>
+                                        <div class="mb-3 pb-3 <?= ($mIndex < count($materiForSesi) - 1) ? 'border-bottom border-white border-opacity-10' : '' ?>">
+                                            <div class="fw-bold text-white fs-5"><i class="fas fa-file-alt text-warning me-2"></i><?= esc($mSesi['judul']) ?></div>
+                                            <?php if (!empty($mSesi['deskripsi'])): ?>
+                                                <div class="text-white-50 fs-6 ps-4 mt-1"><?= esc(strip_tags($mSesi['deskripsi'])) ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="text-white-50 fs-6 fst-italic">Belum ada materi terdaftar pada sesi ini.</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- 4. NARASUMBER -->
+                        <div class="mb-4 pb-4 border-bottom border-white border-opacity-20">
+                            <div class="fw-bold text-uppercase fs-5 mb-3 tracking-wider" style="color: #86efac;">
+                                <i class="fas fa-user-tie me-2"></i>NARASUMBER
+                            </div>
+                            <div class="ps-2 fs-5 text-white fw-bold">
+                                <?php if (!empty($narasumberForSesi)): ?>
+                                    <?php foreach ($narasumberForSesi as $nSesi): ?>
+                                        <div class="mb-1">• <?= esc(($nSesi['gelar_depan'] ? $nSesi['gelar_depan'].' ' : '').$nSesi['nama_pejabat'].($nSesi['gelar_belakang'] ? ', '.$nSesi['gelar_belakang'] : '')) ?></div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="text-white-50 fs-6 fw-normal fst-italic">-</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- 5. PENYELENGGARA -->
+                        <div class="mb-0">
+                            <div class="fw-bold text-uppercase fs-5 mb-3 tracking-wider" style="color: #93c5fd;">
+                                <i class="fas fa-building me-2"></i>PENYELENGGARA
+                            </div>
+                            <div class="ps-2 fs-5 text-white fw-bold">
+                                <?php if (!empty($penyelenggaraForSesi)): ?>
+                                    <?php foreach ($penyelenggaraForSesi as $pSesi): ?>
+                                        <div class="mb-1">• <?= esc($pSesi['nama']) ?></div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="text-white-50 fs-6 fw-normal fst-italic">-</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Presensi & Actions Footer -->
+                    <div class="w-100 text-center">
+                        <?php if ($isAlfaSesi && !$sessionOpen): ?>
+                            <!-- SESI TERLEWAT & STATUS ALFA -->
+                            <div class="alert bg-danger bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-danger text-white mb-3">
+                                <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS KEHADIRAN: ALFA</span></div>
+                                <h5 class="fw-bold text-white mb-1">Sesi ini sudah terlewat</h5>
+                                <p class="text-white-50 fs-6 mb-0">Status kehadiran Anda tercatat <strong class="text-warning">ALFA</strong>. Isi materi dan evaluasi pada sesi ini tidak dapat diakses.</p>
+                            </div>
+                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.$nextSessionStepId.(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0" style="background: #991b1b; color: white;">
                                 LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                             </a>
-                        <?php elseif ($statusHadirPresensi === 'Izin'): ?>
-                            <div class="mb-2"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS: IZIN (dipresensi admin)</span></div>
-                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.(isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none; min-width: 300px;">
+                        <?php elseif ($isHadirSesi && !$sessionOpen): ?>
+                            <!-- SESI TERLEWAT & STATUS HADIR -->
+                            <div class="alert bg-success bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-success text-white mb-3">
+                                <div class="mb-2"><span class="badge bg-success px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS KEHADIRAN: HADIR</span></div>
+                                <h5 class="fw-bold text-white mb-0">Sesi ini telah selesai (Status Hadir)</h5>
+                            </div>
+                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.($active_id + 1).(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 animate__animated animate__pulse animate__infinite" style="background: #991b1b; color: white;">
                                 SELESAI &amp; LANJUT KE MATERI <i class="fas fa-arrow-right ms-2"></i>
                             </a>
-                        <?php elseif ($statusHadirPresensi === 'Hadir'): ?>
-                            <div class="mb-2"><span class="badge bg-success px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS: HADIR (dipresensi admin)</span></div>
-                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.(isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none; min-width: 300px;">
+                        <?php elseif ($isIzinSesi && !$sessionOpen): ?>
+                            <!-- SESI TERLEWAT & STATUS IZIN -->
+                            <div class="alert bg-warning bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-warning text-white mb-3">
+                                <div class="mb-2"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS KEHADIRAN: IZIN</span></div>
+                                <h5 class="fw-bold text-white mb-0">Sesi ini telah selesai (Status Izin)</h5>
+                            </div>
+                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.($active_id + 1).(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 animate__animated animate__pulse animate__infinite" style="background: #991b1b; color: white;">
                                 SELESAI &amp; LANJUT KE MATERI <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        <?php elseif ($sessionOpen): ?>
+                            <!-- SESI MASIH DIBUKA -->
+                            <?php if ($isAlfaSesi): ?>
+                                <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA</span></div>
+                                <p class="text-warning fs-6 fw-bold mb-3">Status Anda saat ini ALFA. Sesi masih buka — presensi sekarang untuk mengubah status.</p>
+                            <?php endif; ?>
+
+                            <?php if ($tipeSesiVal !== 'offline' && !empty($active_step['meeting_link'])): ?>
+                                <a href="<?= esc($active_step['meeting_link']) ?>" target="_blank" class="btn w-100 py-3 fw-bold rounded-pill text-white shadow-lg hover-scale fs-5 mb-3 border-0 animate__animated animate__pulse animate__infinite" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;">
+                                    GABUNG MEETING <i class="fas fa-video ms-2"></i>
+                                </a>
+                            <?php endif; ?>
+
+                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?do_presensi=1'.(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; color: white !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;">
+                                PRESENSI SEKARANG <i class="fas fa-user-check ms-2"></i>
                             </a>
                         <?php else: ?>
-                            <button class="btn px-5 py-4 rounded-4 shadow-sm fw-bold fs-5 border-0" style="background: #cbd5e1 !important; color: #64748b !important; min-width: 300px; cursor: not-allowed;" disabled>
-                                PRESENSI SEKARANG <i class="fas fa-lock ms-2"></i>
-                            </button>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </div>
-
-            <?php elseif ($active_step['tipe'] == 'materi' || $active_step['tipe'] == 'sesi' || $active_step['tipe'] == 'materi_segmen') : ?>
-                <div class="material-viewer shadow-lg border-0" style="background: #0f172a; border-radius: 30px; position: relative;">
-                    <!-- Decorative Controls -->
-                    <div class="position-absolute top-0 start-0 w-100 p-3 d-flex gap-2" style="z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);">
-                        <div style="width: 12px; height: 12px; background: #ff5f56; border-radius: 50%;"></div>
-                        <div style="width: 12px; height: 12px; background: #ffbd2e; border-radius: 50%;"></div>
-                        <div style="width: 12px; height: 12px; background: #27c93f; border-radius: 50%;"></div>
-                    </div>
-                    
-                    <div class="viewer-placeholder p-5 text-center w-100">
-                        <?php 
-                        $sessionOpen = isset($active_step['available']) ? (bool)$active_step['available'] : true;
-                        if (!$sessionOpen): ?>
-                            <?php
-                                $closedSesiId = $active_step['sesi_id'] ?? 0;
-                                $closedSesiStatus = isset($presensiStatusList[$closedSesiId]) ? $presensiStatusList[$closedSesiId] : ($active_step['status_hadir'] ?? null);
-                                $sesiDatePassed = !empty($active_step['close_at']) && $nowTs > strtotime($active_step['close_at']);
-                                $materiForClosed = array_values(array_filter($materiList ?? [], fn($m) => (int)($m['sesi_id'] ?? 0) === (int)$closedSesiId));
-                                $narasumberForClosed = array_values(array_filter($narasumberList ?? [], fn($n) => (int)($n['sesi_id'] ?? 0) === (int)$closedSesiId));
-                                $penyelenggaraForClosed = array_values(array_filter($penyelenggaraList ?? [], fn($p) => (int)($p['sesi_id'] ?? 0) === (int)$closedSesiId));
-                            ?>
-
-                            <!-- Session Info Card -->
-                            <div class="text-start p-4 mx-auto mb-4" style="max-width: 700px;">
-                                <!-- Tipe & Nama Sesi -->
-                                <div class="d-flex align-items-center gap-3 mb-4">
-                                    <?php if (($active_step['tipe_sesi'] ?? '') == 'online'): ?>
-                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-bold"><i class="fas fa-video me-1"></i> Online</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-2 fw-bold"><i class="fas fa-map-marker-alt me-1"></i> Offline</span>
-                                    <?php endif; ?>
-                                    <h4 class="text-white fw-bold mb-0"><?= esc($active_step['judul'] ?? '') ?></h4>
-                                </div>
-
-                                <!-- Jadwal -->
-                                <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                    <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">JADWAL PELAKSANAAN</div>
-                                    <div class="row g-2 small text-white">
-                                        <div class="col-4 text-white-50 fw-bold">Tanggal</div>
-                                        <div class="col-8 fw-bold">: <?= !empty($active_step['tanggal']) ? tanggal_indo($active_step['tanggal']) : '-' ?></div>
-                                        <div class="col-4 text-white-50 fw-bold">Jam Sesi</div>
-                                        <div class="col-8 fw-bold">: <?= !empty($active_step['waktu']) ? date('H:i', strtotime($active_step['waktu'])) : '00:00' ?> s.d <?= !empty($active_step['jam_tutup']) ? date('H:i', strtotime($active_step['jam_tutup'])) : 'Selesai' ?> WIB</div>
-                                    </div>
-                                </div>
-
-                                <!-- Detail Pelaksanaan -->
-                                <?php if (($active_step['tipe_sesi'] ?? '') == 'online'): ?>
-                                    <?php if (!empty($active_step['meeting_link'])): ?>
-                                        <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                            <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">LINK MEETING</div>
-                                            <a href="<?= $active_step['meeting_link'] ?>" target="_blank" class="text-warning fw-bold small text-decoration-none"><i class="fas fa-external-link-alt me-1"></i> Buka Link Meeting</a>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php else: ?>
-                                    <?php if (!empty($active_step['lokasi_ruang']) || !empty($active_step['tempat'])): ?>
-                                        <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                            <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">LOKASI</div>
-                                            <div class="text-white fw-bold small"><?= esc(($active_step['lokasi_ruang'] ? $active_step['lokasi_ruang'].', ' : '').$active_step['tempat']) ?></div>
-                                            <?php if (!empty($active_step['alamat'])): ?>
-                                                <div class="text-white-50 small mt-1"><?= esc($active_step['alamat']) ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($active_step['maps_url'])): ?>
-                                                <a href="<?= $active_step['maps_url'] ?>" target="_blank" class="text-warning small text-decoration-none mt-1 d-inline-block"><i class="fas fa-map-marked-alt me-1"></i> Lihat Maps</a>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-
-                                <!-- Materi -->
-                                <?php if (!empty($materiForClosed)): ?>
-                                    <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                        <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">MATERI PEMBELAJARAN</div>
-                                        <?php foreach ($materiForClosed as $mClosed): ?>
-                                            <div class="d-flex align-items-start gap-2 mb-2">
-                                                <i class="fas fa-file-alt text-warning mt-1 small"></i>
-                                                <div>
-                                                    <div class="text-white fw-bold small"><?= esc($mClosed['judul']) ?></div>
-                                                    <?php if (!empty($mClosed['deskripsi'])): ?>
-                                                        <div class="text-white-50" style="font-size: 0.8rem;"><?= esc(mb_strimwidth($mClosed['deskripsi'], 0, 120, '...')) ?></div>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Narasumber -->
-                                <?php if (!empty($narasumberForClosed)): ?>
-                                    <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                        <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">NARASUMBER</div>
-                                        <?php foreach ($narasumberForClosed as $nClosed): ?>
-                                            <div class="d-flex align-items-center gap-2 mb-2">
-                                                <i class="fas fa-user-tie text-success small"></i>
-                                                <span class="text-white fw-bold small"><?= esc(($nClosed['gelar_depan'] ? $nClosed['gelar_depan'].' ' : '').$nClosed['nama_pejabat'].($nClosed['gelar_belakang'] ? ', '.$nClosed['gelar_belakang'] : '')) ?></span>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <!-- Penyelenggara -->
-                                <?php if (!empty($penyelenggaraForClosed)): ?>
-                                    <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mb-3">
-                                        <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">PENYELENGGARA</div>
-                                        <?php foreach ($penyelenggaraForClosed as $pClosed): ?>
-                                            <div class="d-flex align-items-center gap-2 mb-2">
-                                                <i class="fas fa-building text-warning small"></i>
-                                                <span class="text-white fw-bold small"><?= esc($pClosed['nama']) ?></span>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
+                            <!-- SESI TERLEWAT TANPA STATUS PRESENSI (FALLBACK) -->
+                            <div class="alert bg-secondary bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-secondary text-white mb-3">
+                                <h5 class="fw-bold text-white-50 mb-0">Sesi ini sudah terlewat</h5>
                             </div>
-
-                            <!-- Status Message -->
-                            <div class="p-3 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-4 mx-auto mb-4" style="max-width: 500px;">
-                                <?php if ($sesiDatePassed): ?>
-                                    <?php if ($closedSesiStatus === 'Alfa'): ?>
-                                        <div class="text-center">
-                                            <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
-                                            <div class="h6 text-danger fw-bold mb-1">Sesi ini sudah terlewat</div>
-                                            <p class="text-white-50 small mb-2">Status kehadiran Anda tercatat <span class="fw-bold text-danger">ALFA</span>.</p>
-                                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?sesi_id='.$active_step['sesi_id']) ?>" class="btn btn-sm px-4 py-2 rounded-pill fw-bold" style="background: var(--primary-red); color: white;">LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-1"></i></a>
-                                        </div>
-                                    <?php elseif ($closedSesiStatus === 'Hadir'): ?>
-                                        <div class="text-center">
-                                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                            <div class="h6 text-success fw-bold mb-1">Sesi ini sudah terlewat</div>
-                                            <p class="text-white-50 small mb-2">Status kehadiran: <span class="fw-bold text-success">HADIR</span></p>
-                                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?sesi_id='.$active_step['sesi_id']) ?>" class="btn btn-sm px-4 py-2 rounded-pill fw-bold" style="background: var(--primary-red); color: white;">SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-1"></i></a>
-                                        </div>
-                                    <?php elseif ($closedSesiStatus === 'Izin'): ?>
-                                        <div class="text-center">
-                                            <i class="fas fa-exclamation-circle fa-2x text-warning mb-2"></i>
-                                            <div class="h6 text-warning fw-bold mb-1">Sesi ini sudah terlewat</div>
-                                            <p class="text-white-50 small mb-2">Status kehadiran: <span class="fw-bold text-warning">IZIN</span></p>
-                                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?sesi_id='.$active_step['sesi_id']) ?>" class="btn btn-sm px-4 py-2 rounded-pill fw-bold" style="background: var(--primary-red); color: white;">SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-1"></i></a>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="text-center">
-                                            <i class="fas fa-clock fa-2x text-white-50 mb-2"></i>
-                                            <div class="h6 text-white fw-bold mb-0">Sesi ini sudah terlewat</div>
-                                            <p class="text-white-50 small mb-0">Waktu pelaksanaan sesi ini telah berakhir.</p>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php else: ?>
-                                    <div class="text-center">
-                                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-                                        <div class="h6 text-white fw-bold mb-1">Sesi ini belum dibuka</div>
-                                        <p class="text-white-50 small mb-0">Akses akan dibuka pada <span class="fw-bold text-warning"><?= tanggal_indo($active_step['tanggal']) ?></span> pukul <span class="fw-bold text-warning"><?= !empty($active_step['waktu']) ? date('H:i', strtotime($active_step['waktu'])) : '00:00' ?> WIB</span></p>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php elseif ($active_step['tipe'] == 'sesi') : ?>
-                            <div class="card bg-white bg-opacity-10 border border-white border-opacity-25 p-4 rounded-4 shadow-sm mx-auto mb-4" style="max-width: 500px; text-align: left;">
-                                <div class="text-white-50 small fw-bold mb-2 border-bottom border-white border-opacity-10 pb-2">JADWAL PELAKSANAAN:</div>
-                                <div class="row g-2 small text-white">
-                                    <div class="col-4 text-white-50 fw-bold">Tanggal</div>
-                                    <div class="col-8 fw-bold">: <?= !empty($active_step['tanggal']) ? tanggal_indo($active_step['tanggal']) : '' ?></div>
-
-                                    <div class="col-4 text-white-50 fw-bold">Jam Sesi</div>
-                                    <div class="col-8 fw-bold">: 
-                                        <?= !empty($active_step['waktu']) ? date('H:i', strtotime($active_step['waktu'])) : '00:00' ?> s.d 
-                                        <?= !empty($active_step['jam_tutup']) ? date('H:i', strtotime($active_step['jam_tutup'])) : 'Selesai' ?> WIB
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex flex-column align-items-center gap-3">
-                                <?php
-                                    $statusHadirSesi = $active_step['status_hadir'] ?? null;
-                                    $isAlfaSesi = ($statusHadirSesi === 'Alfa');
-                                ?>
-                                <?php if (isset($active_step['is_attended']) && $active_step['is_attended'] && $isAlfaSesi && $sessionOpen): ?>
-                                    <!-- Alfa tapi sesi masih buka: bisa override presensi sendiri -->
-                                    <?php if (!empty($active_step['meeting_link'])): ?>
-                                        <a href="<?= $active_step['meeting_link'] ?>" target="_blank" class="btn btn-info w-100 py-3 fw-bold rounded-4 text-white shadow-lg hover-scale fs-5">
-                                            GABUNG MEETING <i class="fas fa-video ms-2"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                    <div class="text-center w-100">
-                                        <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA</span></div>
-                                        <p class="text-white-50 small fw-bold">Status Anda saat ini ALFA. Sesi masih buka — presensi sekarang untuk mengubah status.</p>
-                                        <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id) ?><?= isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '' ?>" class="btn w-100 py-3 rounded-4 fw-bold shadow-lg hover-scale fs-5 border-0" style="background: #0f766e !important; color: white !important;">
-                                            PRESENSI SEKARANG <i class="fas fa-user-check ms-2"></i>
-                                        </a>
-                                    </div>
-                                <?php elseif (isset($active_step['is_attended']) && $active_step['is_attended']): ?>
-                                    <?php if (!empty($active_step['meeting_link'])): ?>
-                                        <a href="<?= $active_step['meeting_link'] ?>" target="_blank" class="btn btn-info w-100 py-3 fw-bold rounded-4 text-white shadow-lg hover-scale fs-5">
-                                            GABUNG MEETING <i class="fas fa-video ms-2"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                    <div class="text-center w-100">
-                                        <?php if ($statusHadirSesi === 'Hadir'): ?>
-                                            <div class="mb-2"><span class="badge bg-success px-4 py-2 rounded-pill fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS: HADIR</span></div>
-                                        <?php elseif ($statusHadirSesi === 'Izin'): ?>
-                                            <div class="mb-2"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS: IZIN</span></div>
-                                        <?php elseif ($isAlfaSesi): ?>
-                                            <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA</span></div>
-                                            <p class="text-danger small fw-bold mt-1">Status kehadiran Anda tercatat ALFA. Materi sesi ini tidak dapat diakses.</p>
-                                        <?php endif; ?>
-                                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-3 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none;">
-                                            SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>
-                                        </a>
-                                    </div>
-                                <?php elseif ($sessionOpen): ?>
-                                    <?php if (!empty($active_step['meeting_link'])): ?>
-                                        <a href="<?= $active_step['meeting_link'] ?>" target="_blank" class="btn btn-info w-100 py-3 fw-bold rounded-4 text-white shadow-lg hover-scale fs-5">
-                                            GABUNG MEETING <i class="fas fa-video ms-2"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                    <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id) ?><?= isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '' ?>" class="btn w-100 py-3 rounded-4 fw-bold shadow-lg hover-scale fs-5 border-0" style="background: #0f766e !important; color: white !important;">
-                                        PRESENSI SEKARANG <i class="fas fa-user-check ms-2"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <?php if ($statusHadirSesi === 'Alfa'): ?>
-                                        <div class="mb-2"><span class="badge bg-danger px-4 py-2 rounded-pill fw-bold"><i class="fas fa-times-circle me-1"></i> STATUS: ALFA (dipresensi admin)</span></div>
-                                        <p class="text-white-50 small fw-bold">Materi pada sesi ini tidak dapat diakses.</p>
-                                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2" style="background: var(--primary-red); color: white; border: none;">
-                                            LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
-                                        </a>
-                                    <?php elseif ($statusHadirSesi === 'Izin'): ?>
-                                        <div class="mb-2"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS: IZIN (dipresensi admin)</span></div>
-                                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none;">
-                                            SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>
-                                        </a>
-                                    <?php elseif ($statusHadirSesi === 'Hadir'): ?>
-                                        <div class="mb-2"><span class="badge bg-success px-4 py-2 rounded-pill fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS: HADIR (dipresensi admin)</span></div>
-                                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 mt-2 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none;">
-                                            SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>
-                                        </a>
-                                    <?php else: ?>
-                                        <?php if (!empty($active_step['meeting_link'])): ?>
-                                            <button class="btn btn-secondary w-100 py-3 fw-bold rounded-4 shadow-sm fs-5 border-0" style="cursor: not-allowed;" disabled>
-                                                GABUNG MEETING <i class="fas fa-lock ms-2"></i>
-                                            </button>
-                                        <?php endif; ?>
-                                        <button class="btn btn-secondary w-100 py-3 rounded-4 fw-bold shadow-sm fs-5 border-0" style="cursor: not-allowed;" disabled>
-                                            PRESENSI SEKARANG <i class="fas fa-lock ms-2"></i>
-                                        </button>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-                        <?php elseif ($active_step['tipe'] == 'materi_segmen') : ?>
-                            <?php
-                                $sesiPresensiStatus = $presensiStatusList[$active_step['sesi_id']] ?? null;
-                                $isAlfaLocked = ($sesiPresensiStatus === 'Alfa');
-                            ?>
-                            <?php if ($isAlfaLocked): ?>
-                                <div class="text-center py-5">
-                                    <i class="fas fa-lock fa-5x text-white opacity-25 mb-4"></i>
-                                    <h3 class="fw-bold text-white mb-3">MATERI DITUTUP</h3>
-                                    <p class="text-white-50 fs-5 mb-0" style="max-width: 500px; margin: 0 auto;">Anda tidak dapat mengakses materi ini karena status kehadiran Anda pada sesi terkait tercatat <strong class="text-danger">ALFA</strong>. Silakan hubungi admin untuk informasi lebih lanjut.</p>
-                                </div>
-                            <?php else: ?>
-                            <div class="text-start p-4">
-                                <?php foreach($active_step['materi_list'] as $m): ?>
-                                    <div class="bg-white bg-opacity-10 rounded-4 p-4 mb-4 border border-white border-opacity-25">
-                                        <h4 class="fw-bold text-warning mb-2"><?= esc($m['judul']) ?></h4>
-
-                                        <?php if(!empty($m['file_path'])): ?>
-                                            <div class="mt-3 text-center bg-dark p-3 rounded-3 overflow-hidden">
-                                                <?php
-                                                    $fileUrl = base_url($m['file_path']);
-                                                    echo renderPelatihanFilePreview($m['file_path'], $m['judul'], $fileUrl);
-                                                ?>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($m['deskripsi'])): ?>
-                                            <div class="mt-3 text-white-50 lh-lg" style="font-size: 0.9rem;"><?= $m['deskripsi'] ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <?php endif; ?>
+                            <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.$nextSessionStepId.(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0" style="background: #991b1b; color: white;">
+                                LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
                         <?php endif; ?>
                     </div>
                 </div>
-
-                <?php if ($active_step['tipe'] != 'sesi') : ?>
+            <?php elseif ($active_step['tipe'] == 'materi' || $active_step['tipe'] == 'materi_segmen') : ?>
                 <?php
+                    $sesiPresensiStatus = $presensiStatusList[$active_step['sesi_id']] ?? null;
+                    $isAlfaLocked = ($sesiPresensiStatus === 'Alfa');
+                ?>
+                <?php if ($isAlfaLocked): ?>
+                    <div class="text-center py-5">
+                        <i class="fas fa-lock fa-5x text-white opacity-25 mb-4"></i>
+                        <h3 class="fw-bold text-white mb-3">MATERI DITUTUP</h3>
+                        <p class="text-white-50 fs-5 mb-0" style="max-width: 500px; margin: 0 auto;">Anda tidak dapat mengakses materi ini karena status kehadiran Anda pada sesi terkait tercatat <strong class="text-danger">ALFA</strong>. Silakan hubungi admin untuk informasi lebih lanjut.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="text-start p-4">
+                        <?php foreach($active_step['materi_list'] as $m): ?>
+                            <div class="bg-white bg-opacity-10 rounded-4 p-4 mb-4 border border-white border-opacity-25">
+                                <h4 class="fw-bold text-warning mb-2"><?= esc($m['judul']) ?></h4>
+
+                                <?php if(!empty($m['file_path'])): ?>
+                                    <div class="mt-3 text-center bg-dark p-3 rounded-3 overflow-hidden">
+                                        <?php
+                                            $fileUrl = base_url($m['file_path']);
+                                            echo renderPelatihanFilePreview($m['file_path'], $m['judul'], $fileUrl);
+                                        ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($m['deskripsi'])): ?>
+                                    <div class="mt-3 text-white-50 lh-lg" style="font-size: 0.9rem;"><?= $m['deskripsi'] ?></div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php
+                    $sessionOpen = isset($active_step['available']) ? (bool)$active_step['available'] : true;
                     $currentSesiPresensiStatus = isset($active_step['sesi_id']) ? ($presensiStatusList[$active_step['sesi_id']] ?? null) : null;
                     $isCurrentAlfaLocked = ($currentSesiPresensiStatus === 'Alfa');
+                    $targetNextStep = $isCurrentAlfaLocked ? $nextSessionStepId : ($active_id + 1);
                 ?>
-                <div class="mt-4 p-4 rounded-4 d-flex justify-content-center align-items-center" style="background: #0f172a;">
+                <div class="mt-4 p-4 rounded-4 d-flex justify-content-center align-items-center" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.15) !important;">
                     <?php if ($isCurrentAlfaLocked || $sessionOpen): ?>
-                        <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id) ?><?= isset($active_step['sesi_id']) ? '?sesi_id='.$active_step['sesi_id'] : '' ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none; flex-shrink: 0;">
-                            SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>
+                        <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.$targetNextStep.(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none; flex-shrink: 0;">
+                            <?= $isCurrentAlfaLocked ? 'LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>' : 'SELESAI &amp; LANJUT <i class="fas fa-arrow-right ms-2"></i>' ?>
                         </a>
                     <?php else: ?>
                         <button class="btn px-5 py-3 rounded-pill fw-bold shadow-sm fs-5" style="background: #475569 !important; color: #94a3b8 !important; cursor: not-allowed; border: none; flex-shrink: 0;" disabled>
@@ -926,7 +762,6 @@ if (!function_exists('renderPelatihanFilePreview')) {
                         </button>
                     <?php endif; ?>
                 </div>
-                <?php endif; ?>
 
             <?php elseif ($active_step['tipe'] == 'evaluasi_sesi') : ?>
                 <?php
@@ -944,21 +779,20 @@ if (!function_exists('renderPelatihanFilePreview')) {
                             <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                             <h5 class="fw-bold">Evaluasi Sesi Ini Sudah Dikirim</h5>
                             <p class="text-muted">Anda telah menyelesaikan evaluasi untuk sesi ini. Terima kasih atas penilaian Anda.</p>
-                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn btn-selanjutnya mt-3">LANJUT <i class="fas fa-arrow-right ms-2"></i></a>
+                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$nextSessionStepId) ?>" class="btn btn-selanjutnya mt-3">LANJUT <i class="fas fa-arrow-right ms-2"></i></a>
                         </div>
                     <?php else : ?>
                         <form id="evalSesiForm" action="<?= base_url('pelatihan/peserta/submit_evaluasi_sesi/'.$p['id']) ?>" method="POST">
                             <input type="hidden" name="sesi_id" value="<?= $sesiId ?>">
                             <input type="hidden" name="step_id" value="<?= $active_id ?>">
-
                             <div class="mb-5">
-                                <div class="d-flex align-items-center gap-4 mb-4 p-4 bg-light rounded-4 border-start border-primary border-5">
+                                <div class="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 border-start border-primary border-5 text-white" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15) !important; border-left-width: 5px !important;">
                                     <div class="bg-primary p-3 rounded-circle text-white shadow-sm">
                                         <i class="fas fa-book fa-2x"></i>
                                     </div>
                                     <div>
-                                        <div class="text-muted small fw-bold text-uppercase">Evaluasi Materi & Modul Sesi Ini</div>
-                                        <h4 class="fw-bold mb-0">Penilaian Materi & Modul Pembelajaran</h4>
+                                        <div class="text-white-50 small fw-bold text-uppercase">Evaluasi Materi & Modul Sesi Ini</div>
+                                        <h4 class="fw-bold mb-0 text-white fs-4">Penilaian Materi & Modul Pembelajaran</h4>
                                     </div>
                                 </div>
 
@@ -976,11 +810,11 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     <div class="alert alert-warning">Belum ada pertanyaan evaluasi untuk kategori Materi/Modul.</div>
                                 <?php else: ?>
                                     <?php foreach ($materiForSesi as $materi): ?>
-                                        <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border">
-                                            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-file-alt me-2 text-primary"></i> <?= esc($materi['judul']) ?></h5>
+                                        <div class="mb-4 p-4 rounded-4 shadow-sm text-white" style="background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
+                                            <h5 class="fw-bold text-white mb-3"><i class="fas fa-file-alt me-2 text-warning"></i> <?= esc($materi['judul']) ?></h5>
                                             <?php foreach ($materiQs as $q): ?>
                                                 <div class="rating-row mb-4">
-                                                    <label class="fw-bold mb-3 d-block"><?= esc($q['pertanyaan']) ?></label>
+                                                    <label class="fw-bold mb-3 d-block" style="color: #fca5a5 !important;"><?= esc($q['pertanyaan']) ?></label>
                                                     <div class="rating-options">
                                                         <?php for ($i = 1; $i <= 5; $i++): ?>
                                                             <div class="rating-btn">
@@ -1001,13 +835,13 @@ if (!function_exists('renderPelatihanFilePreview')) {
                             </div>
 
                             <div class="mb-5">
-                                <div class="d-flex align-items-center gap-4 mb-4 p-4 bg-light rounded-4 border-start border-success border-5">
+                                <div class="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 border-start border-success border-5 text-white" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15) !important; border-left-width: 5px !important;">
                                     <div class="bg-success p-3 rounded-circle text-white shadow-sm">
                                         <i class="fas fa-chalkboard-teacher fa-2x"></i>
                                     </div>
                                     <div>
-                                        <div class="text-muted small fw-bold text-uppercase">Evaluasi Narasumber</div>
-                                        <h4 class="fw-bold mb-0">Penilaian Narasumber</h4>
+                                        <div class="text-white-50 small fw-bold text-uppercase">Evaluasi Narasumber</div>
+                                        <h4 class="fw-bold mb-0 text-white fs-4">Penilaian Narasumber</h4>
                                     </div>
                                 </div>
                                 <?php
@@ -1022,11 +856,11 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     <div class="alert alert-warning">Belum ada pertanyaan evaluasi untuk kategori Narasumber.</div>
                                 <?php else: ?>
                                     <?php foreach ($narasumberForSesi as $narasumber): ?>
-                                        <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border">
-                                            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-user me-2 text-success"></i> <?= esc(($narasumber['gelar_depan'] ? $narasumber['gelar_depan'].' ' : '').$narasumber['nama_pejabat'].($narasumber['gelar_belakang'] ? ', '.$narasumber['gelar_belakang'] : '')) ?></h5>
+                                        <div class="mb-4 p-4 rounded-4 shadow-sm text-white" style="background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
+                                            <h5 class="fw-bold text-white mb-3"><i class="fas fa-user me-2 text-success"></i> <?= esc(($narasumber['gelar_depan'] ? $narasumber['gelar_depan'].' ' : '').$narasumber['nama_pejabat'].($narasumber['gelar_belakang'] ? ', '.$narasumber['gelar_belakang'] : '')) ?></h5>
                                             <?php foreach ($narasumberQs as $q): ?>
                                                 <div class="rating-row mb-4">
-                                                    <label class="fw-bold mb-3 d-block"><?= esc($q['pertanyaan']) ?></label>
+                                                    <label class="fw-bold mb-3 d-block" style="color: #fca5a5 !important;"><?= esc($q['pertanyaan']) ?></label>
                                                     <div class="rating-options">
                                                         <?php for ($i = 1; $i <= 5; $i++): ?>
                                                             <div class="rating-btn">
@@ -1047,13 +881,13 @@ if (!function_exists('renderPelatihanFilePreview')) {
                             </div>
 
                             <div class="mb-5">
-                                <div class="d-flex align-items-center gap-4 mb-4 p-4 bg-light rounded-4 border-start border-warning border-5">
+                                <div class="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 border-start border-warning border-5 text-white" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15) !important; border-left-width: 5px !important;">
                                     <div class="bg-warning p-3 rounded-circle text-dark shadow-sm">
                                         <i class="fas fa-users-cog fa-2x"></i>
                                     </div>
                                     <div>
-                                        <div class="text-muted small fw-bold text-uppercase">Evaluasi Penyelenggara</div>
-                                        <h4 class="fw-bold mb-0">Penilaian Penyelenggara</h4>
+                                        <div class="text-white-50 small fw-bold text-uppercase">Evaluasi Penyelenggara</div>
+                                        <h4 class="fw-bold mb-0 text-white fs-4">Penilaian Penyelenggara</h4>
                                     </div>
                                 </div>
                                 <?php
@@ -1068,11 +902,11 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     <div class="alert alert-warning">Belum ada pertanyaan evaluasi untuk kategori Penyelenggara.</div>
                                 <?php else: ?>
                                     <?php foreach ($penyelenggaraForSesi as $penyelenggara): ?>
-                                        <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border">
-                                            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-building me-2 text-warning"></i> <?= esc($penyelenggara['nama'] ?? '') ?></h5>
+                                        <div class="mb-4 p-4 rounded-4 shadow-sm text-white" style="background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
+                                            <h5 class="fw-bold text-white mb-3"><i class="fas fa-building me-2 text-warning"></i> <?= esc($penyelenggara['nama'] ?? '') ?></h5>
                                             <?php foreach ($penyelenggaraQs as $q): ?>
                                                 <div class="rating-row mb-4">
-                                                    <label class="fw-bold mb-3 d-block"><?= esc($q['pertanyaan']) ?></label>
+                                                    <label class="fw-bold mb-3 d-block" style="color: #fca5a5 !important;"><?= esc($q['pertanyaan']) ?></label>
                                                     <div class="rating-options">
                                                         <?php for ($i = 1; $i <= 5; $i++): ?>
                                                             <div class="rating-btn">
@@ -1099,22 +933,22 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                 }
                             ?>
                             <div class="mb-5">
-                                <div class="d-flex align-items-center gap-4 mb-4 p-4 bg-light rounded-4 border-start border-dark border-5">
+                                <div class="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 border-start border-dark border-5 text-white" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15) !important; border-left-width: 5px !important;">
                                     <div class="bg-dark p-3 rounded-circle text-white shadow-sm">
                                         <i class="fas fa-user-tie fa-2x"></i>
                                     </div>
                                     <div>
-                                        <div class="text-muted small fw-bold text-uppercase">Evaluasi Fasilitator</div>
-                                        <h4 class="fw-bold mb-0">Fasilitator Sesi: <?= esc($active_step['judul']) ?></h4>
+                                        <div class="text-white-50 small fw-bold text-uppercase">Evaluasi Fasilitator</div>
+                                        <h4 class="fw-bold mb-0 text-white fs-4">Fasilitator Sesi: <?= esc($active_step['judul']) ?></h4>
                                     </div>
                                 </div>
                                 <?php if (empty($fasilQs)): ?>
                                     <div class="alert alert-warning">Belum ada pertanyaan evaluasi untuk kategori Fasilitator.</div>
                                 <?php else: ?>
-                                    <div class="mb-4 bg-white p-4 rounded-4 shadow-sm border">
+                                    <div class="mb-4 p-4 rounded-4 shadow-sm text-white" style="background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
                                         <?php foreach ($fasilQs as $q): ?>
                                             <div class="rating-row mb-4">
-                                                <label class="fw-bold mb-3 d-block"><?= esc($q['pertanyaan']) ?></label>
+                                                <label class="fw-bold mb-3 d-block" style="color: #fca5a5 !important;"><?= esc($q['pertanyaan']) ?></label>
                                                 <div class="rating-options">
                                                     <?php for ($i = 1; $i <= 5; $i++): ?>
                                                         <div class="rating-btn">
@@ -1133,8 +967,8 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                 <?php endif; ?>
                             </div>
 
-                            <div class="d-flex gap-3 mt-4">
-                                <button type="submit" class="btn py-3 flex-grow-2 rounded-pill fw-bold shadow-lg" style="background: #0f172a !important; color: white !important;">KIRIM EVALUASI SESI <i class="fas fa-paper-plane ms-2"></i></button>
+                            <div class="w-100 mt-4">
+                                <button type="submit" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-4 border-0" style="background: #ce2127 !important; color: white !important;">KIRIM EVALUASI SESI <i class="fas fa-paper-plane ms-2"></i></button>
                             </div>
                         </form>
                     <?php endif; ?>
@@ -1174,51 +1008,67 @@ if (!function_exists('renderPelatihanFilePreview')) {
                         </div>
                     </div>
                 <?php elseif ($active_step['tipe'] == 'post_test' && !empty($post_test_attempts) && $post_test_attempts >= 3) : ?>
-                    <div class="alert alert-danger rounded-4 border-0 p-4">
-                        <h5 class="fw-bold mb-2"><i class="fas fa-lock me-2"></i> Batas Post-Test Telah Tercapai</h5>
-                        <p class="mb-0 text-muted">Post-Test hanya dapat dikerjakan maksimal 3 kali. Anda tidak dapat mengulanginya lagi.</p>
+                    <div class="alert rounded-4 p-5 text-center" style="background: rgba(220, 38, 38, 0.15); border: 2px dashed rgba(220, 38, 38, 0.4) !important;">
+                        <h4 class="fw-bold mb-3 text-white"><i class="fas fa-lock me-2 text-warning"></i> Batas Post-Test Telah Tercapai</h4>
+                        <p class="mb-4 text-white-50 fs-6">Anda telah mencoba Post-Test sebanyak 3 kali. Anda tidak dapat mengulanginya lagi.</p>
+                        <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #ce2127;">
+                            LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
                     </div>
                 <?php elseif (isset($_GET['error']) && $_GET['error'] == 'score_low') :
                     $lastScore = $_GET['last_score'] ?? 0;
                     $attempts = $_GET['attempts'] ?? 1;
                     $sisa_percobaan = 3 - $attempts;
                 ?>
-                    <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-2 text-center p-5 rounded-4 mb-4 mx-auto" style="max-width: 800px; margin-top: 50px;">
-                        <h4 class="fw-bold text-danger mb-4"><i class="fas fa-times-circle me-2"></i> Nilai Tidak Memenuhi Standar</h4>
+                    <div class="alert text-center p-5 rounded-4 mb-4 mx-auto" style="max-width: 800px; margin-top: 30px; background: rgba(220, 38, 38, 0.12); border: 2px dashed rgba(220, 38, 38, 0.35) !important;">
+                        <h3 class="fw-extrabold text-white mb-4"><i class="fas fa-exclamation-triangle me-2 text-warning animate__animated animate__flash animate__infinite"></i> Nilai Belum Memenuhi KKM</h3>
                         
-                        <div class="d-flex justify-content-center gap-5 mb-4">
-                            <div>
-                                <div class="small text-muted fw-bold mb-1">Skor Pre-Test</div>
-                                <div class="fs-2 fw-bold text-dark"><?= $pre_test_score ?? 0 ?></div>
+                        <div class="row g-3 justify-content-center mb-4">
+                            <div class="col-sm-5">
+                                <div class="p-3 rounded-4" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                                    <div class="text-white-50 small fw-bold mb-1">SKOR PRE-TEST</div>
+                                    <div class="fs-2 fw-extrabold text-info"><?= number_format($pre_test_score ?? 0, 2) ?></div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="small text-muted fw-bold mb-1">Skor Post-Test Saat Ini</div>
-                                <div class="fs-2 fw-bold text-danger"><?= $lastScore ?></div>
+                            <div class="col-sm-5">
+                                <div class="p-3 rounded-4" style="background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(220, 38, 38, 0.45);">
+                                    <div class="text-white-50 small fw-bold mb-1">SKOR POST-TEST SAAT INI</div>
+                                    <div class="fs-2 fw-extrabold text-danger animate__animated animate__shakeX"><?= number_format($lastScore, 2) ?></div>
+                                </div>
                             </div>
                         </div>
                         
-                        <p class="mb-0 text-muted fs-5">Skor minimal kelulusan adalah <strong><?= $post_test_kkm ?? 70 ?></strong>.</p>
+                        <p class="mb-4 text-white fs-5">Skor minimal kelulusan adalah <strong class="text-warning"><?= $post_test_kkm ?? 70 ?></strong>.</p>
+                        
                         <?php if ($sisa_percobaan > 0): ?>
-                            <p class="mb-0 fw-bold mt-4 text-danger fs-5">Apakah Anda ingin mengerjakan ulang Post-Test?</p>
-                            <p class="mb-4 fw-bold text-danger">Sisa kuota pengerjaan Anda: <?= $sisa_percobaan ?> kali</p>
-                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$active_id.'&retake=1') ?>" class="btn btn-danger px-5 py-3 rounded-pill fw-bold shadow-sm fs-5">
-                                <i class="fas fa-redo-alt me-2"></i> KERJAKAN ULANG SEKARANG
-                            </a>
+                            <p class="mb-2 fw-bold text-white fs-6">Apakah Anda ingin mengerjakan ulang Post-Test?</p>
+                            <p class="mb-4 text-white-50">Sisa kuota pengerjaan Anda: <strong class="text-warning"><?= $sisa_percobaan ?></strong> kali</p>
+                            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$active_id.'&retake=1') ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #10b981;">
+                                    <i class="fas fa-redo-alt me-2"></i> KERJAKAN ULANG SEKARANG
+                                </a>
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold hover-scale fs-5" style="border-width: 2px;">
+                                    LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
                         <?php else: ?>
-                            <p class="mb-0 fw-bold mt-4 text-danger fs-5">Kesempatan Anda telah habis.</p>
+                            <p class="mb-4 text-danger fw-bold fs-5"><i class="fas fa-lock me-2"></i> Kesempatan pengerjaan ulang Anda telah habis.</p>
+                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #ce2127;">
+                                LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
                         <?php endif; ?>
                     </div>
                 <?php else : ?>
                 <div class="test-area py-4" id="quizContainer">
                     <div class="row g-4">
                         <div class="col-lg-9">
-                            <div class="d-flex justify-content-between align-items-center mb-5 bg-light p-3 rounded-pill border">
+                            <div class="d-flex justify-content-between align-items-center mb-5 p-3 rounded-pill" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15) !important;">
                                 <div class="flex-grow-1 mx-4">
-                                    <div class="progress" style="height: 12px; border-radius: 20px; background: #e2e8f0;">
-                                        <div class="progress-bar bg-dark shadow-sm" id="quizProgress" style="width: 20%"></div>
+                                    <div class="progress" style="height: 12px; border-radius: 20px; background: rgba(0,0,0,0.35);">
+                                        <div class="progress-bar shadow-sm" id="quizProgress" style="width: 20%; background-color: #ce2127;"></div>
                                     </div>
                                 </div>
-                                <span class="fw-bold text-dark me-3" id="quizCounter">SOAL 1/5</span>
+                                <span class="fw-bold text-white me-3" id="quizCounter">SOAL 1/5</span>
                             </div>
                             
                             <div id="questionArea">
@@ -1226,18 +1076,18 @@ if (!function_exists('renderPelatihanFilePreview')) {
                             </div>
                             
                             <div class="d-flex justify-content-between mt-5">
-                                <button onclick="prevQuestion()" id="btnPrev" class="btn btn-outline-dark px-5 py-3 rounded-pill fw-bold invisible" style="min-width: 220px;">
+                                <button onclick="prevQuestion()" id="btnPrev" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold invisible" style="min-width: 220px; border-width: 2px;">
                                     <i class="fas fa-arrow-left me-2"></i> SEBELUMNYA
                                 </button>
-                                <button onclick="nextQuestionQuiz()" id="btnNext" class="btn btn-primary shadow-lg px-5 py-3 rounded-pill fw-bold" style="background-color: #3b82f6 !important; border: none !important; min-width: 220px; transition: all 0.3s ease;">
+                                <button onclick="nextQuestionQuiz()" id="btnNext" class="btn shadow-lg px-5 py-3 rounded-pill fw-bold text-white border-0" style="background-color: #ce2127 !important; min-width: 220px; transition: all 0.3s ease;">
                                     BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="col-lg-3">
-                            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px; background: #fff;">
+                            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px; background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
                                 <div class="card-body p-4">
-                                    <h6 class="fw-bold mb-4 text-center">Navigasi Soal</h6>
+                                    <h6 class="fw-bold mb-4 text-center text-white">Navigasi Soal</h6>
                                     <div class="d-flex flex-wrap gap-2 justify-content-center" id="quizNavGrid">
                                         <!-- Boxes injected via JS -->
                                     </div>
@@ -1356,7 +1206,7 @@ if (!function_exists('renderPelatihanFilePreview')) {
                         const navGrid = document.getElementById('quizNavGrid');
                         if (navGrid) {
                             navGrid.innerHTML = quizData.map((_, i) => `
-                                <button onclick="gotoQuestion(${i})" class="btn fw-bold p-0 ${currentQ === i ? 'btn-primary text-white border-primary' : (answers[i] !== null ? 'btn-success text-white border-success' : 'btn-outline-secondary')} d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; border-width: 2px;">
+                                <button onclick="gotoQuestion(${i})" class="btn fw-bold p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; border-width: 2px; ${currentQ === i ? 'background: #ce2127; border-color: #ce2127; color: white !important;' : (answers[i] !== null ? 'background: #10b981; border-color: #10b981; color: white !important;' : 'background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white !important;')}" >
                                     ${i + 1}
                                 </button>
                             `).join('');
@@ -1381,7 +1231,7 @@ if (!function_exists('renderPelatihanFilePreview')) {
                         area.innerHTML = `
                             <div class="question-card">
                                 ${mediaHtml}
-                                <h5 class="fw-bold mb-4">${q.q}</h5>
+                                <h5 class="fw-bold mb-4" style="color: #fca5a5 !important; font-size: 1.3rem !important;">${q.q}</h5>
                                 <div class="d-flex flex-column gap-3">
                                     ${q.a.map((opt, i) => `
                                         <div class="quiz-option ${answers[currentQ] === i ? 'selected' : ''}" onclick="selectOption(${i})">
@@ -1400,13 +1250,13 @@ if (!function_exists('renderPelatihanFilePreview')) {
                             'Selesai & Kirim <i class="fas fa-paper-plane ms-2"></i>' : 
                             'Berikutnya <i class="fas fa-arrow-right ms-2"></i>';
                         
-                        // Apply light blue style if not finished
+                        // Apply brand red style if not finished, green if finished
                         if (currentQ < quizData.length - 1) {
-                            document.getElementById('btnNext').style.backgroundColor = '#3b82f6';
-                            document.getElementById('btnNext').classList.remove('btn-dark');
-                            document.getElementById('btnNext').classList.add('btn-primary');
+                            document.getElementById('btnNext').style.backgroundColor = '#ce2127';
+                            document.getElementById('btnNext').classList.remove('btn-dark', 'btn-primary');
                         } else {
-                            document.getElementById('btnNext').style.backgroundColor = '#0f172a';
+                            document.getElementById('btnNext').style.backgroundColor = '#10b981';
+                            document.getElementById('btnNext').classList.remove('btn-primary');
                         }
                         renderNavGrid();
                     }
@@ -1485,7 +1335,7 @@ if (!function_exists('renderPelatihanFilePreview')) {
                 <?php endif; ?>
             <?php elseif ($active_step['tipe'] == 'evaluasi') : ?>
                 <?php 
-                    $post_test_completed = $postTestIndex ? in_array($postTestIndex, $completed_steps) : true;
+                    $post_test_completed = $postTestIndex ? (in_array($postTestIndex, $completed_steps) || (isset($post_test_attempts) && $post_test_attempts > 0)) : true;
                 ?>
 
                 <div class="evaluasi-area py-2">
@@ -1575,10 +1425,10 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     </a>
                                 </div>
                             </div>
-                        </div>
                     <?php else: ?>
                     <script>
                         window.onload = function() {
+                            <?php if ($post_test_status == 'Lulus'): ?>
                             // Trigger Confetti
                             var count = 200;
                             var defaults = { origin: { y: 0.7 } };
@@ -1608,6 +1458,20 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                 showClass: { popup: 'animate__animated animate__zoomIn' },
                                 hideClass: { popup: 'animate__animated animate__fadeOut' }
                             });
+                            <?php else: ?>
+                            Swal.fire({
+                                title: '<span class="text-warning fw-bold">PELATIHAN SELESAI</span>',
+                                html: 'Anda telah menyelesaikan seluruh modul pelatihan <b><?= $p['nama'] ?></b>.',
+                                icon: 'info',
+                                iconColor: '#f59e0b',
+                                confirmButtonText: 'LIHAT HASIL AKHIR',
+                                confirmButtonColor: '#1e293b',
+                                background: '#fff',
+                                backdrop: `rgba(15, 23, 42, 0.4)`,
+                                showClass: { popup: 'animate__animated animate__zoomIn' },
+                                hideClass: { popup: 'animate__animated animate__fadeOut' }
+                            });
+                            <?php endif; ?>
                         };
                     </script>
 
@@ -1618,19 +1482,31 @@ if (!function_exists('renderPelatihanFilePreview')) {
 
                         <div class="position-relative" style="z-index: 1;">
                             <div class="mb-4">
-                                <div class="bg-success bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn animate__delay-1s">
-                                    <i class="fas fa-award fa-5x text-success"></i>
-                                </div>
-                                <h1 class="display-5 fw-bold text-dark mb-2">SELAMAT! ANDA LULUS</h1>
-                                <p class="text-muted fw-bold fs-5 mb-5 opacity-75">Sertifikat Digital Anda telah diterbitkan dan siap diunduh.</p>
+                                <?php if ($post_test_status == 'Lulus'): ?>
+                                    <div class="bg-success bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn animate__delay-1s">
+                                        <i class="fas fa-award fa-5x text-success"></i>
+                                    </div>
+                                    <h1 class="display-5 fw-bold text-dark mb-2">SELAMAT! ANDA LULUS</h1>
+                                    <p class="text-muted fw-bold fs-5 mb-5 opacity-75">Sertifikat Digital Anda telah diterbitkan dan siap diunduh.</p>
+                                <?php else: ?>
+                                    <div class="bg-danger bg-opacity-10 d-inline-block p-4 rounded-circle mb-4 animate__animated animate__bounceIn animate__delay-1s">
+                                        <i class="fas fa-times-circle fa-5x text-danger"></i>
+                                    </div>
+                                    <h1 class="display-5 fw-bold text-dark mb-2">PELATIHAN SELESAI</h1>
+                                    <p class="text-danger fw-bold fs-5 mb-5 opacity-75">Sertifikat tidak diterbitkan karena nilai akhir Post-Test belum memenuhi KKM.</p>
+                                <?php endif; ?>
                             </div>
 
                             <div class="row g-4 mb-5">
                                 <div class="col-md-4">
                                     <div class="p-4 rounded-4 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <small class="text-muted fw-bold d-block mb-2 text-uppercase letter-spacing-1">HASIL AKHIR</small>
-                                        <div class="display-6 fw-bold text-dark"><?= $post_test_score ?? 0 ?></div>
-                                        <div class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 mt-2 fw-bold">KOMPETEN</div>
+                                        <div class="display-6 fw-bold text-dark"><?= number_format($post_test_score ?? 0, 2) ?></div>
+                                        <?php if ($post_test_status == 'Lulus'): ?>
+                                            <div class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 mt-2 fw-bold">KOMPETEN</div>
+                                        <?php else: ?>
+                                            <div class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1 mt-2 fw-bold">TIDAK LULUS</div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1654,25 +1530,26 @@ if (!function_exists('renderPelatihanFilePreview')) {
                                     <i class="fas fa-id-badge fa-2x"></i>
                                 </div>
                                 <div>
-                                    <div class="opacity-75 small fw-bold">DITERBITKAN UNTUK</div>
+                                    <div class="opacity-75 small fw-bold">NAMA PESERTA</div>
                                     <h4 class="fw-bold mb-0"><?= strtoupper($user['nama_lengkap'] ?? 'Peserta') ?></h4>
                                 </div>
                                 <div class="ms-auto text-end">
-                                    <div class="opacity-50 small fw-bold">TANGGAL TERBIT</div>
+                                    <div class="opacity-50 small fw-bold">TANGGAL SELESAI</div>
                                     <div class="fw-bold"><?= date('d F Y') ?></div>
                                 </div>
                             </div>
 
                             <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
-                                <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn px-5 py-3 shadow-lg fw-bold rounded-pill fs-5 d-flex align-items-center justify-content-center gap-2" style="background: var(--primary-red) !important; color: white !important;">
-                                    <i class="fas fa-file-download fs-4"></i> UNDUH SERTIFIKAT
-                                </a>
+                                <?php if ($post_test_status == 'Lulus'): ?>
+                                    <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn px-5 py-3 shadow-lg fw-bold rounded-pill fs-5 d-flex align-items-center justify-content-center gap-2" style="background: var(--primary-red) !important; color: white !important;">
+                                        <i class="fas fa-file-download fs-4"></i> UNDUH SERTIFIKAT
+                                    </a>
+                                <?php endif; ?>
                                 <a href="<?= base_url('pelatihan/peserta/beranda') ?>" class="btn px-5 py-3 fw-bold rounded-pill fs-5 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="border: 2px solid #0f172a; color: #0f172a; background: transparent;">
                                     <i class="fas fa-home fs-4"></i> KEMBALI KE BERANDA
                                 </a>
                             </div>
                         </div>
-                    </div>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -1680,4 +1557,4 @@ if (!function_exists('renderPelatihanFilePreview')) {
     </div>
 </div>
 
-<?= $this->endSection() ?>?>
+<?= $this->endSection() ?>

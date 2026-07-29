@@ -238,11 +238,12 @@ class Training extends BaseController
             $sessionCloseAt = !empty($s['tanggal']) && !empty($s['jam_tutup']) ? strtotime($s['tanggal'] . ' ' . $s['jam_tutup']) : (!empty($s['tanggal']) ? strtotime($s['tanggal'] . ' 23:59:59') : $sessionOpenAt);
             $sessionAvailable = $sessionOpenAt === null || ($nowTs >= $sessionOpenAt && ($sessionCloseAt === null || $nowTs <= $sessionCloseAt));
 
+            $tipeSesiLabel = ucfirst(strtolower($s['tipe_sesi'] ?? 'online'));
             if (strtolower($s['tipe_sesi'] ?? '') == 'offline') {
                 $konten[] = [
                     'id' => $stepCounter++,
                     'tipe' => 'presensi',
-                    'judul' => 'Sesi Tatap Muka: ' . $s['nama_sesi'],
+                    'judul' => 'Sesi ' . $tipeSesiLabel . ': ' . $s['nama_sesi'],
                     'sesi_id' => $s['id'],
                     'waktu' => $s['waktu'] ?? '',
                     'jam_tutup' => $s['jam_tutup'] ?? '',
@@ -256,15 +257,19 @@ class Training extends BaseController
                     'close_at' => $sessionCloseAt ? date('Y-m-d H:i:s', $sessionCloseAt) : null,
                     'is_attended' => isset($presensiList[$s['id']]),
                     'attended_at' => isset($presensiList[$s['id']]) ? $presensiList[$s['id']] : null,
-                    'status_hadir' => $presensiStatusList[$s['id']] ?? null
+                    'status_hadir' => $presensiStatusList[$s['id']] ?? null,
+                    'tipe_sesi' => $s['tipe_sesi'] ?? '',
+                    'meeting_link' => $s['meeting_link'] ?? '',
+                    'meeting_pass' => $s['meeting_pass'] ?? ''
                 ];
             } else {
                 $konten[] = [
                     'id' => $stepCounter++,
                     'tipe' => 'sesi',
-                    'judul' => 'Sesi Online/Hybrid: ' . $s['nama_sesi'],
+                    'judul' => 'Sesi ' . $tipeSesiLabel . ': ' . $s['nama_sesi'],
                     'sesi_id' => $s['id'],
                     'meeting_link' => $s['meeting_link'] ?? '',
+                    'meeting_pass' => $s['meeting_pass'] ?? '',
                     'waktu' => $s['waktu'] ?? '',
                     'jam_tutup' => $s['jam_tutup'] ?? '',
                     'tanggal' => $s['tanggal'] ?? '',
@@ -357,10 +362,30 @@ class Training extends BaseController
         
         $filtered_active = array_filter($konten, fn($k) => $k['id'] == $active_step_id);
         
-        // Auto-skip: jika step aktif adalah materi_segmen atau evaluasi_sesi
-        // dari sesi yang Alfa atau sudah tutup tanpa presensi → redirect ke step setelah sesi itu
+        // Check for closed sessions without presensi & insert Alfa first so status is up-to-date
         if (!empty($filtered_active)) {
             $activeK = reset($filtered_active);
+            if (in_array($activeK['tipe'], ['sesi', 'presensi']) && isset($activeK['sesi_id'])) {
+                $sesiIdCheck  = $activeK['sesi_id'];
+                $statusCheck  = $presensiStatusList[$sesiIdCheck] ?? null;
+                $sesiFiltered = array_filter($sesi, fn($s) => $s['id'] == $sesiIdCheck);
+                $sesiRowCheck = reset($sesiFiltered);
+                $sesiCloseTs  = ($sesiRowCheck && !empty($sesiRowCheck['tanggal']) && !empty($sesiRowCheck['jam_tutup']))
+                    ? strtotime($sesiRowCheck['tanggal'] . ' ' . $sesiRowCheck['jam_tutup'])
+                    : (($sesiRowCheck && !empty($sesiRowCheck['tanggal'])) ? strtotime($sesiRowCheck['tanggal'] . ' 23:59:59') : null);
+                if ($sesiCloseTs !== null && $nowTs > $sesiCloseTs && $statusCheck === null && $pesertaRecord) {
+                    $db->table('peserta_presensi_pelatihan')->insert([
+                        'peserta_pelat_id' => $pesertaRecord['id'],
+                        'sesi_id'          => $sesiIdCheck,
+                        'status_hadir'     => 'Alfa',
+                        'waktu_absen'      => date('Y-m-d H:i:s'),
+                    ]);
+                    $presensiStatusList[$sesiIdCheck] = 'Alfa';
+                }
+            }
+
+            // Auto-skip: jika step aktif adalah materi_segmen atau evaluasi_sesi
+            // dari sesi yang Alfa atau sudah tutup tanpa presensi → redirect ke step setelah sesi itu
             $skipTypes = ['materi_segmen', 'evaluasi_sesi'];
             if (in_array($activeK['tipe'], $skipTypes) && isset($activeK['sesi_id'])) {
                 $sesiIdCheck = $activeK['sesi_id'];
@@ -379,14 +404,8 @@ class Training extends BaseController
                     $nextStep = null;
                     foreach ($konten as $kStep) {
                         if ($kStep['id'] <= $active_step_id) continue;
-                        // Step tanpa sesi_id (post_test/evaluasi/sertifikat) atau sesi_id berbeda
                         $kSesiId = $kStep['sesi_id'] ?? null;
                         if ($kSesiId !== $sesiIdCheck) {
-                            $nextStep = $kStep['id'];
-                            break;
-                        }
-                        // Step tipe sesi/presensi dari sesi lain juga ok
-                        if (in_array($kStep['tipe'], ['sesi', 'presensi']) && $kSesiId != $sesiIdCheck) {
                             $nextStep = $kStep['id'];
                             break;
                         }
@@ -394,27 +413,6 @@ class Training extends BaseController
                     if ($nextStep) {
                         return redirect()->to(base_url('pelatihan/peserta/belajar/' . $id . '?step=' . $nextStep));
                     }
-                }
-            }
-
-            // Tipe 'sesi' yang sudah tutup & belum presensi → insert Alfa agar badge tampil di view
-            // Tidak auto-redirect — user navigasi via tombol di halaman
-            if ($activeK['tipe'] === 'sesi' && isset($activeK['sesi_id'])) {
-                $sesiIdCheck  = $activeK['sesi_id'];
-                $statusCheck  = $presensiStatusList[$sesiIdCheck] ?? null;
-                $sesiFiltered = array_filter($sesi, fn($s) => $s['id'] == $sesiIdCheck);
-                $sesiRowCheck = reset($sesiFiltered);
-                $sesiCloseTs  = ($sesiRowCheck && !empty($sesiRowCheck['tanggal']) && !empty($sesiRowCheck['jam_tutup']))
-                    ? strtotime($sesiRowCheck['tanggal'] . ' ' . $sesiRowCheck['jam_tutup'])
-                    : (($sesiRowCheck && !empty($sesiRowCheck['tanggal'])) ? strtotime($sesiRowCheck['tanggal'] . ' 23:59:59') : null);
-                if ($sesiCloseTs !== null && $nowTs > $sesiCloseTs && $statusCheck === null && $pesertaRecord) {
-                    $db->table('peserta_presensi_pelatihan')->insert([
-                        'peserta_pelat_id' => $pesertaRecord['id'],
-                        'sesi_id'          => $sesiIdCheck,
-                        'status_hadir'     => 'Alfa',
-                        'waktu_absen'      => date('Y-m-d H:i:s'),
-                    ]);
-                    $presensiStatusList[$sesiIdCheck] = 'Alfa';
                 }
             }
         }
@@ -486,6 +484,23 @@ class Training extends BaseController
             }
         }
 
+        $active_step_val = !empty($filtered_active) ? reset($filtered_active) : null;
+        $active_sesi_id = ($active_step_val && isset($active_step_val['sesi_id'])) ? $active_step_val['sesi_id'] : null;
+        $nextSessionStepId = null;
+        if ($active_sesi_id !== null) {
+            foreach ($konten as $kStep) {
+                if ($kStep['id'] <= $active_step_id) continue;
+                $kSesiId = $kStep['sesi_id'] ?? null;
+                if ($kSesiId !== $active_sesi_id) {
+                    $nextSessionStepId = $kStep['id'];
+                    break;
+                }
+            }
+        }
+        if (!$nextSessionStepId) {
+            $nextSessionStepId = $active_step_id + 1;
+        }
+
         $data = [
             'title' => 'Ruang Belajar',
             'p' => $item,
@@ -493,6 +508,7 @@ class Training extends BaseController
             'completed_steps' => $completed_steps,
             'active_step' => reset($filtered_active),
             'active_id' => $active_step_id,
+            'nextSessionStepId' => $nextSessionStepId,
             'pg' => $pg,
             'user' => $user,
             'evalIndex' => $evalIndex,
@@ -570,6 +586,45 @@ class Training extends BaseController
         return null;
     }
 
+    private function _getKontenSteps($db, $pelatihanId): array
+    {
+        $konten = [];
+        $stepCounter = 1;
+        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
+        if ($preTest) {
+            $konten[] = ['id' => $stepCounter++, 'tipe' => 'pre_test'];
+        }
+
+        $sesi = $db->table('sesi_interaktif_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->orderBy('tanggal', 'ASC')
+            ->orderBy('waktu', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+
+        foreach ($sesi as $s) {
+            $tipeSesi = strtolower($s['tipe_sesi'] ?? '') == 'offline' ? 'presensi' : 'sesi';
+            $konten[] = ['id' => $stepCounter++, 'tipe' => $tipeSesi, 'sesi_id' => $s['id']];
+
+            $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->orderBy('segmen', 'ASC')->orderBy('urutan', 'ASC')->get()->getResultArray();
+            $groupedSegmen = [];
+            foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
+            foreach ($groupedSegmen as $seg => $mList) {
+                $konten[] = ['id' => $stepCounter++, 'tipe' => 'materi_segmen', 'sesi_id' => $s['id'], 'segmen' => $seg];
+            }
+            $konten[] = ['id' => $stepCounter++, 'tipe' => 'evaluasi_sesi', 'sesi_id' => $s['id']];
+        }
+
+        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
+        if ($postTest) {
+            $konten[] = ['id' => $stepCounter++, 'tipe' => 'post_test'];
+        }
+        $konten[] = ['id' => $stepCounter++, 'tipe' => 'evaluasi'];
+        $konten[] = ['id' => $stepCounter++, 'tipe' => 'sertifikat'];
+
+        return $konten;
+    }
+
     public function tandai_selesai($id, $step_id)
     {
         $userId = $this->session->get('user_id');
@@ -622,12 +677,10 @@ class Training extends BaseController
                     if ($pesertaRecord) {
                         $db->table('peserta_pelatihan')
                            ->where('id', $pesertaRecord['id'])
-                           ->update(['status_peserta' => 'Gagal', 'updated_at' => date('Y-m-d H:i:s')]);
+                           ->update(['status_peserta' => 'Tidak Lulus', 'updated_at' => date('Y-m-d H:i:s')]);
                     }
-                    return redirect()->to('/pelatihan/peserta/pembelajaran_saya')->with('error', 'Maaf, Anda gagal dalam Post-Test sebanyak 3 kali. Pelatihan dibatalkan dan status Anda Tidak Lulus.');
-                } else {
-                    return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id.'&error=score_low&last_score='.$score.'&attempts='.$attempts);
                 }
+                return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id.'&error=score_low&last_score='.$score.'&attempts='.$attempts);
             }
         }
 
@@ -648,7 +701,8 @@ class Training extends BaseController
         }
 
         $sesi_id = $this->request->getGet('sesi_id');
-        if ($sesi_id && $pesertaRecord) {
+        $do_presensi = $this->request->getGet('do_presensi');
+        if ($sesi_id && $pesertaRecord && $do_presensi == '1') {
             $existPresensi = $db->table('peserta_presensi_pelatihan')
                                 ->where('peserta_pelat_id', $pesertaRecord['id'])
                                 ->where('sesi_id', $sesi_id)
@@ -671,6 +725,34 @@ class Training extends BaseController
         $is_ujian = $this->request->getGet('is_ujian');
         if ($is_ujian == '1') {
             return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id.'&success=1');
+        }
+
+        $next_step = $this->request->getGet('next_step');
+        if ($next_step) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$next_step);
+        }
+
+        if ($pesertaRecord) {
+            $kontenSteps = $this->_getKontenSteps($db, $id);
+            $currStepObj = array_filter($kontenSteps, fn($k) => $k['id'] == $step_id);
+            if (!empty($currStepObj)) {
+                $cStep = reset($currStepObj);
+                $cSesiId = $cStep['sesi_id'] ?? null;
+                if ($cSesiId !== null) {
+                    $pRow = $db->table('peserta_presensi_pelatihan')
+                        ->where('peserta_pelat_id', $pesertaRecord['id'])
+                        ->where('sesi_id', $cSesiId)
+                        ->get()->getRowArray();
+                    if (($pRow['status_hadir'] ?? null) === 'Alfa') {
+                        foreach ($kontenSteps as $kStep) {
+                            if ($kStep['id'] <= $step_id) continue;
+                            if (($kStep['sesi_id'] ?? null) !== $cSesiId) {
+                                return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$kStep['id']);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.($step_id + 1));
@@ -1009,10 +1091,13 @@ class Training extends BaseController
                        'status_peserta' => 'Lulus',
                        'updated_at'     => date('Y-m-d H:i:s')
                    ]);
+                $msg = 'Pelatihan Selesai! Anda telah resmi Lulus pelatihan ini. Terimakasih atas evaluasi Anda.';
+            } else {
+                $msg = 'Pelatihan Selesai! Terimakasih atas evaluasi Anda.';
             }
         }
 
-        return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$certIndex)->with('success', 'Pelatihan Selesai! Anda telah resmi Lulus pelatihan ini. Terimakasih atas evaluasi Anda.');
+        return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$certIndex)->with('success', $msg ?? 'Evaluasi berhasil disimpan.');
     }
 
     public function approve_and_start($id)
