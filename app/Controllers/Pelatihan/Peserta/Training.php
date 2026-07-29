@@ -660,6 +660,11 @@ class Training extends BaseController
                     'status_hadir' => 'Hadir',
                     'waktu_absen' => date('Y-m-d H:i:s')
                 ]);
+            } elseif ($existPresensi['status_hadir'] === 'Alfa') {
+                // Peserta presensi mandiri (sesi masih aktif) → ubah Alfa ke Hadir
+                $db->table('peserta_presensi_pelatihan')
+                   ->where('id', $existPresensi['id'])
+                   ->update(['status_hadir' => 'Hadir', 'waktu_absen' => date('Y-m-d H:i:s')]);
             }
         }
 

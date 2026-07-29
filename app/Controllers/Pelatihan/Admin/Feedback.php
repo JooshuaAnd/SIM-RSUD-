@@ -137,7 +137,7 @@ class Feedback extends BaseController
         // ─── Aggregate ratings by Narasumber ──────────────────────────────────
         $narasumberStats = [];
         $narasumberList = $db->table('narasumber_pelatihan')
-            ->select('narasumber_pelatihan.id, pejabat_ttd_pelatihan.nama_pejabat')
+            ->select('narasumber_pelatihan.id, pejabat_ttd_pelatihan.nama_pejabat, pejabat_ttd_pelatihan.gelar_depan, pejabat_ttd_pelatihan.gelar_belakang')
             ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id', 'left')
             ->where('narasumber_pelatihan.pelatihan_id', $id)
             ->get()->getResultArray();
@@ -151,7 +151,7 @@ class Feedback extends BaseController
             if (!empty($ratingsForNar)) {
                 $narasumberStats[] = [
                     'id'   => $narasumber['id'],
-                    'nama' => $narasumber['nama_pejabat'] ?? $narasumber['pejabat_ttd_id'],
+                    'nama' => ($narasumber['gelar_depan'] ? $narasumber['gelar_depan'].' ' : '').$narasumber['nama_pejabat'].($narasumber['gelar_belakang'] ? ', '.$narasumber['gelar_belakang'] : ''),
                     'pertanyaan' => array_map(function($r) {
                         return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
                     }, $ratingsForNar),
