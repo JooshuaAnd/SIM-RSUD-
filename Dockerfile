@@ -1,8 +1,6 @@
 FROM php:8.3-apache
 
-# ==========================================
-# 1. Install system dependencies
-# ==========================================
+# 1. System dependencies
 RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
@@ -14,34 +12,14 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ==========================================
-# 2. Install PHP extensions untuk CI4
-# ==========================================
+# 2. PHP extensions untuk CI4
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# ==========================================
 # 3. Enable Apache rewrite
-# ==========================================
 RUN a2enmod rewrite
 
-# ==========================================
-# 4. SOLUSI FINAL & BRUTAL UNTUK KONFLIK MPM
-# ==========================================
-# Alih-alih hanya menghapus symlink, kita HANCURKAN file fisik (.so) dari modul event dan worker.
-# Jika file fisiknya tidak ada, mustahil bagi Apache untuk memuatnya, tidak peduli 
-# konfigurasi apa yang mencoba memanggilnya saat runtime.
-RUN rm -f /usr/lib/apache2/modules/mod_mpm_event.so \
-    && rm -f /usr/lib/apache2/modules/mod_mpm_worker.so \
-    && rm -f /etc/apache2/mods-available/mpm_event.load \
-    && rm -f /etc/apache2/mods-available/mpm_worker.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_event.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_worker.load \
-    && a2enmod mpm_prefork || true
-
-# ==========================================
-# 5. Set CodeIgniter public directory
-# ==========================================
+# 4. Set CodeIgniter DocumentRoot (Tanpa menyentuh konfigurasi port atau MPM)
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN echo '<Directory /var/www/html/public>\n\
@@ -49,44 +27,47 @@ RUN echo '<Directory /var/www/html/public>\n\
     Require all granted\n\
 </Directory>' >> /etc/apache2/apache2.conf
 
-# ==========================================
-# 6. Copy project & Install Composer
-# ==========================================
+# 5. Working Directory & Composer
 WORKDIR /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# ==========================================
-# 7. Permission CodeIgniter writable
-# ==========================================
+# 6. Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-# ==========================================
-# 8. Railway expose port
-# ==========================================
 EXPOSE 80
 
-# ==========================================
-# 9. Runtime Debug Wrapper
-# ==========================================
+# 7. EXHAUSTIVE RUNTIME DIAGNOSTIC WRAPPER
 RUN printf '#!/bin/bash\n\
-echo "========================================"\n\
-echo " APACHE RUNTIME DEBUG (STARTING) "\n\
-echo "========================================"\n\
-echo "--- Apache Syntax Test ---"\n\
+echo "=================================================="\n\
+echo " INVESTIGASI ROOT CAUSE APACHE RUNTIME"\n\
+echo "=================================================="\n\
+\n\
+echo "--- 1. SEMUA FILE KONFIGURASI APACHE ---"\n\
+find /etc/apache2 -type f -name "*.conf" -print || true\n\
+\n\
+echo "--- 2. GREP SEMUA KEYWORD MPM ---"\n\
+grep -Ri "mpm" /etc/apache2 || true\n\
+\n\
+echo "--- 3. GREP SEMUA LOADMODULE ---"\n\
+grep -R "LoadModule" /etc/apache2 || true\n\
+\n\
+echo "--- 4. SYNTAX TEST (apache2ctl -t) ---"\n\
 apache2ctl -t || true\n\
-echo "--- Loaded MPM Modules ---"\n\
+\n\
+echo "--- 5. LOADED MODULES (apache2ctl -M) ---"\n\
 apache2ctl -M 2>/dev/null | grep mpm || true\n\
-echo "--- Enabled MPM Files ---"\n\
-ls -la /etc/apache2/mods-enabled/ | grep mpm || true\n\
-echo "--- ALL MPM LOADMODULE ---"\n\
-grep -R "LoadModule.*mpm" /etc/apache2 || true\n\
-echo "========================================"\n\
-echo " STARTING APACHE "\n\
-echo "========================================"\n\
+\n\
+echo "--- 6. VIRTUAL HOSTS (apache2ctl -S) ---"\n\
+apache2ctl -S || true\n\
+\n\
+echo "=================================================="\n\
+echo " STARTING APACHE-FOREGROUND"\n\
+echo "=================================================="\n\
 exec apache2-foreground\n' > /usr/local/bin/start-apache.sh \
 && chmod +x /usr/local/bin/start-apache.sh
 
+# 8. Start Container
 CMD ["/usr/local/bin/start-apache.sh"]
