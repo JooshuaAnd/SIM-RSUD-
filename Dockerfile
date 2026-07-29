@@ -30,8 +30,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# 6. Permissions
-RUN chown -R www-data:www-data /var/www/html \
+# 6. Permissions & Reset Cache (BUILD PHASE)
+RUN rm -rf /var/www/html/writable/cache/* \
+    && mkdir -p /var/www/html/writable/cache \
+                /var/www/html/writable/session \
+                /var/www/html/writable/logs \
+                /var/www/html/writable/debugbar \
+    && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
 EXPOSE 80
@@ -63,6 +68,12 @@ a2enmod mpm_prefork\n\
 \n\
 echo "--- 4. VALIDASI SETELAH REPAIR (apache2ctl -M) ---"\n\
 apache2ctl -M 2>/dev/null | grep mpm || true\n\
+\n\
+echo "--- 5. RESET CACHE & PERMISSIONS CODEIGNITER (RUNTIME) ---"\n\
+rm -rf /var/www/html/writable/cache/*\n\
+mkdir -p /var/www/html/writable/cache /var/www/html/writable/session /var/www/html/writable/logs /var/www/html/writable/debugbar\n\
+chown -R www-data:www-data /var/www/html/writable\n\
+chmod -R 775 /var/www/html/writable\n\
 \n\
 echo "=========================================="\n\
 echo "STARTING APACHE-FOREGROUND"\n\
