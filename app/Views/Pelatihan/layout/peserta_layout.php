@@ -49,7 +49,7 @@ try {
         }
         
         .glass-wrapper-global {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+            background: linear-gradient(135deg, rgba(70, 10, 15, 0.95) 0%, rgba(30, 5, 5, 0.98) 100%);
             box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
             color: white;
             border-radius: 24px;
@@ -177,7 +177,7 @@ try {
         }
 
         .navbar-custom {
-            background: rgba(110, 15, 25, 0.90);
+            background: rgba(0, 0, 0, 0.90);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 0.85rem 0;
