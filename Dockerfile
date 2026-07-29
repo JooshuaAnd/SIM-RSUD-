@@ -17,7 +17,12 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 4. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
+# 4. Pastikan hanya MPM prefork yang aktif (mencegah error "More than one MPM loaded")
+# Ini harus dilakukan SEBELUM a2enmod rewrite atau modifikasi apache lainnya.
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork
+
+# 5. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
 RUN a2enmod rewrite
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
@@ -42,10 +47,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/writable
 
-# 11. Pastikan hanya MPM prefork yang aktif (mencegah error "More than one MPM loaded"
-# jika apt-get install memicu update konfigurasi default apache)
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork
+
 
 # 12. Definisikan default PORT.
 ENV PORT=8080
