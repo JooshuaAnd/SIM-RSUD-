@@ -17,18 +17,19 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl mbstring pdo_mysql mysqli zip gd
 
-# 4. PEMBERSIHAN MPM (Mencegah "More than one MPM loaded")
-# Alih-alih a2dismod, kita hapus paksa file symlink mpm_ apapun yang terlanjur ter-copy/aktif,
-# lalu mengaktifkan ulang HANYA prefork (yang diwajibkan oleh PHP).
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_*.conf \
-    && a2enmod mpm_prefork
+# 4. DIAGNOSTIK AWAL: Lihat kondisi mpm bawaan sebelum kita apa-apakan
+RUN echo "=== DIAGNOSTIK AWAL: MPM YANG TERSEDIA ===" \
+    && ls -la /etc/apache2/mods-available/ | grep mpm \
+    && echo "=== DIAGNOSTIK AWAL: MPM YANG AKTIF ===" \
+    && ls -la /etc/apache2/mods-enabled/ | grep mpm || true
 
-# 5. DIAGNOSTIK BUILD (Hasilnya akan muncul di Railway Deploy Logs)
-RUN echo "=== CEK MODUL MPM YANG AKTIF DI FOLDER ===" \
-    && ls -la /etc/apache2/mods-enabled/ | grep mpm \
-    && echo "=== CEK APACHE MODULE (DUMP) ===" \
-    && apache2ctl -M || true
+# 5. PEMBERSIHAN MPM SECARA TOTAL DAN BRUTAL
+# Kita matikan paksa ketiganya menggunakan a2dismod -f (force)
+# Lalu kita hapus bersih semua file konfigurasi MPM di mods-enabled
+# Barulah kita nyalakan ulang HANYA prefork.
+RUN a2dismod -f mpm_event mpm_worker mpm_prefork || true \
+    && rm -f /etc/apache2/mods-enabled/mpm_* \
+    && a2enmod mpm_prefork
 
 # 6. Aktifkan mod_rewrite Apache (wajib untuk routing CodeIgniter 4)
 RUN a2enmod rewrite
@@ -63,5 +64,14 @@ EXPOSE 8080
 RUN echo 'export PORT=${PORT:-8080}' >> /etc/apache2/envvars
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
-# 15. CMD kembali ke default
+# 15. DIAGNOSTIK FINAL SEBELUM RUNTIME
+# Ini akan mencetak hasil persis sebelum image dikunci oleh Docker.
+RUN echo "=== DIAGNOSTIK FINAL: MPM YANG AKTIF DI FOLDER ===" \
+    && ls -la /etc/apache2/mods-enabled/ | grep mpm \
+    && echo "=== DIAGNOSTIK FINAL: APACHE MODULE (DUMP) ===" \
+    && apache2ctl -M | grep mpm \
+    && echo "=== CEK FILE KONFIGURASI YANG MENGANDUNG KATA mpm_ ===" \
+    && grep -R "mpm_" /etc/apache2/ || true
+
+# 16. CMD kembali ke default
 CMD ["apache2-foreground"]
