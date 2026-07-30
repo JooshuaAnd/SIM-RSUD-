@@ -72,7 +72,9 @@ $profesi = $profesi ?? [];
                         </div>
                     </div>
 
-
+                    <div class="alert alert-info py-2 mt-2 mb-0" style="font-size: 0.85rem; border-left: 4px solid #0dcaf0;">
+                        <i class="fas fa-info-circle me-1"></i> <strong>Pemberitahuan:</strong> Password default untuk akun yang baru dibuat adalah <strong>RSUDKotaYogyakarta2026</strong>. Pengguna hanya dapat menggunakan password ini 1x dan akan dipaksa untuk menggantinya saat login pertama kali.
+                    </div>
 
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-register-submit w-100">

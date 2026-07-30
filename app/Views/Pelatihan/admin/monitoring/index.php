@@ -655,7 +655,7 @@
             if (result.isConfirmed) {
                 Swal.fire({
                     title: 'Mengirim Pengingat...',
-                    html: 'Mohon tunggu, sedang mengirim notifikasi dan email.',
+                    html: 'Mohon tunggu, sedang mengirim pengingat.',
                     allowOutsideClick: false,
                     showConfirmButton: false,
                     didOpen: () => {
@@ -692,6 +692,14 @@
                                 confirmButtonColor: '#ce2127'
                             });
                         }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Terjadi kesalahan sistem: ' + err.message,
+                            confirmButtonColor: '#ce2127'
+                        });
                     });
             }
         });
@@ -779,7 +787,7 @@
             if (result.isConfirmed) {
                 Swal.fire({
                     title: 'Mengirim Pengingat Ruangan...',
-                    html: 'Mohon tunggu, sedang mengirim notifikasi dan email ke seluruh pegawai ruangan.',
+                    html: 'Mohon tunggu, sedang mengirim pengingat ke seluruh pegawai ruangan.',
                     allowOutsideClick: false,
                     showConfirmButton: false,
                     didOpen: () => {
