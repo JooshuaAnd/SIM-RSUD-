@@ -409,7 +409,7 @@ $nowTs = time();
         <div class="learning-sidebar w-100 h-100 border-0">
             <div class="sidebar-header">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <div class="small text-muted text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
+                    <div class="small text-white text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
             <h6 class="fw-bold mb-3"><?= $p['nama'] ?></h6>
@@ -1352,7 +1352,7 @@ $nowTs = time();
                         <div class="text-center py-5">
                             <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                             <h5 class="fw-bold">Evaluasi Sudah Dikirim</h5>
-                            <p class="text-muted">Anda telah menyelesaikan evaluasi pelatihan ini. Terima kasih atas penilaian Anda.</p>
+                            <p class="text-white">Anda telah menyelesaikan evaluasi pelatihan ini. Terima kasih atas penilaian Anda.</p>
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$certIndex) ?>" class="btn btn-selanjutnya mt-3">Lihat Sertifikat <i class="fas fa-arrow-right ms-2"></i></a>
                         </div>
                     <?php else : ?>
