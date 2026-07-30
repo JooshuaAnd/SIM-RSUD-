@@ -653,20 +653,26 @@ $nowTs = time();
                             <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.$nextSessionStepId.(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0" style="background: #991b1b; color: white;">
                                 LANJUT KE SESI BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                             </a>
-                        <?php elseif ($isHadirSesi && !$sessionOpen): ?>
-                            <!-- SESI TERLEWAT & STATUS HADIR -->
+                        <?php elseif ($isHadirSesi): ?>
+                            <!-- STATUS HADIR -->
                             <div class="alert bg-success bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-success text-white mb-3">
                                 <div class="mb-2"><span class="badge bg-success px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-check-circle me-1"></i> STATUS KEHADIRAN: HADIR</span></div>
-                                <h5 class="fw-bold text-white mb-0">Sesi ini telah selesai (Status Hadir)</h5>
+                                <h5 class="fw-bold text-white mb-2">Presensi Anda telah tercatat</h5>
+                                <?php if (!empty($active_step['attended_at'])): ?>
+                                    <p class="text-white-50 fs-6 mb-0">Pada: <strong class="text-white"><?= date('d M Y H:i', strtotime($active_step['attended_at'])) ?> WIB</strong></p>
+                                <?php endif; ?>
                             </div>
                             <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.($active_id + 1).(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 animate__animated animate__pulse animate__infinite" style="background: #991b1b; color: white;">
                                 SELESAI &amp; LANJUT KE MATERI <i class="fas fa-arrow-right ms-2"></i>
                             </a>
-                        <?php elseif ($isIzinSesi && !$sessionOpen): ?>
-                            <!-- SESI TERLEWAT & STATUS IZIN -->
+                        <?php elseif ($isIzinSesi): ?>
+                            <!-- STATUS IZIN -->
                             <div class="alert bg-warning bg-opacity-30 rounded-4 shadow-sm p-4 text-center border border-warning text-white mb-3">
                                 <div class="mb-2"><span class="badge bg-warning text-dark px-4 py-2 rounded-pill fs-6 fw-bold"><i class="fas fa-exclamation-circle me-1"></i> STATUS KEHADIRAN: IZIN</span></div>
-                                <h5 class="fw-bold text-white mb-0">Sesi ini telah selesai (Status Izin)</h5>
+                                <h5 class="fw-bold text-white mb-2">Presensi Anda tercatat sebagai Izin</h5>
+                                <?php if (!empty($active_step['attended_at'])): ?>
+                                    <p class="text-white-50 fs-6 mb-0">Pada: <strong class="text-white"><?= date('d M Y H:i', strtotime($active_step['attended_at'])) ?> WIB</strong></p>
+                                <?php endif; ?>
                             </div>
                             <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.($active_id + 1).(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 animate__animated animate__pulse animate__infinite" style="background: #991b1b; color: white;">
                                 SELESAI &amp; LANJUT KE MATERI <i class="fas fa-arrow-right ms-2"></i>

@@ -363,6 +363,21 @@ class Training extends BaseController
         $this->session->set('cert_step_'.$id, $certIndex);
 
         $completed_steps = $pg ? ($pg['completed_steps'] ?? []) : [];
+        
+        if ($preTestAttempted && $pesertaRecord) {
+            $preTestStepId = null;
+            foreach ($konten as $k) {
+                if ($k['tipe'] == 'pre_test') { $preTestStepId = $k['id']; break; }
+            }
+            if ($preTestStepId && !in_array((int)$preTestStepId, $completed_steps)) {
+                $completed_steps[] = (int)$preTestStepId;
+                $progressPct = (count($completed_steps) / ($stepCounter - 1)) * 100;
+                $db->table('peserta_pelatihan')->where('id', $pesertaRecord['id'])->update([
+                    'completed_steps' => json_encode($completed_steps),
+                    'progress' => $progressPct
+                ]);
+            }
+        }
         $active_step_id = $this->request->getGet('step') ?? 1;
         
         $filtered_active = array_filter($konten, fn($k) => $k['id'] == $active_step_id);
