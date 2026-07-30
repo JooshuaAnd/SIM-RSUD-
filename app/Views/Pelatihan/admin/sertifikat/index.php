@@ -966,6 +966,22 @@ $templates = $templates ?? [];
         });
     }
 
+    function getPreviewHtml(path, title) {
+        if (!path) return '';
+        let ext = path.split('.').pop().toLowerCase();
+        let baseUrl = "<?= base_url() ?>";
+        if (!baseUrl.endsWith('/')) baseUrl += '/';
+        let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        let url = baseUrl + cleanPath;
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+            return `<div class="mb-4 w-100"><div class="fw-bold mb-2 text-dark"><i class="fas fa-image text-danger me-1"></i> ${title}:</div><div class="text-center"><img src="${url}" class="img-fluid rounded shadow-sm border" style="max-height: 500px;"></div></div>`;
+        } else if (ext === 'pdf') {
+            return `<div class="mb-4 w-100"><div class="fw-bold mb-2 text-dark"><i class="fas fa-file-pdf text-danger me-1"></i> ${title}:</div><iframe src="${url}" class="w-100 rounded border shadow-sm" style="height: 500px;"></iframe></div>`;
+        }
+        return `<div class="mb-4 w-100"><div class="fw-bold mb-2 text-dark"><i class="fas fa-file text-muted me-1"></i> ${title}:</div><a href="${url}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-3"><i class="fas fa-download me-1"></i> Unduh / Lihat File</a></div>`;
+    }
+
     function showDetailCert(cert) {
         document.getElementById('detail_nama').innerText = cert.user_nama || '-';
         document.getElementById('detail_nik').innerText = cert.user_id || '-';
@@ -988,11 +1004,13 @@ $templates = $templates ?? [];
 
         const berkasLinks = document.getElementById('detail_berkas_links');
         berkasLinks.innerHTML = '';
+        berkasLinks.classList.remove('d-flex', 'gap-2'); // Remove flex so they stack block-level
+        
         if (cert.file_path) {
-            berkasLinks.innerHTML += `<a href="<?= base_url() ?>${cert.file_path}" target="_blank" class="btn btn-outline-danger rounded-pill fw-bold btn-sm px-3"><i class="fas fa-file-pdf me-1"></i> File Sertifikat/Kegiatan</a>`;
+            berkasLinks.innerHTML += getPreviewHtml(cert.file_path, 'Dokumen Sertifikat/Bukti');
         }
         if (cert.surat_tugas_path) {
-            berkasLinks.innerHTML += `<a href="<?= base_url() ?>${cert.surat_tugas_path}" target="_blank" class="btn btn-outline-dark rounded-pill fw-bold btn-sm px-3"><i class="fas fa-file-contract me-1"></i> Surat Tugas</a>`;
+            berkasLinks.innerHTML += getPreviewHtml(cert.surat_tugas_path, 'Surat Tugas');
         }
         if (!cert.file_path && !cert.surat_tugas_path) {
             berkasLinks.innerHTML = '<span class="text-muted small">Tidak ada lampiran berkas</span>';

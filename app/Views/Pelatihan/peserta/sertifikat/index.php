@@ -386,13 +386,8 @@
                     </div>
                 </div>
 
-                <div id="modalButtons" class="mt-4 text-center d-flex flex-column gap-2">
-                    <a id="btnSertifikatModal" href="#" target="_blank" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold w-100 d-none">
-                        <i class="fas fa-file-pdf me-2 text-danger"></i> LIHAT FILE SERTIFIKAT
-                    </a>
-                    <a id="btnSuratTugasModal" href="#" target="_blank" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold w-100 d-none">
-                        <i class="fas fa-file-contract me-2"></i> LIHAT FILE SURAT TUGAS
-                    </a>
+                <div id="detail_berkas_links" class="mt-4 text-center">
+                    <!-- Preview will be injected here -->
                 </div>
             </div> <!-- End of modal-body -->
             <div class="modal-footer border-0 p-4 pt-0 mt-3">
@@ -404,6 +399,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function getPreviewHtml(path, title) {
+        if (!path) return '';
+        let ext = path.split('.').pop().toLowerCase();
+        let baseUrl = "<?= base_url() ?>";
+        if (!baseUrl.endsWith('/')) baseUrl += '/';
+        let cleanPath = path.startsWith('/') ? path.substring(1) : path;
+        let url = baseUrl + cleanPath;
+        
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+            return `<div class="mb-4 w-100 text-start"><div class="fw-bold mb-2 text-dark"><i class="fas fa-image text-danger me-1"></i> ${title}:</div><div class="text-center"><img src="${url}" class="img-fluid rounded shadow-sm border" style="max-height: 500px;"></div></div>`;
+        } else if (ext === 'pdf') {
+            return `<div class="mb-4 w-100 text-start"><div class="fw-bold mb-2 text-dark"><i class="fas fa-file-pdf text-danger me-1"></i> ${title}:</div><iframe src="${url}" class="w-100 rounded border shadow-sm" style="height: 500px;"></iframe></div>`;
+        }
+        return `<div class="mb-4 w-100 text-start"><div class="fw-bold mb-2 text-dark"><i class="fas fa-file text-muted me-1"></i> ${title}:</div><a href="${url}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-3"><i class="fas fa-download me-1"></i> Unduh / Lihat File</a></div>`;
+    }
+
     function showCertDetail(cert) {
         document.getElementById('detailJudul').innerText = cert.judul;
         document.getElementById('detailKategori').innerText = cert.kategori_kegiatan || 'Sertifikat Kegiatan';
@@ -414,30 +425,25 @@
         document.getElementById('detailWaktu').innerText = (cert.tgl_mulai || '') + ' s/d ' + (cert.tgl_selesai || '');
         document.getElementById('detailTipe').innerText = cert.jenis_dokumen || '-';
 
-        const btnSertifikat = document.getElementById('btnSertifikatModal');
-        const btnSuratTugas = document.getElementById('btnSuratTugasModal');
-        
         let baseUrl = "<?= base_url('/') ?>";
         if (!baseUrl.endsWith('/')) baseUrl += '/';
 
+        const berkasLinks = document.getElementById('detail_berkas_links');
+        berkasLinks.innerHTML = '';
+        
         if (cert.jenis_dokumen === 'rsud') {
-            btnSertifikat.classList.remove('d-none');
-            btnSertifikat.href = baseUrl + 'pelatihan/peserta/unduh_sertifikat/' + cert.id + '?auto=1';
+            berkasLinks.innerHTML += `<div class="mb-4 w-100 text-start"><div class="fw-bold mb-2 text-dark"><i class="fas fa-certificate text-danger me-1"></i> Sertifikat (Otomatis RSUD):</div><a href="${baseUrl}pelatihan/peserta/unduh_sertifikat/${cert.id}?auto=1" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill fw-bold px-3 w-100 py-2"><i class="fas fa-download me-1"></i> Unduh Sertifikat RSUD</a></div>`;
         } else if (cert.file_path) {
-            btnSertifikat.classList.remove('d-none');
-            let path = cert.file_path.startsWith('/') ? cert.file_path.substring(1) : cert.file_path;
-            btnSertifikat.href = baseUrl + path;
-        } else {
-            btnSertifikat.classList.add('d-none');
+            berkasLinks.innerHTML += getPreviewHtml(cert.file_path, 'Dokumen Sertifikat/Bukti');
         }
 
         const typeLower = (cert.jenis_dokumen || '').toLowerCase();
         if ((typeLower === 'surat tugas' || typeLower === 'surat_tugas') && cert.surat_tugas_path) {
-            btnSuratTugas.classList.remove('d-none');
-            let stPath = cert.surat_tugas_path.startsWith('/') ? cert.surat_tugas_path.substring(1) : cert.surat_tugas_path;
-            btnSuratTugas.href = baseUrl + stPath;
-        } else {
-            btnSuratTugas.classList.add('d-none');
+            berkasLinks.innerHTML += getPreviewHtml(cert.surat_tugas_path, 'Surat Tugas');
+        }
+
+        if (!cert.file_path && !cert.surat_tugas_path && cert.jenis_dokumen !== 'rsud') {
+            berkasLinks.innerHTML = '<span class="text-muted small">Tidak ada lampiran berkas</span>';
         }
 
         new bootstrap.Modal(document.getElementById('certDetailModal')).show();

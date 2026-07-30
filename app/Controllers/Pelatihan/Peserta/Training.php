@@ -137,6 +137,7 @@ class Training extends BaseController
 
     public function belajar($id)
     {
+        helper('pelatihan');
         $userId = $this->session->get('user_id');
         if (!$userId) {
             return redirect()->to('/login');

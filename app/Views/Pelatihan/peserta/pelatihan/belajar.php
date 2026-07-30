@@ -21,38 +21,7 @@ $ratingAlreadySubmitted = $ratingAlreadySubmitted ?? false;
 $submittedSesiEvaluations = $submittedSesiEvaluations ?? [];
 $nowTs = time();
 
-if (!function_exists('renderPelatihanFilePreview')) {
-    function renderPelatihanFilePreview($filePath, $title = '', $fallbackUrl = '') {
-        $filePath = $filePath ?: '';
-        $title = $title ?: basename($filePath);
-        $fileUrl = $fallbackUrl ?: base_url($filePath);
-        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
-            return '<div class="text-center"><img src="' . esc($fileUrl, 'attr') . '" class="img-fluid rounded shadow" style="max-height: 600px;" alt="' . esc($title, 'attr') . '"></div>';
-        }
-
-        if (in_array($ext, ['mp4', 'webm', 'ogg'], true)) {
-            $mime = $ext === 'mp4' ? 'video/mp4' : ($ext === 'webm' ? 'video/webm' : 'video/ogg');
-            return '<video controls class="w-100 rounded shadow" style="max-height: 500px;"><source src="' . esc($fileUrl, 'attr') . '" type="' . esc($mime, 'attr') . '">Browser Anda tidak mendukung pemutaran video.</video>';
-        }
-
-        if ($ext === 'pdf') {
-            return '<div class="document-preview-shell"><div class="document-preview-head"><span>' . esc($title) . '</span></div><iframe src="' . esc($fileUrl, 'attr') . '" class="inline-document-preview" title="' . esc($title, 'attr') . '"></iframe></div>';
-        }
-
-        if (in_array($ext, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'], true)) {
-            $label = in_array($ext, ['xls', 'xlsx'], true) ? 'Excel' : (in_array($ext, ['ppt', 'pptx'], true) ? 'PowerPoint' : 'Word');
-            return '<div class="document-preview-shell"><div class="document-preview-head"><span>' . esc($title) . '</span></div><div class="p-4 text-center bg-light" style="min-height: 220px;"><i class="fas fa-file-alt fa-3x text-muted mb-3"></i><h6 class="fw-bold text-dark">Preview ' . esc($label) . ' tidak tersedia di halaman ini</h6><p class="text-muted small mb-0">File materi ini tidak dapat dibuka langsung dari ruang belajar.</p></div></div>';
-        }
-
-        if (in_array($ext, ['txt', 'csv'], true)) {
-            return '<div class="document-preview-shell"><div class="document-preview-head"><span>' . esc($title) . '</span></div><div class="p-4 text-center bg-light" style="min-height: 220px;"><i class="fas fa-file-alt fa-3x text-muted mb-3"></i><h6 class="fw-bold text-dark">Preview teks tidak tersedia</h6><p class="text-muted small mb-0">File materi ini tidak dapat dibuka langsung dari ruang belajar.</p></div></div>';
-        }
-
-        return '<div class="py-4 text-center"><i class="fas fa-file-alt fa-4x text-muted mb-3"></i><h6 class="text-white">File ini tidak punya preview bawaan browser.</h6><div class="text-warning fw-bold">' . esc($title) . '</div></div>';
-    }
-}
 ?>
 
 <?= $this->extend('Pelatihan/layout/peserta_layout') ?>
@@ -418,10 +387,17 @@ if (!function_exists('renderPelatihanFilePreview')) {
 
     @media (max-width: 992px) {
         .learning-layout { flex-direction: column; }
-        .learning-sidebar { width: 100%; max-height: none; }
-        .learning-content { padding: 18px; }
-        .content-card { padding: 24px; }
-        .inline-document-preview { min-height: 420px; }
+        .learning-sidebar { width: 100%; max-height: none; border-right: none; border-bottom: 1px solid #e5e7eb; }
+        .sidebar-nav { max-height: 250px; overflow-y: auto; border-bottom: 1px solid #e5e7eb; }
+        .learning-content { padding: 16px; }
+        .content-card { padding: 20px; }
+        .inline-document-preview { min-height: 350px; }
+    }
+    @media (max-width: 575.98px) {
+        .learning-layout { margin: -10px; border-radius: 0; border-left: none; border-right: none; }
+        .content-card { padding: 16px; border-radius: 12px; }
+        .content-card h2 { font-size: 1.5rem !important; }
+        .sidebar-nav { max-height: 200px; }
     }
 
 </style>

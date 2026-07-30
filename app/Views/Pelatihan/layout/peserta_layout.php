@@ -389,6 +389,87 @@ try {
             background: var(--primary-red);
             color: white !important;
             transform: translateY(-3px) scale(1.1);
+        /* Mobile Responsive Enhancements */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: rgba(15, 23, 42, 0.98);
+                border-radius: 16px;
+                padding: 1rem;
+                margin-top: 1rem;
+                border: 1px solid rgba(255,255,255,0.1);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+            .navbar-nav .nav-item {
+                margin-bottom: 0.5rem;
+            }
+            .navbar-nav .nav-link {
+                padding: 0.8rem 1rem !important;
+                text-align: center;
+            }
+            .btn-profile {
+                width: 100%;
+                display: block;
+                margin-top: 0.5rem;
+                text-align: center;
+            }
+            .navbar-brand img {
+                height: 32px !important;
+            }
+            .navbar-brand span {
+                font-size: 1rem !important;
+            }
+            body {
+                padding-top: 70px;
+            }
+            .glass-wrapper-global {
+                padding: 1.5rem 1rem !important;
+                border-radius: 16px !important;
+                margin-bottom: 1rem !important;
+            }
+            .glass-breadcrumb {
+                top: 70px !important;
+                font-size: 0.8rem !important;
+                padding: 0.5rem 0.8rem !important;
+            }
+            /* Reset Belajar Sidebar Fixed position on Mobile */
+            #sidebar-container {
+                position: relative !important;
+                height: auto !important;
+                margin-bottom: 1.5rem !important;
+                top: 0 !important;
+                max-height: none !important;
+            }
+            #content-container {
+                height: auto !important;
+                overflow-y: visible !important;
+            }
+        }
+        @media (max-width: 575.98px) {
+            .course-img-wrapper {
+                height: 160px !important;
+            }
+            h2, h3, h4 {
+                font-size: 1.25rem !important;
+            }
+            h5 {
+                font-size: 1.1rem !important;
+            }
+            .glass-wrapper-global {
+                padding: 1.25rem 0.85rem !important;
+                border-radius: 12px !important;
+            }
+            .btn {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.85rem !important;
+            }
+            .badge {
+                font-size: 0.7rem !important;
+                padding: 0.35rem 0.65rem !important;
+            }
+            .table-responsive {
+                border-radius: 12px;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
