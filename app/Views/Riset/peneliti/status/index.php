@@ -40,7 +40,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold px-3 py-2 rounded-pill position-relative" id="studi-tab" data-bs-toggle="tab" data-bs-target="#studi" type="button" role="tab" style="font-size: 12px;">
                     Studi Pendahuluan
-                    <span class="badge bg-danger ms-1 text-white rounded-pill" style="font-size: 9px; padding: 3px 6px;"><?= count($studi_pendahuluan) ?></span>
+                    <span class="badge bg-secondary ms-1 text-white rounded-pill" style="font-size: 9px; padding: 3px 6px;"><?= count($studi_pendahuluan) ?></span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">

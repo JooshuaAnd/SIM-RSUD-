@@ -213,7 +213,8 @@ class Publikasi extends BaseController
         }
 
         $dokumen = $this->dokumenModel->where('pengajuan_riset_id', $id)
-                                      ->whereIn('jenis_dokumen', ['Surat Izin Publikasi Resmi', 'Surat Izin Resmi'])
+                                      ->where('jenis_dokumen', 'Surat Izin Publikasi Resmi')
+                                      ->orderBy('id', 'DESC')
                                       ->first();
                                       
         if ($dokumen && !empty($dokumen['file_path'])) {

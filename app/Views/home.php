@@ -284,9 +284,6 @@
                 <img src="<?= base_url('assets/img/logo_rs_jogja.jpg') ?>" alt="Logo RSUD Yogyakarta" height="50" class="me-3">
                 SIM DIKLAT RSUD Yogyakarta
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
         </div>
     </nav>
 

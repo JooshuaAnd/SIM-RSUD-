@@ -141,7 +141,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="<?= base_url('riset/peneliti/profil') ?>"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i> Profil Saya</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="<?= base_url('riset/logout') ?>"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2"></i> Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="<?= base_url('riset/logout') ?>"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2"></i> Keluar</a></li>
                         </ul>
                     </li>
                 </ul>

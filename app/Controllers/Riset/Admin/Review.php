@@ -52,9 +52,12 @@ class Review extends BaseController
         $pengajuan['no_telp'] = $user['no_telp'] ?? 'Tidak ada';
         $pengajuan['tanggal'] = date('d/m/Y', strtotime($pengajuan['created_at'] ?? 'now'));
 
-        // Generate nomor surat berdasarkan angka tertinggi di tahun berjalan
+        // Generate nomor surat berdasarkan angka tertinggi di tahun berjalan khusus studi pendahuluan
         $currentYear = date('Y');
-        $existingNumbers = $this->pengajuanModel->like('nomor_surat', '/' . $currentYear, 'before')->findColumn('nomor_surat');
+        $existingNumbers = $this->pengajuanModel
+            ->where('jenis_pengajuan', 'studi_pendahuluan')
+            ->like('nomor_surat', '/' . $currentYear, 'before')
+            ->findColumn('nomor_surat');
         
         $maxNumber = 0;
         if ($existingNumbers) {
@@ -72,7 +75,7 @@ class Review extends BaseController
         $increment = str_pad($maxNumber + 1, 3, '0', STR_PAD_LEFT);
         $romans = ['01'=>'I', '02'=>'II', '03'=>'III', '04'=>'IV', '05'=>'V', '06'=>'VI', '07'=>'VII', '08'=>'VIII', '09'=>'IX', '10'=>'X', '11'=>'XI', '12'=>'XII'];
         $romanMonth = $romans[date('m')];
-        $default_nomor_surat = "{$increment}/SIP-RSUDY/{$romanMonth}/" . $currentYear;
+        $default_nomor_surat = "{$increment}/SIP-SP/{$romanMonth}/" . $currentYear;
 
         return view('Riset/admin/review/detail', [
             'title'               => 'Detail Pengajuan',
