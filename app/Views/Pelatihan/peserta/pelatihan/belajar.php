@@ -40,13 +40,13 @@ $nowTs = time();
     .learning-layout {
         display: flex;
         min-height: calc(100vh - 100px);
-        margin: -1rem -1.5rem; /* Override layout container padding on mobile */
+        margin: -1rem 0; /* Remove negative horizontal margins */
         background: transparent;
         overflow: hidden;
     }
     @media (min-width: 992px) {
         .learning-layout {
-            margin: -1rem -3rem; /* Override layout container padding on desktop */
+            margin: -1rem 0; 
         }
     }
 
@@ -395,9 +395,9 @@ $nowTs = time();
         .inline-document-preview { min-height: 350px; }
     }
     @media (max-width: 575.98px) {
-        .learning-layout { margin: -10px; border-radius: 0; border-left: none; border-right: none; }
-        .content-card { padding: 16px; border-radius: 12px; }
-        .content-card h2 { font-size: 1.5rem !important; }
+        .learning-layout { margin: -10px 0; border-radius: 0; border-left: none; border-right: none; }
+        .content-card { padding: 16px; border-radius: 0; }
+        .content-card h2 { font-size: 1.3rem !important; }
     }
 
 </style>

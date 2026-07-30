@@ -563,7 +563,7 @@ try {
         $isMainTab = $isHomeActive || ($isKatalogActive && !$isKatalogDetail) || ($isDiklatSayaActive && !$isDiklatSayaDetail) || ($isSertifikatActive && !$isSertifikatDetail) || in_array('profil', $segments) || in_array('notifikasi', $segments);
         
         // Hide breadcrumb in layout for Katalog Detail so we can render it custom in the view
-        $hideBreadcrumb = $isMainTab || $isKatalogDetail;
+        $hideBreadcrumb = $isMainTab || $isKatalogDetail || $isDiklatSayaDetail;
     ?>
     <div class="<?= $isFullWidth ? 'container-fluid px-0' : 'container' ?> pt-3 pb-0" style="flex: 1 0 auto;">
         <div class="row m-0">
