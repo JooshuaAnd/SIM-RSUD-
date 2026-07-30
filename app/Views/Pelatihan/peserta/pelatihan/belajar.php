@@ -126,6 +126,9 @@ $nowTs = time();
         flex-direction: column;
         border: 1px solid rgba(255, 255, 255, 0.15);
         color: white;
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
     }
 
     .material-viewer {
@@ -461,13 +464,15 @@ $nowTs = time();
     <!-- Content Area -->
     <div class="learning-content">
         
+        <div class="mb-4 text-start" style="max-width: 1100px; margin: 0 auto; width: 100%;">
+            <button class="btn px-3 py-2 rounded-3 text-dark d-inline-flex align-items-center gap-2 fw-bold" style="background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
+                <i class="fas fa-bars text-danger"></i> Navigasi Materi
+            </button>
+        </div>
+
         <div class="content-card">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-outline-light px-3 py-2 rounded-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div>
+                <div>
                     <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
                     <?php if ($active_step['tipe'] == 'presensi') : ?>
                         <p class="text-white-50 small mb-0 mt-2 fw-bold"><i class="fas fa-map-marker-alt me-1 text-warning"></i> LOKASI: RSUD KOTA YOGYAKARTA</p>
