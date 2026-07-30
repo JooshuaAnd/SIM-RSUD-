@@ -188,9 +188,9 @@ $waktu_penelitian = $waktu_penelitian ?? '-';
                     <p class="mb-0">Yogyakarta, <?= $tanggal ?></p>
                     <p class="mb-0"><?= isset($pengaturan['jabatan']) && !empty($pengaturan['jabatan']) ? esc($pengaturan['jabatan']) : 'Direktur' ?>,</p>
 
-                    <div style="height: 50px;"></div>
+                    <div style="height: 80px;"></div>
 
-                    <p class="fw-bold mb-0 text-decoration-underline"><?= isset($pengaturan['nama_pejabat']) && !empty($pengaturan['nama_pejabat']) ? esc($pengaturan['nama_pejabat']) : 'dr. Ariyudi Yunita, MMR' ?></p>
+                    <p class="fw-bold mb-0"><?= isset($pengaturan['nama_pejabat']) && !empty($pengaturan['nama_pejabat']) ? esc($pengaturan['nama_pejabat']) : 'dr. Ariyudi Yunita, MMR' ?></p>
                     <p class="mb-0"><?= isset($pengaturan['pangkat']) && !empty($pengaturan['pangkat']) ? esc($pengaturan['pangkat']) : 'Pembina Utama Muda (IV/c)' ?></p>
                     <p class="small mb-0">NIP. <?= isset($pengaturan['nip_pejabat']) && !empty($pengaturan['nip_pejabat']) ? esc($pengaturan['nip_pejabat']) : '196706262002122003' ?></p>
                 </div>

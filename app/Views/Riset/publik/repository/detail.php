@@ -26,7 +26,7 @@
         .publication-header {
             background-color: #222;
             color: white;
-            padding: 80px 0;
+            padding: 30px 0 80px;
         }
 
         .category-badge {
@@ -88,7 +88,12 @@
     <!-- Hero Section -->
     <section class="publication-header px-4">
         <div class="container">
-            <span class="category-badge mb-3 d-inline-block text-uppercase"><?= esc($data['kategori_jurnal'] ?? 'Penelitian') ?></span>
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="<?= base_url('repository/catalog') ?>" class="btn btn-outline-light btn-sm rounded-pill" style="font-size: 12px; font-weight: 600; padding: 6px 18px; border-color: rgba(255,255,255,0.2); transition: all 0.2s;">
+                    <i class="fas fa-arrow-left me-2"></i> Kembali ke Katalog
+                </a>
+                <span class="category-badge d-inline-block text-uppercase m-0"><?= esc($data['kategori_jurnal'] ?? 'Penelitian') ?></span>
+            </div>
             <h1 class="fw-bold mb-4" style="line-height: 1.3; font-size: 32px; max-width: 900px;"><?= esc($data['judul']) ?></h1>
             <div class="d-flex flex-wrap gap-4 text-white opacity-75" style="font-size: 13px;">
                 <div><i class="fas fa-users me-2"></i> <?= esc($data['nama']) ?></div>

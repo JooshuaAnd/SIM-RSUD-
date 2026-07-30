@@ -247,7 +247,7 @@
                                 <?php endif; ?>
                             </form>
                         </div>
-                    <?php elseif ($data['status'] == 'revisi'): ?>
+                    <?php elseif ($data['status'] == 'direvisi' || $data['status'] == 'revisi'): ?>
                         <div class="text-center py-4">
                             <div class="mb-3">
                                 <i class="fas fa-undo text-secondary" style="font-size: 48px;"></i>

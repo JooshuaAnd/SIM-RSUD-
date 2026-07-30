@@ -46,7 +46,7 @@
 
         <div class="p-3 mt-auto border-top">
             <a href="<?= base_url('riset/logout') ?>" class="btn btn-outline-danger w-100 btn-sm fw-bold">
-                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                <i class="fas fa-sign-out-alt me-1"></i> Keluar
             </a>
         </div>
     </div>

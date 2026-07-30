@@ -366,28 +366,51 @@ class ManajemenPeserta extends BaseController
         ];
         
         $sentCount = 0;
-        foreach ($niks as $nik) {
-            $user = $userModel->select('users_pelatihan.*, profesi_pelatihan.kategori_target, profesi_pelatihan.target_jpl as target_jpl_profesi')
-                ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
-                ->where('users_pelatihan.nik', $nik)
-                ->first();
-            if (!$user) continue;
+        
+        // Optimize: Fetch all users at once
+        $users = $userModel->select('users_pelatihan.*, profesi_pelatihan.kategori_target, profesi_pelatihan.target_jpl as target_jpl_profesi')
+            ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
+            ->whereIn('users_pelatihan.nik', $niks)
+            ->findAll();
             
-            $myCompletedPelat = $pesertaPelatihanModel->select('master_pelatihan.jpl, master_pelatihan.jadwal_selesai')
-                ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
-                ->where('peserta_pelatihan.user_id', $nik)
-                ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                ->where('master_pelatihan.cert_published', 1)
-                ->findAll();
+        if (empty($users)) {
+            return $this->response->setJSON(['status' => 'success', 'count' => 0]);
+        }
+
+        // Optimize: Fetch all completed trainings for these users at once
+        $allCompletedPelat = $pesertaPelatihanModel->select('peserta_pelatihan.user_id, master_pelatihan.jpl, master_pelatihan.jadwal_selesai')
+            ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
+            ->whereIn('peserta_pelatihan.user_id', $niks)
+            ->where('peserta_pelatihan.status_peserta', 'Lulus')
+            ->where('master_pelatihan.cert_published', 1)
+            ->findAll();
             
-            $myApprovedCerts = $db->table('sertifikat_pelatihan')
-                ->where('user_id', $nik)
-                ->where('verifikasi', 'approved')
-                ->where('jenis_dokumen !=', 'rsud')
-                ->get()->getResultArray();
+        $pelatByUser = [];
+        foreach ($allCompletedPelat as $cp) {
+            $pelatByUser[$cp['user_id']][] = $cp;
+        }
+
+        // Optimize: Fetch all approved external certs at once
+        $allApprovedCerts = $db->table('sertifikat_pelatihan')
+            ->whereIn('user_id', $niks)
+            ->where('verifikasi', 'approved')
+            ->where('jenis_dokumen !=', 'rsud')
+            ->get()->getResultArray();
+            
+        $certsByUser = [];
+        foreach ($allApprovedCerts as $ac) {
+            $certsByUser[$ac['user_id']][] = $ac;
+        }
+        
+        $notifData = [];
+        $currentYear = date('Y');
+
+        foreach ($users as $user) {
+            $nik = $user['nik'];
+            $myCompletedPelat = $pelatByUser[$nik] ?? [];
+            $myApprovedCerts = $certsByUser[$nik] ?? [];
             
             $completedJpl = 0;
-            $currentYear = date('Y');
             foreach ($myCompletedPelat as $cp) {
                 $yearOfTraining = !empty($cp['jadwal_selesai']) ? date('Y', strtotime($cp['jadwal_selesai'])) : date('Y');
                 if ($yearOfTraining == $currentYear) $completedJpl += (int)($cp['jpl'] ?? 0);
@@ -406,17 +429,19 @@ class ManajemenPeserta extends BaseController
                 $message
             );
             
-            $notifModel->insert([
+            $notifData[] = [
                 'user_id' => $nik,
                 'title' => 'Peringatan Capaian JPL - Room Broadcast',
                 'message' => $personalized,
                 'type' => 'warning',
                 'is_read' => 0
-            ]);
-            
-            // Email sending logic removed
+            ];
             
             $sentCount++;
+        }
+        
+        if (!empty($notifData)) {
+            $notifModel->insertBatch($notifData);
         }
         
         return $this->response->setJSON(['status' => 'success', 'count' => $sentCount]);
@@ -466,17 +491,32 @@ class ManajemenPeserta extends BaseController
         ];
 
         $sentCount = 0;
+        
+        $niks = array_column($usersList, 'nik');
+        if (empty($niks)) {
+            return redirect()->to('/pelatihan/admin/monitoring')->with('success', 'Tidak ada peserta yang sesuai kriteria.');
+        }
+
+        // Optimize: Fetch all completed trainings for these users at once
+        $allCompletedPelat = $pesertaPelatihanModel->select('peserta_pelatihan.user_id, master_pelatihan.jpl, master_pelatihan.jadwal_selesai')
+            ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
+            ->whereIn('peserta_pelatihan.user_id', $niks)
+            ->where('peserta_pelatihan.status_peserta', 'Lulus')
+            ->where('master_pelatihan.cert_published', 1)
+            ->findAll();
+            
+        $pelatByUser = [];
+        foreach ($allCompletedPelat as $cp) {
+            $pelatByUser[$cp['user_id']][] = $cp;
+        }
+
+        $notifData = [];
+        $currentYear = date('Y');
+
         foreach ($usersList as $u) {
-            // Get total JPL completed by user (where status is Lulus) in current year
-            $myCompletedPelat = $pesertaPelatihanModel->select('master_pelatihan.jpl, master_pelatihan.jadwal_selesai')
-                ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
-                ->where('peserta_pelatihan.user_id', $u['nik'])
-                ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                ->where('master_pelatihan.cert_published', 1)
-                ->findAll();
+            $myCompletedPelat = $pelatByUser[$u['nik']] ?? [];
             
             $completedJpl = 0;
-            $currentYear = date('Y');
             foreach ($myCompletedPelat as $cp) {
                 $yearOfTraining = !empty($cp['jadwal_selesai']) ? date('Y', strtotime($cp['jadwal_selesai'])) : date('Y');
                 if ($yearOfTraining == $currentYear) {
@@ -498,17 +538,19 @@ class ManajemenPeserta extends BaseController
                 $message
             );
             
-            $notifModel->insert([
+            $notifData[] = [
                 'user_id' => $u['nik'],
                 'title' => 'Broadcast Capaian JPL',
                 'message' => $personalized,
                 'type' => 'info',
                 'is_read' => 0
-            ]);
-            
-            // Email sending logic removed
+            ];
             
             $sentCount++;
+        }
+        
+        if (!empty($notifData)) {
+            $notifModel->insertBatch($notifData);
         }
         
         return redirect()->to('/pelatihan/admin/monitoring')->with('success', 'Broadcast berhasil dikirim ke ' . $sentCount . ' peserta.');
