@@ -796,25 +796,42 @@
                 });
                 
                 let msg = document.getElementById('remindMsgRoom').value;
-                let promises = employees.map(emp => {
-                    return fetch('<?= base_url("pelatihan/admin/monitoring/remind_individual") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            nik: emp.nik,
-                            message: msg
-                        })
-                    }).then(res => res.json());
-                });
-
-                Promise.all(promises).then(results => {
+                let niksArray = employees.map(emp => emp.nik);
+                
+                fetch('<?= base_url("pelatihan/admin/monitoring/broadcast_room") ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        niks: niksArray,
+                        message: msg
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Terkirim',
+                            text: 'Pengingat berhasil dikirim ke seluruh pegawai di ruangan ini.',
+                            confirmButtonColor: '#ce2127'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: data.message || 'Terjadi kesalahan saat mengirim pengingat.',
+                            confirmButtonColor: '#ce2127'
+                        });
+                    }
+                })
+                .catch(err => {
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Terkirim',
-                        text: 'Pengingat berhasil dikirim ke seluruh pegawai di ruangan ini.',
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan sistem: ' + err.message,
                         confirmButtonColor: '#ce2127'
                     });
                 });
