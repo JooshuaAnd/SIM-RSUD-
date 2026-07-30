@@ -1608,14 +1608,14 @@ $nowTs = time();
                                 <div class="col-md-4">
                                     <div class="p-4 rounded-4 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <small class="text-muted fw-bold d-block mb-2 text-uppercase letter-spacing-1">TOTAL DURASI</small>
-                                        <div class="h3 fw-bold text-dark mb-0"><?= $p['jpl'] ?> JPL</div>
+                                        <div class="h3 fw-bold text-dark mb-0"><?= esc($p['jpl'] ?? 0) ?> JPL</div>
                                         <div class="small text-muted mt-2 fw-bold">Jam Pelajaran</div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-4 rounded-4 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <small class="text-muted fw-bold d-block mb-2 text-uppercase letter-spacing-1">PENYELENGGARA</small>
-                                        <div class="h6 fw-bold text-dark mb-0 text-truncate" title="<?= $p['penyelenggara'] ?>"><?= strtoupper($p['penyelenggara']) ?></div>
+                                        <div class="h6 fw-bold text-dark mb-0 text-truncate" title="<?= esc($p['penyelenggara'] ?? '') ?>"><?= strtoupper(esc($p['penyelenggara'] ?? 'TIDAK DIKETAHUI')) ?></div>
                                         <div class="small text-muted mt-2 fw-bold">Institusi Terdaftar</div>
                                     </div>
                                 </div>
