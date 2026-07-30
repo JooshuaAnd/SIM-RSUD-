@@ -40,11 +40,14 @@ $nowTs = time();
     .learning-layout {
         display: flex;
         min-height: calc(100vh - 100px);
-        margin: 0;
-        background: var(--bg-light);
-        border-radius: 24px;
+        margin: -1rem -1.5rem; /* Override layout container padding on mobile */
+        background: transparent;
         overflow: hidden;
-        border: 1px solid #e5e7eb;
+    }
+    @media (min-width: 992px) {
+        .learning-layout {
+            margin: -1rem -3rem; /* Override layout container padding on desktop */
+        }
     }
 
     .learning-sidebar {
@@ -118,17 +121,14 @@ $nowTs = time();
 
     .content-card {
         background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
-        border-radius: 24px;
-        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.3);
+        border-radius: 0; /* Full screen card */
+        box-shadow: none;
         padding: 40px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: none;
         color: white;
-        max-width: 1100px;
-        margin: 0 auto;
-        width: 100%;
     }
 
     .material-viewer {
@@ -462,10 +462,10 @@ $nowTs = time();
 </div>
 
     <!-- Content Area -->
-    <div class="learning-content">
+    <div class="learning-content p-0">
         
-        <div class="mb-4 text-start" style="max-width: 1100px; margin: 0 auto; width: 100%;">
-            <button class="btn px-3 py-2 rounded-3 text-dark d-inline-flex align-items-center gap-2 fw-bold" style="background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
+        <div class="mb-0 text-start px-4 px-lg-5 py-3" style="background: var(--bg-light); border-bottom: 1px solid #e5e7eb;">
+            <button class="btn btn-lg rounded-3 text-dark d-inline-flex align-items-center gap-2 fw-bold" style="background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
                 <i class="fas fa-bars text-danger"></i> Navigasi Materi
             </button>
         </div>
@@ -1151,7 +1151,10 @@ $nowTs = time();
 
                         if (ext === 'pdf') {
                             return `
-                                <div class="mb-4 document-preview-shell shadow-sm">
+                                <div class="mb-4 document-preview-shell shadow-sm position-relative">
+                                    <button type="button" class="btn btn-dark btn-sm position-absolute" style="top: 12px; right: 15px; z-index: 10;" onclick="toggleFullscreen(this.parentElement)">
+                                        <i class="fas fa-expand"></i> Full View
+                                    </button>
                                     <div class="document-preview-head">
                                         <span>${displayTitle}</span>
                                     </div>
@@ -1162,7 +1165,10 @@ $nowTs = time();
                         if (['doc','docx','xls','xlsx','ppt','pptx'].includes(ext)) {
                             const label = ['xls','xlsx'].includes(ext) ? 'Excel' : (['ppt','pptx'].includes(ext) ? 'PowerPoint' : 'Word');
                             return `
-                                <div class="mb-4 document-preview-shell shadow-sm">
+                                <div class="mb-4 document-preview-shell shadow-sm position-relative">
+                                    <button type="button" class="btn btn-dark btn-sm position-absolute" style="top: 12px; right: 15px; z-index: 10;" onclick="toggleFullscreen(this.parentElement)">
+                                        <i class="fas fa-expand"></i> Full View
+                                    </button>
                                     <div class="document-preview-head">
                                         <span>${displayTitle}</span>
                                         <a href="${url}" target="_blank" rel="noopener">Unduh file</a>
@@ -1177,7 +1183,10 @@ $nowTs = time();
 
                         if (['txt','csv'].includes(ext)) {
                             return `
-                                <div class="mb-4 document-preview-shell shadow-sm">
+                                <div class="mb-4 document-preview-shell shadow-sm position-relative">
+                                    <button type="button" class="btn btn-dark btn-sm position-absolute" style="top: 12px; right: 15px; z-index: 10;" onclick="toggleFullscreen(this.parentElement)">
+                                        <i class="fas fa-expand"></i> Full View
+                                    </button>
                                     <div class="document-preview-head">
                                         <span>${displayTitle}</span>
                                         <a href="${url}" target="_blank" rel="noopener">Buka tab baru</a>
@@ -1637,5 +1646,17 @@ $nowTs = time();
         </div>
     </div>
 </div>
+
+<script>
+function toggleFullscreen(elem) {
+    if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+</script>
 
 <?= $this->endSection() ?>
