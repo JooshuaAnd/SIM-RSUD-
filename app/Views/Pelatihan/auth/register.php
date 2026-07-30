@@ -294,9 +294,6 @@
                     <h3 class="fw-bold text-dark">Registrasi Akun Peserta</h3>
                     <p class="text-muted small mb-0">Silakan lengkapi formulir di bawah ini untuk membuat akun portal diklat.</p>
                 </div>
-                <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-3" onclick="autofillRegister()" title="Autofill data testing">
-                    <i class="fas fa-bolt me-1"></i> TESTING
-                </button>
             </div>
 
             <form action="<?= base_url('pelatihan/auth/register') ?>" method="POST" id="registerForm">

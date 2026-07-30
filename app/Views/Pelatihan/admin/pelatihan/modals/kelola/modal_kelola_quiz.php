@@ -4,9 +4,6 @@
             <div class="modal-header bg-primary-custom text-white border-0">
                 <h5 class="modal-title fw-bold" id="quizModalTitle">Kelola Soal</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold" onclick="autofillQuizSoal()" title="Auto-fill 5 soal K3 untuk testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING 5 SOAL
-                    </button>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>

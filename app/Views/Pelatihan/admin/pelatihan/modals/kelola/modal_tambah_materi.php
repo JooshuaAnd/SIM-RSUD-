@@ -8,9 +8,6 @@ $sesiList = $sesiList ?? [];
             <div class="modal-header bg-primary-custom text-white border-0">
                 <h5 class="modal-title fw-bold small"><i class="fas fa-plus-circle me-2"></i> Tambah Materi Pembelajaran</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold" onclick="autofillMateri()" title="Auto-fill materi untuk testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING
-                    </button>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>

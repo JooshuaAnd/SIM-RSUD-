@@ -8,9 +8,6 @@ $profesi = $profesi ?? [];
             <div class="modal-header bg-dark text-white border-0 p-4 border-bottom border-danger border-4">
                 <h5 class="modal-title fw-bold text-uppercase"><i class="fas fa-user-plus me-2 text-warning"></i> Registrasi Akun Baru</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-3" onclick="autofillAkun()" title="Autofill data testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING
-                    </button>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>

@@ -175,7 +175,6 @@
                     <a href="<?= base_url('/') ?>" class="text-decoration-none text-muted small"><i class="fas fa-home"></i> Beranda</a>
                 </div>
                 <div>
-                    <button type="button" class="btn btn-warning me-2 text-dark fw-bold" onclick="autofillTesting()"><i class="fas fa-magic"></i> Autofill</button>
                     <button type="submit" class="btn btn-primary">DAFTAR SEKARANG</button>
                 </div>
             </div>

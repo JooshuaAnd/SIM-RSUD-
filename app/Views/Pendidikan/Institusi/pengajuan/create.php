@@ -237,7 +237,6 @@
         <div class="col-lg-12 mb-5">
             <div class="card border-0 bg-transparent">
                 <div class="card-body p-0 d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-warning px-4 text-dark fw-bold" onclick="autofillPengajuan()"><i class="fas fa-magic"></i> Autofill Testing</button>
                     <button type="button" class="btn btn-light px-4">Batal</button>
                     <button type="submit" class="btn btn-danger px-5 fw-bold">KIRIM PENGAJUAN</button>
                 </div>

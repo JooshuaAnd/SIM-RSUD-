@@ -104,9 +104,6 @@
             <div class="modal-header bg-light border-0 px-4 py-3">
                 <h5 class="modal-title fw-bold text-dark" id="modalSesiTitle">Tambah Sesi Baru</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold" onclick="autofillSesi()" title="Auto-fill sesi untuk testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING
-                    </button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
