@@ -387,8 +387,6 @@ $nowTs = time();
 
     @media (max-width: 992px) {
         .learning-layout { flex-direction: column; }
-        .learning-sidebar { width: 100%; max-height: none; border-right: none; border-bottom: 1px solid #e5e7eb; }
-        .sidebar-nav { max-height: 250px; overflow-y: auto; border-bottom: 1px solid #e5e7eb; }
         .learning-content { padding: 16px; }
         .content-card { padding: 20px; }
         .inline-document-preview { min-height: 350px; }
@@ -397,17 +395,20 @@ $nowTs = time();
         .learning-layout { margin: -10px; border-radius: 0; border-left: none; border-right: none; }
         .content-card { padding: 16px; border-radius: 12px; }
         .content-card h2 { font-size: 1.5rem !important; }
-        .sidebar-nav { max-height: 200px; }
     }
 
 </style>
 
 <div class="learning-layout">
     
-    <!-- Sidebar -->
-    <div class="learning-sidebar">
-        <div class="sidebar-header">
-            <div class="small text-muted mb-1 text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
+    <!-- Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start border-0 shadow-lg" tabindex="-1" id="sidebarBelajar" aria-labelledby="sidebarBelajarLabel" style="width: 320px;">
+        <div class="learning-sidebar w-100 h-100 border-0">
+            <div class="sidebar-header">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="small text-muted text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
             <h6 class="fw-bold mb-3"><?= $p['nama'] ?></h6>
             <div class="progress" style="height: 8px; background: #e2e8f0; border-radius: 10px;">
                 <div class="progress-bar bg-danger shadow-sm" style="width: <?= (count($completed_steps) / count($konten)) * 100 ?>%"></div>
@@ -455,13 +456,18 @@ $nowTs = time();
             <?php endforeach; ?>
         </div>
     </div>
+</div>
 
     <!-- Content Area -->
     <div class="learning-content">
         
         <div class="content-card">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
-                <div>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-light px-3 py-2 rounded-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
                     <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
                     <?php if ($active_step['tipe'] == 'presensi') : ?>
                         <p class="text-white-50 small mb-0 mt-2 fw-bold"><i class="fas fa-map-marker-alt me-1 text-warning"></i> LOKASI: RSUD KOTA YOGYAKARTA</p>
