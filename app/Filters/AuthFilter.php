@@ -33,6 +33,15 @@ class AuthFilter implements FilterInterface
                 return redirect()->to('/pelatihan/login')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
             }
         }
+
+        // Force password reset for default passwords
+        if ($session->get('force_password_reset') && $session->get('role') === 'peserta') {
+            $currentUri = $request->getUri()->getPath();
+            // Allow access only to /pelatihan/peserta/profil and its save endpoint, and logout
+            if (!str_contains($currentUri, 'pelatihan/peserta/profil') && !str_contains($currentUri, 'pelatihan/logout')) {
+                return redirect()->to('/pelatihan/peserta/profil')->with('error', 'Wajib mengganti password default (RSUDKotaYogyakarta2026) sebelum dapat menggunakan aplikasi.');
+            }
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

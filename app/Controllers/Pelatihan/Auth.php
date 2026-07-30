@@ -62,7 +62,8 @@ class Auth extends BaseController
             'email'         => $user['email'],
             'role'          => $user['role'],
             'jenis_peserta' => $user['jenis_peserta'],
-            'logged_in'     => true
+            'logged_in'     => true,
+            'force_password_reset' => password_verify('RSUDKotaYogyakarta2026', $user['password'])
         ]);
 
         // Redirect to respective dashboard based on database role

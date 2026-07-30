@@ -341,13 +341,6 @@ class ManajemenPeserta extends BaseController
         
         $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
         $user = $userModel->where('nik', $nik)->first();
-        if ($user && !empty($user['email'])) {
-            $emailService = \Config\Services::email();
-            $emailService->setTo($user['email']);
-            $emailService->setSubject('Peringatan Capaian JPL');
-            $emailService->setMessage($message);
-            $emailService->send();
-        }
         
         return $this->response->setJSON(['status' => 'success']);
     }
@@ -421,13 +414,7 @@ class ManajemenPeserta extends BaseController
                 'is_read' => 0
             ]);
             
-            if (!empty($user['email'])) {
-                $emailService = \Config\Services::email();
-                $emailService->setTo($user['email']);
-                $emailService->setSubject('Peringatan Capaian JPL - Room Broadcast');
-                $emailService->setMessage($personalized);
-                $emailService->send();
-            }
+            // Email sending logic removed
             
             $sentCount++;
         }
@@ -519,13 +506,7 @@ class ManajemenPeserta extends BaseController
                 'is_read' => 0
             ]);
             
-            if (!empty($u['email'])) {
-                $emailService = \Config\Services::email();
-                $emailService->setTo($u['email']);
-                $emailService->setSubject('Broadcast Capaian JPL');
-                $emailService->setMessage($personalized);
-                $emailService->send();
-            }
+            // Email sending logic removed
             
             $sentCount++;
         }
@@ -547,15 +528,8 @@ class ManajemenPeserta extends BaseController
         
         $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
         $user = $userModel->where('nik', $userId)->first();
-        if ($user && !empty($user['email'])) {
-            $emailService = \Config\Services::email();
-            $emailService->setTo($user['email']);
-            $emailService->setSubject('Peringatan Capaian JPL');
-            $emailService->setMessage($message);
-            $emailService->send();
-        }
         
-        return redirect()->back()->with('success', 'Pengingat telah dikirim ke notifikasi dan email peserta.');
+        return redirect()->back()->with('success', 'Pengingat telah dikirim ke notifikasi peserta.');
     }
 
     public function akun_peserta()
@@ -668,8 +642,8 @@ class ManajemenPeserta extends BaseController
              $idProfesi = $this->request->getPost('id_profesi');
         }
 
-        // Generate random password
-        $randomPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+        // Generate default password
+        $randomPassword = 'RSUDKotaYogyakarta2026';
 
         $userData = [
             'nik'           => $this->request->getPost('nik'),
@@ -686,29 +660,7 @@ class ManajemenPeserta extends BaseController
 
         $userModel = new UserPelatihanModel();
         if ($userModel->insert($userData)) {
-            // Send email
-            $emailService = \Config\Services::email();
-            $emailService->setTo($userData['email']);
-            $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
-            $emailService->setSubject('Informasi Akun SIM Diklat KP');
-            
-            $message = "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>";
-            $message .= "<h2 style='color: #ce2127;'>Selamat Datang di SIM Diklat KP</h2>";
-            $message .= "<p>Halo <b>" . esc($userData['nama_lengkap']) . "</b>,</p>";
-            $message .= "<p>Akun Anda telah berhasil didaftarkan oleh Admin. Berikut adalah detail login Anda:</p>";
-            $message .= "<table style='border-collapse: collapse; width: 100%; max-width: 400px;'>";
-            $message .= "<tr><td style='padding: 8px; border: 1px solid #ddd;'><b>Username / NIK</b></td><td style='padding: 8px; border: 1px solid #ddd; font-family: monospace;'>" . esc($userData['nik']) . "</td></tr>";
-            $message .= "<tr><td style='padding: 8px; border: 1px solid #ddd;'><b>Password</b></td><td style='padding: 8px; border: 1px solid #ddd; font-family: monospace;'>" . esc($randomPassword) . "</td></tr>";
-            $message .= "</table>";
-            $message .= "<p style='margin-top: 20px;'>Harap segera ubah password Anda setelah berhasil login untuk keamanan akun Anda.</p>";
-            $message .= "<a href='" . base_url('pelatihan/peserta/login') . "' style='display: inline-block; padding: 10px 20px; color: #fff; background-color: #ce2127; text-decoration: none; border-radius: 5px;'>Login Sekarang</a>";
-            $message .= "<p style='margin-top: 20px; font-size: 0.9em; color: #666;'>Terima kasih,<br>Tim Diklat RSUD Kota Yogyakarta</p>";
-            $message .= "</div>";
-            
-            $emailService->setMessage($message);
-            $emailService->send();
-
-            return redirect()->to('/pelatihan/admin/akun_peserta')->with('success', 'Akun berhasil ditambahkan dan password telah dikirim ke email peserta.');
+            return redirect()->to('/pelatihan/admin/akun_peserta')->with('success', 'Akun berhasil ditambahkan. Password default peserta adalah RSUDKotaYogyakarta2026');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan akun. Silakan coba lagi.');
         }

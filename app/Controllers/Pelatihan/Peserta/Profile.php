@@ -65,6 +65,7 @@ class Profile extends BaseController
 
         if (!empty($data['password'])) {
             $updateData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            $this->session->remove('force_password_reset');
         }
 
         $db->table('users_pelatihan')->where('nik', $userId)->update($updateData);
