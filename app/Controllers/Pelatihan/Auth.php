@@ -154,7 +154,7 @@ class Auth extends BaseController
             // Send Registration Email
             $emailService = \Config\Services::email();
             $emailService->setTo($userData['email']);
-            $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
+
             $emailService->setSubject('Registrasi Berhasil - Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
             
             $loginUrl = base_url('pelatihan/login');
@@ -228,7 +228,7 @@ class Auth extends BaseController
         // Send Email
         $emailService = \Config\Services::email();
         $emailService->setTo($user['email']);
-        $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
+
         $emailService->setSubject('Password Baru Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
         
         $message = "

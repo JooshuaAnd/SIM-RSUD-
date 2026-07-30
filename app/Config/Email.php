@@ -6,8 +6,8 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = 'ruskia335@gmail.com';
-    public string $fromName   = 'Super Admin SIM Diklat';
+    public string $fromEmail;
+    public string $fromName;
     public string $recipients = '';
 
     /**
@@ -18,7 +18,7 @@ class Email extends BaseConfig
     /**
      * The mail sending protocol: mail, sendmail, smtp
      */
-    public string $protocol = 'smtp';
+    public string $protocol;
 
     /**
      * The server path to Sendmail.
@@ -28,7 +28,7 @@ class Email extends BaseConfig
     /**
      * SMTP Server Hostname
      */
-    public string $SMTPHost = 'smtp.gmail.com';
+    public string $SMTPHost;
 
     /**
      * Which SMTP authentication method to use: login, plain
@@ -38,17 +38,17 @@ class Email extends BaseConfig
     /**
      * SMTP Username
      */
-    public string $SMTPUser = 'ruskia335@gmail.com';
+    public string $SMTPUser;
 
     /**
      * SMTP Password
      */
-    public string $SMTPPass = 'dncolbjpkdjgennh';
+    public string $SMTPPass;
 
     /**
      * SMTP Port
      */
-    public int $SMTPPort = 465;
+    public int $SMTPPort;
 
     /**
      * SMTP Timeout (in seconds)
@@ -67,7 +67,7 @@ class Email extends BaseConfig
      *             to the server. 'ssl' means implicit SSL. Connection on port
      *             465 should set this to ''.
      */
-    public string $SMTPCrypto = 'ssl';
+    public string $SMTPCrypto;
 
     /**
      * Enable word-wrap
@@ -123,4 +123,21 @@ class Email extends BaseConfig
      * Enable notify message from server
      */
     public bool $DSN = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Mengambil konfigurasi SMTP dari environment variable
+        // Jika environment variable kosong, fallback ke nilai default
+        $this->fromEmail  = env('EMAIL_FROM_EMAIL', 'ruskia335@gmail.com');
+        $this->fromName   = env('EMAIL_FROM_NAME', 'RSUD Yogyakarta');
+        
+        $this->protocol   = env('EMAIL_PROTOCOL', 'smtp');
+        $this->SMTPHost   = env('EMAIL_SMTP_HOST', 'smtp.mailersend.net');
+        $this->SMTPUser   = env('EMAIL_SMTP_USER', '');
+        $this->SMTPPass   = env('EMAIL_SMTP_PASS', '');
+        $this->SMTPPort   = (int) env('EMAIL_SMTP_PORT', 587); // Dicast menjadi integer
+        $this->SMTPCrypto = env('EMAIL_SMTP_CRYPTO', 'tls');
+    }
 }
