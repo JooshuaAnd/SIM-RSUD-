@@ -1198,15 +1198,21 @@ class ManajemenPeserta extends BaseController
         $sheet1->setCellValue('A8', 'Level & Cakupan');
         $sheet1->setCellValue('B8', ($pelatihan['level_pelatihan'] ?? '-') . ' - ' . ($pelatihan['cakupan'] ?? '-'));
         
-        $sheet1->setCellValue('A9', 'Jadwal Pelaksanaan');
+        $sheet1->setCellValue('A9', 'Nilai SKP');
+        $sheet1->setCellValue('B9', $pelatihan['skp'] ?? '-');
+        
+        $sheet1->setCellValue('A10', 'Total JPL');
+        $sheet1->setCellValue('B10', $pelatihan['jpl'] ?? '-');
+        
+        $sheet1->setCellValue('A11', 'Jadwal Pelaksanaan');
         $jadwal = ($pelatihan['jadwal_mulai'] ?? '') . ' s.d ' . ($pelatihan['jadwal_selesai'] ?? '');
-        $sheet1->setCellValue('B9', $jadwal);
+        $sheet1->setCellValue('B11', $jadwal);
         
-        $sheet1->setCellValue('A10', 'Tujuan');
-        $sheet1->setCellValue('B10', strip_tags($pelatihan['tujuan'] ?? '-'));
+        $sheet1->setCellValue('A12', 'Tujuan');
+        $sheet1->setCellValue('B12', strip_tags($pelatihan['tujuan'] ?? '-'));
         
-        $sheet1->setCellValue('A11', 'Kompetensi');
-        $sheet1->setCellValue('B11', strip_tags($pelatihan['kompetensi'] ?? '-'));
+        $sheet1->setCellValue('A13', 'Kompetensi');
+        $sheet1->setCellValue('B13', strip_tags($pelatihan['kompetensi'] ?? '-'));
 
         $narasumberList = $db->table('narasumber_pelatihan')
             ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id')
@@ -1214,13 +1220,13 @@ class ManajemenPeserta extends BaseController
             ->get()->getResultArray();
         $narasumberText = [];
         foreach($narasumberList as $n) { $narasumberText[] = $n['nama_pejabat']; }
-        $sheet1->setCellValue('A12', 'Narasumber');
-        $sheet1->setCellValue('B12', implode(', ', $narasumberText) ?: '-');
+        $sheet1->setCellValue('A14', 'Narasumber');
+        $sheet1->setCellValue('B14', implode(', ', $narasumberText) ?: '-');
 
         // Kurikulum Materi
-        $sheet1->setCellValue('A14', 'Kurikulum Materi');
-        $sheet1->getStyle('A14')->getFont()->setBold(true);
-        $rowK = 15;
+        $sheet1->setCellValue('A16', 'Kurikulum Materi');
+        $sheet1->getStyle('A16')->getFont()->setBold(true);
+        $rowK = 17;
         $noK = 1;
 
         // Pre Test
@@ -1262,7 +1268,7 @@ class ManajemenPeserta extends BaseController
 
         $sheet1->getColumnDimension('A')->setWidth(25);
         $sheet1->getColumnDimension('B')->setWidth(80);
-        $sheet1->getStyle('A3:A12')->getFont()->setBold(true);
+        $sheet1->getStyle('A3:A14')->getFont()->setBold(true);
 
         // === SHEET 2: PESERTA ===
         $sheet2 = $spreadsheet->createSheet();

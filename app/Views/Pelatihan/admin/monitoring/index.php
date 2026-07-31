@@ -228,8 +228,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
-                                            <?php if ($totalBelum > 0): ?>
-                                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2 fw-bold" style="font-size:0.65rem;" title="Ingatkan semua yang kurang" onclick='remindRoom(<?= json_encode($r['nama_unit']) ?>, <?= json_encode($r['belum']) ?>)'>
+                                            <?php if (($totalSudah + $totalBelum) > 0): ?>
+                                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2 fw-bold" style="font-size:0.65rem;" title="Ingatkan seluruh pegawai ruangan" onclick='remindRoom(<?= json_encode($r['nama_unit']) ?>, <?= json_encode(array_merge($r['sudah'], $r['belum'])) ?>)'>
                                                     <i class="fas fa-bell"></i>
                                                 </button>
                                             <?php endif; ?>
@@ -765,14 +765,14 @@
     }
 
     function remindRoom(roomName, employees) {
-        let templateMsg = `Pemberitahuan kepada pegawai di Ruangan ${roomName}. Harap segera lakukan pemenuhan program diklat tahunan Anda.`;
+        let templateMsg = `Pemberitahuan kepada seluruh pegawai di Ruangan ${roomName}. Harap perhatikan capaian JPL tahunan Anda.`;
         Swal.fire({
             title: '<span class="fw-bold fs-5 text-dark"><i class="fas fa-bell text-danger me-2"></i>Kirim Pengingat Ruangan</span>',
             html: `
                 <div class="text-start">
-                    <p class="small text-muted">Kirim pengingat ke seluruh nakes di <b>Ruangan ${roomName}</b> yang belum memenuhi target JPL.</p>
+                    <p class="small text-muted">Kirim pengingat ke seluruh nakes di <b>Ruangan ${roomName}</b>.</p>
                     <div class="alert alert-dark p-3 rounded-3 mb-3 border">
-                        <strong>Penerima:</strong> ${employees.length} Pegawai Belum Terpenuhi
+                        <strong>Penerima:</strong> ${employees.length} Pegawai Ruangan
                     </div>
                     <div class="mb-2">
                         <label class="fw-bold small text-dark mb-1">Pesan Broadcast Ruangan:</label>

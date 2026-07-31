@@ -409,7 +409,7 @@ $nowTs = time();
         <div class="learning-sidebar w-100 h-100 border-0">
             <div class="sidebar-header">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <div class="small text-muted text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
+                    <div class="small text-white text-uppercase fw-bold letter-spacing-1">Progress Belajar</div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
             <h6 class="fw-bold mb-3"><?= $p['nama'] ?></h6>
@@ -1376,7 +1376,7 @@ $nowTs = time();
                         <div class="text-center py-5">
                             <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                             <h5 class="fw-bold">Evaluasi Sudah Dikirim</h5>
-                            <p class="text-muted">Anda telah menyelesaikan evaluasi pelatihan ini. Terima kasih atas penilaian Anda.</p>
+                            <p class="text-white">Anda telah menyelesaikan evaluasi pelatihan ini. Terima kasih atas penilaian Anda.</p>
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$certIndex) ?>" class="btn btn-selanjutnya mt-3">Lihat Sertifikat <i class="fas fa-arrow-right ms-2"></i></a>
                         </div>
                     <?php else : ?>
@@ -1632,14 +1632,14 @@ $nowTs = time();
                                 <div class="col-md-4">
                                     <div class="p-4 rounded-4 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <small class="text-muted fw-bold d-block mb-2 text-uppercase letter-spacing-1">TOTAL DURASI</small>
-                                        <div class="h3 fw-bold text-dark mb-0"><?= $p['jpl'] ?> JPL</div>
+                                        <div class="h3 fw-bold text-dark mb-0"><?= esc($p['jpl'] ?? 0) ?> JPL</div>
                                         <div class="small text-muted mt-2 fw-bold">Jam Pelajaran</div>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-4 rounded-4 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                                         <small class="text-muted fw-bold d-block mb-2 text-uppercase letter-spacing-1">PENYELENGGARA</small>
-                                        <div class="h6 fw-bold text-dark mb-0 text-truncate" title="<?= $p['penyelenggara'] ?>"><?= strtoupper($p['penyelenggara']) ?></div>
+                                        <div class="h6 fw-bold text-dark mb-0 text-truncate" title="<?= esc($p['penyelenggara'] ?? '') ?>"><?= strtoupper(esc($p['penyelenggara'] ?? 'TIDAK DIKETAHUI')) ?></div>
                                         <div class="small text-muted mt-2 fw-bold">Institusi Terdaftar</div>
                                     </div>
                                 </div>

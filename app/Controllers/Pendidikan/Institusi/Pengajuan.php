@@ -726,6 +726,12 @@ class Pengajuan extends BaseController
                 return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengupdate database: ' . implode(', ', $mahasiswaModel->errors())]);
             }
 
+            // Update email in UsersPendidikanModel if email is changed and user_id exists
+            if (!empty($dataUpdate['email']) && !empty($mahasiswa['user_id'])) {
+                $userModel = new \App\Models\UsersPendidikanModel();
+                $userModel->update($mahasiswa['user_id'], ['email' => $dataUpdate['email']]);
+            }
+
             return $this->response->setJSON(['success' => true, 'message' => 'Data mahasiswa berhasil diperbarui.']);
         } catch (\Exception $e) {
             return $this->response->setJSON(['success' => false, 'message' => 'Error System: ' . $e->getMessage()]);

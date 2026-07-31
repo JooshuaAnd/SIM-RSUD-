@@ -154,7 +154,7 @@ class Auth extends BaseController
             // Send Registration Email
             $emailService = \Config\Services::email();
             $emailService->setTo($userData['email']);
-            $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
+
             $emailService->setSubject('Registrasi Berhasil - Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
             
             $loginUrl = base_url('pelatihan/login');
@@ -228,7 +228,7 @@ class Auth extends BaseController
         // Send Email
         $emailService = \Config\Services::email();
         $emailService->setTo($user['email']);
-        $emailService->setFrom('ruskia335@gmail.com', 'RSUD Yogyakarta');
+
         $emailService->setSubject('Password Baru Modul Pelatihan SIM DIKLAT RSUD Yogyakarta');
         
         $message = "
@@ -253,10 +253,13 @@ class Auth extends BaseController
         if ($emailService->send()) {
             return redirect()->to(base_url('pelatihan/login'))->with('success', 'Password baru telah dikirim ke email Anda. Silakan periksa kotak masuk atau folder spam untuk login.');
         } else {
-            // Log error or display to user for debug (in production, just generic error)
-            $err = $emailService->printDebugger(['headers']);
-            log_message('error', 'Email reset password gagal dikirim: ' . $err);
-            return redirect()->back()->with('error', 'Gagal mengirim email berisi password baru. Pastikan konfigurasi SMTP di server telah diatur.');
+            // // Log error or display to user for debug (in production, just generic error)
+            // $err = $emailService->printDebugger(['headers']);
+            // log_message('error', 'Email reset password gagal dikirim: ' . $err);
+            // return redirect()->back()->with('error', 'Gagal mengirim email berisi password baru. Pastikan konfigurasi SMTP di server telah diatur.');
+             echo "<pre>";
+    print_r($emailService->printDebugger(['headers', 'subject', 'body']));
+    exit;
         }
     }
 }
