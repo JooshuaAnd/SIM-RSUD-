@@ -716,26 +716,50 @@ $nowTs = time();
                         <p class="text-white-50 fs-5 mb-0" style="max-width: 500px; margin: 0 auto;">Anda tidak dapat mengakses materi ini karena status kehadiran Anda pada sesi terkait tercatat <strong class="text-danger">ALFA</strong>. Silakan hubungi admin untuk informasi lebih lanjut.</p>
                     </div>
                 <?php else: ?>
-                    <div class="text-start p-4">
-                        <?php foreach($active_step['materi_list'] as $m): ?>
-                            <div class="bg-white bg-opacity-10 rounded-4 p-4 mb-4 border border-white border-opacity-25">
-                                <h4 class="fw-bold text-warning mb-2"><?= esc($m['judul']) ?></h4>
+                    <div class="text-start p-4" id="materiAccordion">
+                        <?php foreach($active_step['materi_list'] as $index => $m): ?>
+                            <div class="bg-white bg-opacity-10 rounded-4 mb-4 border border-white border-opacity-25 overflow-hidden">
+                                <button class="w-100 text-start bg-transparent border-0 p-4 d-flex justify-content-between align-items-center" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#materiCollapse<?= $index ?>" 
+                                        aria-expanded="<?= $index === 0 ? 'true' : 'false' ?>" 
+                                        aria-controls="materiCollapse<?= $index ?>">
+                                    <h4 class="fw-bold text-warning mb-0"><i class="fas fa-file-alt me-2"></i><?= esc($m['judul']) ?></h4>
+                                    <i class="fas fa-chevron-down text-white transition-transform materi-chevron"></i>
+                                </button>
 
-                                <?php if(!empty($m['file_path'])): ?>
-                                    <div class="mt-3 text-center bg-dark p-3 rounded-3 overflow-hidden">
-                                        <?php
-                                            $fileUrl = base_url($m['file_path']);
-                                            echo renderPelatihanFilePreview($m['file_path'], $m['judul'], $fileUrl);
-                                        ?>
+                                <div id="materiCollapse<?= $index ?>" class="collapse <?= $index === 0 ? 'show' : '' ?>" data-bs-parent="#materiAccordion">
+                                    <div class="p-4 pt-0">
+                                        <?php if(!empty($m['file_path'])): ?>
+                                            <div class="mt-2 text-center bg-dark p-3 rounded-3 overflow-hidden">
+                                                <?php
+                                                    $fileUrl = base_url($m['file_path']);
+                                                    echo renderPelatihanFilePreview($m['file_path'], $m['judul'], $fileUrl);
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (!empty($m['deskripsi'])): ?>
+                                            <div class="mt-3 text-white-50 lh-lg" style="font-size: 0.9rem;"><?= $m['deskripsi'] ?></div>
+                                        <?php endif; ?>
                                     </div>
-                                <?php endif; ?>
-
-                                <?php if (!empty($m['deskripsi'])): ?>
-                                    <div class="mt-3 text-white-50 lh-lg" style="font-size: 0.9rem;"><?= $m['deskripsi'] ?></div>
-                                <?php endif; ?>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    
+                    <style>
+                        .materi-chevron {
+                            transition: transform 0.3s ease;
+                        }
+                        button[aria-expanded="true"] .materi-chevron {
+                            transform: rotate(180deg);
+                        }
+                        button:focus {
+                            outline: none;
+                        }
+                    </style>
                 <?php endif; ?>
 
                 <?php

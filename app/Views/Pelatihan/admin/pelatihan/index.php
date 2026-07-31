@@ -587,75 +587,7 @@
         }
     }, 60000);
 
-    function autofillTesting() {
-        var now = new Date();
-        var today = now.toISOString().split('T')[0];
-        var nextWeek = new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0];
-        var nextMonth = new Date(now.getTime() + 30 * 86400000).toISOString().split('T')[0];
-        var twoMonths = new Date(now.getTime() + 60 * 86400000).toISOString().split('T')[0];
 
-        $('#f_nama').val('Pelatihan K3 Rumah Sakit Angkatan 1');
-        $('#f_tema').val('Keselamatan dan Kesehatan Kerja di Fasilitas Pelayanan Kesehatan');
-        $('#f_program').val('Pelatihan');
-        $('#f_kategori').val('Kesehatan');
-
-        var ranahSkp = $('#f_ranah_skp').val();
-        updateTrainingCategories(ranahSkp);
-        setTimeout(function() {
-            var opts = $('#f_kategori_kegiatan option');
-            if (opts.length > 1) {
-                $('#f_kategori_kegiatan').val(opts.eq(1).val());
-            }
-        }, 200);
-
-        $('#f_skp').val('2.5');
-        $('#f_biaya').val('Berbayar').trigger('change');
-        setTimeout(function() {
-            $('#f_nama_bank').val('Bank Mandiri');
-            $('#f_rekening').val('1234567890123');
-            $('#f_atas_nama').val('RSUD Kota Yogyakarta');
-            $('#f_biaya_nominal').val('150000');
-        }, 100);
-        $('#f_level').val('Menengah');
-        $('#f_jpl').val('10');
-        $('#f_cakupan').val('Lokal');
-
-        $('#f_mekanisme').val('Tertutup').trigger('change');
-        setTimeout(function() {
-            $('#f_target_khusus_profesi').val(['Perawat', 'Dokter']).trigger('change');
-            $('#f_target_khusus_unit').val(['ICU', 'IGD']).trigger('change');
-        }, 100);
-        $('#f_metode').val('Offline / Clasical');
-        
-        $('#f_narasumber').empty();
-        $('#f_narasumber').append(new Option('dr. Ahmad Suharto, M.Kes, Sp.OG', 'dr. Ahmad Suharto, M.Kes, Sp.OG', true, true)).trigger('change');
-        
-        $('#f_penyelenggara').empty();
-        $('#f_penyelenggara').append(new Option('RSUD Kota Yogyakarta', 'RSUD Kota Yogyakarta', true, true)).trigger('change');
-        
-        $('#f_kontak').val('081234567890');
-
-        $('#f_reg_buka_tgl').val(today);
-        $('#f_reg_buka_jam').val('08:00');
-        $('#f_reg_tutup_tgl').val(nextWeek);
-        $('#f_reg_tutup_jam').val('23:59');
-        $('#f_jadwal_mulai').val(nextMonth);
-        $('#f_jam_mulai').val('08:00');
-        $('#f_jadwal_selesai').val(twoMonths);
-        $('#f_jam_selesai').val('16:00');
-        $('#f_kuota').val('30');
-
-        $('.target-profesi-checkbox').prop('checked', false);
-        $('.target-profesi-checkbox').first().prop('checked', true);
-        $('#checkAllProfesi').prop('checked', false);
-
-        $('#f_pengumuman').val('Pendaftaran dibuka untuk tenaga kesehatan RSUD Kota Yogyakarta');
-        $('#f_tujuan').val('Meningkatkan pengetahuan dan keterampilan petugas kesehatan dalam menerapkan standar K3 di lingkungan rumah sakit.');
-        $('#f_deskripsi').val('Pelatihan ini dirancang untuk memberikan pemahaman komprehensif mengenai keselamatan dan kesehatan kerja (K3) khususnya di lingkungan fasilitas pelayanan kesehatan. Materi meliputi identifikasi bahaya, mitigasi risiko, prosedur darurat, serta penggunaan APD yang benar.');
-        $('#f_kompetensi').val('Keselamatan Kerja, Mitigasi Risiko, Penggunaan APD, Prosedur Darurat');
-
-        showToast('Form berhasil diisi dengan data testing!', 'success');
-    }
 
     function showToast(text, icon) {
         var Toast = Swal.mixin({

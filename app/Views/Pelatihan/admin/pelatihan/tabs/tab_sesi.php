@@ -65,17 +65,25 @@
                                             <span class="text-muted small">Lokasi belum diatur</span>
                                         <?php endif; ?>
                                     <?php endif; ?>
-                                    <?php if(!empty($s['narasumber'])): ?>
-                                        <div class="small mt-2 text-muted"><i class="fas fa-user-tie me-1"></i> <?= $s['narasumber'] ?></div>
+                                    <?php if(!empty($s['narasumber_arr'])): ?>
+                                        <div class="small mt-2 d-flex flex-wrap gap-1">
+                                            <?php foreach($s['narasumber_arr'] as $nr): ?>
+                                                <span class="badge bg-light text-dark border fw-normal"><i class="fas fa-user-tie text-muted me-1"></i> <?= esc($nr) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
                                     <?php endif; ?>
-                                    <?php if(!empty($s['penyelenggara'])): ?>
-                                        <div class="small mt-1 text-muted"><i class="fas fa-building me-1"></i> <?= $s['penyelenggara'] ?></div>
+                                    <?php if(!empty($s['penyelenggara_arr'])): ?>
+                                        <div class="small mt-1 d-flex flex-wrap gap-1">
+                                            <?php foreach($s['penyelenggara_arr'] as $py): ?>
+                                                <span class="badge bg-light text-dark border fw-normal"><i class="fas fa-building text-muted me-1"></i> <?= esc($py) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <?php if ($s['tipe_sesi'] == 'offline'): ?>
-                                        <a href="<?= base_url('pelatihan/admin/presensi/'.$p['id'].'?sesi_id='.$s['id']) ?>" class="btn btn-sm btn-outline-success px-2 py-1" style="font-size: 0.75rem;" title="Presensi Kehadiran">
+                                        <a href="<?= base_url('pelatihan/admin/presensi/'.($p['id'] ?? '').'?sesi_id='.$s['id']) ?>" class="btn btn-sm btn-outline-success px-2 py-1" style="font-size: 0.75rem;" title="Presensi Kehadiran">
                                             <i class="fas fa-calendar-check me-1"></i> Presensi
                                         </a>
                                         <?php endif; ?>
@@ -104,22 +112,23 @@
             <div class="modal-header bg-light border-0 px-4 py-3">
                 <h5 class="modal-title fw-bold text-dark" id="modalSesiTitle">Tambah Sesi Baru</h5>
                 <div class="d-flex align-items-center gap-2">
+
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
             <form action="<?= base_url('pelatihan/admin/pelatihan/simpan_sesi') ?>" method="POST" onsubmit="showLoading('Menyimpan data sesi...');">
                 <div class="modal-body px-4 py-4" style="max-height: 70vh; overflow-y: auto;">
-                    <input type="hidden" name="pelatihan_id" value="<?= $p['id'] ?>">
+                    <input type="hidden" name="pelatihan_id" value="<?= $p['id'] ?? '' ?>">
                     <input type="hidden" name="id_sesi" id="id_sesi" value="">
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Tipe Sesi</label>
                         <select class="form-select border-light-subtle bg-light" name="tipe_sesi" id="tipe_sesi" onchange="toggleSesiFields()" required>
                             <option value="">-- Pilih Tipe --</option>
-                            <?php if ($p['metode'] == 'Online' || strpos(strtolower($p['metode']), 'blended') !== false): ?>
+                            <?php if (($p['metode'] ?? '') == 'Online' || strpos(strtolower($p['metode'] ?? ''), 'blended') !== false): ?>
                                 <option value="online">Online Meeting (Zoom/GMeet dll)</option>
                             <?php endif; ?>
-                            <?php if ($p['metode'] == 'Offline' || strpos(strtolower($p['metode']), 'clasical') !== false || strpos(strtolower($p['metode']), 'blended') !== false): ?>
+                            <?php if (($p['metode'] ?? '') == 'Offline' || strpos(strtolower($p['metode'] ?? ''), 'clasical') !== false || strpos(strtolower($p['metode'] ?? ''), 'blended') !== false): ?>
                                 <option value="offline">Tatap Muka (Offline)</option>
                             <?php endif; ?>
                         </select>
@@ -133,7 +142,6 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Narasumber</label>
                         <select class="form-select border-light-subtle bg-light" name="narasumber[]" id="narasumber" style="width: 100%;" multiple>
-                            <option value="">-- Pilih Narasumber --</option>
                             <?php if(!empty($master_narasumber)): foreach($master_narasumber as $mn): ?>
                                 <option value="<?= $mn['id'] ?>"><?= htmlspecialchars(($mn['gelar_depan'] ? $mn['gelar_depan'].' ' : '').$mn['nama_pejabat'].($mn['gelar_belakang'] ? ', '.$mn['gelar_belakang'] : '')) ?></option>
                             <?php endforeach; endif; ?>
@@ -144,7 +152,6 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark small">Penyelenggara</label>
                         <select class="form-select border-light-subtle bg-light" name="penyelenggara[]" id="penyelenggara" style="width: 100%;" multiple>
-                            <option value="">-- Pilih Penyelenggara --</option>
                             <?php if(!empty($master_penyelenggara)): foreach($master_penyelenggara as $mp): ?>
                                 <option value="<?= $mp['id'] ?>"><?= htmlspecialchars($mp['nama']) ?></option>
                             <?php endforeach; endif; ?>
@@ -248,8 +255,8 @@
         document.getElementById('alamat').value = '';
         document.getElementById('maps_url').value = '';
 
-        $('#narasumber').val('');
-        $('#penyelenggara').val('');
+        $('#narasumber').val('').trigger('change');
+        $('#penyelenggara').val('').trigger('change');
         
         toggleSesiFields();
         new bootstrap.Modal(document.getElementById('modalSesi')).show();
@@ -273,47 +280,42 @@
         document.getElementById('maps_url').value = sesi.maps_url;
         
         var selectNarasumber = $('#narasumber');
-        selectNarasumber.val('');
+        selectNarasumber.val('').trigger('change');
         if (sesi.narasumber_ids && sesi.narasumber_ids.length > 0) {
-            selectNarasumber.val(sesi.narasumber_ids);
+            selectNarasumber.val(sesi.narasumber_ids).trigger('change');
         }
 
         var selectPenyelenggara = $('#penyelenggara');
-        selectPenyelenggara.val('');
+        selectPenyelenggara.val('').trigger('change');
         if (sesi.penyelenggara_ids && sesi.penyelenggara_ids.length > 0) {
-            selectPenyelenggara.val(sesi.penyelenggara_ids);
+            selectPenyelenggara.val(sesi.penyelenggara_ids).trigger('change');
         }
 
         toggleSesiFields();
         new bootstrap.Modal(document.getElementById('modalSesi')).show();
     }
 
-    function autofillSesi() {
-        var now = new Date();
-        var nextWeek = new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0];
 
-        var tipeSesi = document.getElementById('tipe_sesi');
-        var options = tipeSesi.options;
-        for (var i = 0; i < options.length; i++) {
-            if (options[i].value === 'offline') {
-                tipeSesi.value = 'offline';
-                break;
+    document.addEventListener("DOMContentLoaded", function() {
+        var checkJquery = setInterval(function() {
+            if (window.jQuery && window.jQuery.fn.select2) {
+                clearInterval(checkJquery);
+                $('#narasumber').select2({
+                    dropdownParent: $('#modalSesi'),
+                    placeholder: "-- Pilih Narasumber --",
+                    allowClear: true,
+                    width: '100%'
+                });
+                
+                $('#penyelenggara').select2({
+                    dropdownParent: $('#modalSesi'),
+                    placeholder: "-- Pilih Penyelenggara --",
+                    allowClear: true,
+                    width: '100%'
+                });
             }
-        }
-        toggleSesiFields();
-
-        document.getElementById('nama_sesi').value = 'Sesi Pembukaan & Pengenalan Materi';
-        document.getElementById('tanggal').value = nextWeek;
-        document.getElementById('waktu').value = '08:00';
-        document.getElementById('jam_tutup').value = '10:00';
-
-        document.getElementById('lokasi_ruang').value = 'Aula Serbaguna Lt. 4';
-        document.getElementById('tempat').value = 'RSUD Kota Yogyakarta';
-        document.getElementById('alamat').value = 'Jl. Jend. Sudirman No. 50, Yogyakarta';
-        document.getElementById('maps_url').value = 'https://goo.gl/maps/example';
-
-        showToast('Form sesi berhasil diisi dengan data testing!', 'success');
-    }
+        }, 50);
+    });
 
 </script>
 

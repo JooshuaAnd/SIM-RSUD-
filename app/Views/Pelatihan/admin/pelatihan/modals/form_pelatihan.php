@@ -4,6 +4,7 @@
             <div class="modal-header bg-dark text-white border-0 p-4">
                 <h5 class="modal-title fw-bold" id="modalTitle"><i class="fas fa-plus-circle me-2 text-warning"></i> INPUT MASTER DIKLAT BARU</h5>
                 <div class="d-flex align-items-center gap-2">
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>

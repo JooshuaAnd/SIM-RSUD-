@@ -422,11 +422,13 @@ class Pelatihan extends BaseController
         $sesiList = $this->sesiModel->where('pelatihan_id', $id)->orderBy('tanggal', 'ASC')->orderBy('waktu', 'ASC')->findAll();
         foreach ($sesiList as &$s) {
             $ns = $this->getNarasumberForSesi($s['id']);
-            $s['narasumber'] = implode(',', array_map(fn($n) => $this->formatNamaLengkap($n), $ns));
+            $s['narasumber'] = implode(', ', array_map(fn($n) => $this->formatNamaLengkap($n), $ns));
+            $s['narasumber_arr'] = array_map(fn($n) => $this->formatNamaLengkap($n), $ns);
             $s['narasumber_ids'] = array_column($ns, 'id');
             
             $py = $this->getPenyelenggaraForSesi($s['id']);
-            $s['penyelenggara'] = implode(',', array_column($py, 'nama'));
+            $s['penyelenggara'] = implode(', ', array_column($py, 'nama'));
+            $s['penyelenggara_arr'] = array_column($py, 'nama');
             $s['penyelenggara_ids'] = array_column($py, 'id');
         }
 

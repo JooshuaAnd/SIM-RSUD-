@@ -4,6 +4,7 @@
             <div class="modal-header bg-primary-custom text-white border-0">
                 <h5 class="modal-title fw-bold" id="quizModalTitle">Kelola Soal</h5>
                 <div class="d-flex align-items-center gap-2">
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
