@@ -8,9 +8,7 @@ $sesiList = $sesiList ?? [];
             <div class="modal-header bg-primary-custom text-white border-0">
                 <h5 class="modal-title fw-bold small"><i class="fas fa-plus-circle me-2"></i> Tambah Materi Pembelajaran</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-warning btn-sm rounded-pill fw-bold" onclick="autofillMateri()" title="Auto-fill materi untuk testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING
-                    </button>
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
@@ -122,7 +120,7 @@ $sesiList = $sesiList ?? [];
                             }
                         });
                     </script>
-                    <div class="mt-4 pt-3 border-top text-end">
+                    <div class="mt-3 pt-3 border-top text-end">
                         <button type="button" class="btn btn-light btn-lg rounded-pill px-5 fw-bold" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary-custom btn-lg rounded-pill px-5 fw-bold shadow"><i class="fas fa-save me-1"></i> Simpan Materi</button>
                     </div>

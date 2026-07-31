@@ -221,7 +221,6 @@
         cursor: pointer;
         font-weight: 700;
         padding: 4px 10px;
-        appearance: auto;
     }
     .attendance-select:focus {
         box-shadow: none !important;

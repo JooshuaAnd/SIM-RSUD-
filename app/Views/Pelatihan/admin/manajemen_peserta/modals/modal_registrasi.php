@@ -8,9 +8,7 @@ $profesi = $profesi ?? [];
             <div class="modal-header bg-dark text-white border-0 p-4 border-bottom border-danger border-4">
                 <h5 class="modal-title fw-bold text-uppercase"><i class="fas fa-user-plus me-2 text-warning"></i> Registrasi Akun Baru</h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-3" onclick="autofillAkun()" title="Autofill data testing">
-                        <i class="fas fa-bolt me-1"></i> TESTING
-                    </button>
+
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
@@ -86,30 +84,5 @@ $profesi = $profesi ?? [];
         </div>
     </div>
 </div>
-<script>
-function autofillAkun() {
-    const randNik = '3' + String(Math.floor(10000000000000 + Math.random() * 89999999999999)).substring(0, 15);
-    const randNum = Math.floor(1000 + Math.random() * 9000);
-    const names = ['Budi Santoso', 'Siti Rahayu', 'Ahmad Hidayat', 'Dewi Lestari', 'Rizki Pratama'];
-    const randName = names[Math.floor(Math.random() * names.length)];
-    const firstName = randName.split(' ')[0].toLowerCase();
 
-    document.querySelector('#formRegistrasi [name="role"]').value = 'named';
-    document.querySelector('#formRegistrasi [name="nama"]').value = randName;
-    document.querySelector('#formRegistrasi [name="nik"]').value = randNik;
-    document.querySelector('#formRegistrasi [name="email"]').value = firstName + randNum + '@gmail.com';
-    document.querySelector('#formRegistrasi [name="wa"]').value = '08' + Math.floor(1000000000 + Math.random() * 9000000000);
-
-    const ukSelect = document.getElementById('reg_unit_kerja');
-    if (ukSelect && ukSelect.options.length > 1) {
-        ukSelect.selectedIndex = 1;
-    }
-
-    const profSelect = document.getElementById('reg_profesi');
-    if (profSelect && profSelect.options.length > 1) {
-        profSelect.selectedIndex = 1;
-    }
-
-}
-</script>
 

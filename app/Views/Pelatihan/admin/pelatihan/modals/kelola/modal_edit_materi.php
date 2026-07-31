@@ -115,8 +115,7 @@ $sesiList = $sesiList ?? [];
                             }
                         });
                     </script>
-                    </div>
-                    <div class="mt-4 pt-3 border-top text-end">
+                    <div class="mt-3 pt-3 border-top text-end">
                         <button type="button" class="btn btn-light btn-lg rounded-pill px-5 fw-bold" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-warning btn-lg rounded-pill px-5 fw-bold shadow"><i class="fas fa-save me-1"></i> Update Materi</button>
                     </div>

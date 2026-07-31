@@ -30,38 +30,111 @@ class ManajemenPeserta extends BaseController
         ];
         
         $stats = [];
-        foreach ($dbUsers as $u) {
-            // Get last training name
-            $lastPelat = $pesertaPelatihanModel->select('master_pelatihan.nama')
-                ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
-                ->where('peserta_pelatihan.user_id', $u['nik'])
-                ->orderBy('peserta_pelatihan.id', 'DESC')
-                ->first();
-            $lastPelatName = $lastPelat ? $lastPelat['nama'] : 'Belum Ada';
+        $niks = array_column($dbUsers, 'nik');
+        
+        $pelatByUser = [];
+        $certsByUser = [];
+        $fallbackByUser = [];
+        $lastPelatByUser = [];
+        $lastRegByUser = [];
+        $progressByUser = [];
 
-            // Get total JPL completed by user (where status is Lulus) IN THE SELECTED YEAR, only if certificate published
-            $myCompletedPelat = $pesertaPelatihanModel->select('master_pelatihan.jpl, master_pelatihan.nama, master_pelatihan.jadwal_selesai')
+        if (!empty($niks)) {
+            // Get all completed trainings at once
+            $allCompletedPelat = $pesertaPelatihanModel->select('peserta_pelatihan.user_id, master_pelatihan.jpl, master_pelatihan.nama, master_pelatihan.jadwal_selesai')
                 ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
-                ->where('peserta_pelatihan.user_id', $u['nik'])
+                ->whereIn('peserta_pelatihan.user_id', $niks)
                 ->where('peserta_pelatihan.status_peserta', 'Lulus')
                 ->where('master_pelatihan.cert_published', 1)
                 ->findAll();
+            foreach ($allCompletedPelat as $cp) {
+                $pelatByUser[$cp['user_id']][] = $cp;
+            }
 
-            // Get approved external certificates
-            $myApprovedCerts = $db->table('sertifikat_pelatihan')
-                ->where('user_id', $u['nik'])
+            // Get all approved external certificates at once
+            $allApprovedCerts = $db->table('sertifikat_pelatihan')
+                ->whereIn('user_id', $niks)
                 ->where('verifikasi', 'approved')
                 ->where('jenis_dokumen !=', 'rsud')
                 ->get()->getResultArray();
+            foreach ($allApprovedCerts as $ac) {
+                $certsByUser[$ac['user_id']][] = $ac;
+            }
 
-            // Get approved RSUD certificates that do NOT have a corresponding peserta_pelatihan Lulus record
+            // Get all approved RSUD fallback certificates at once
             $rsudFallbackCerts = $db->table('sertifikat_pelatihan sp')
-                ->select('sp.skp, sp.tgl_selesai, sp.judul')
-                ->where('sp.user_id', $u['nik'])
+                ->select('sp.user_id, sp.skp, sp.tgl_selesai, sp.judul')
+                ->whereIn('sp.user_id', $niks)
                 ->where('sp.verifikasi', 'approved')
                 ->where('sp.jenis_dokumen', 'rsud')
                 ->where("NOT EXISTS (SELECT 1 FROM peserta_pelatihan pp WHERE pp.user_id = sp.user_id AND pp.pelatihan_id = sp.pelatihan_id AND pp.status_peserta = 'Lulus')", null, false)
                 ->get()->getResultArray();
+            foreach ($rsudFallbackCerts as $rc) {
+                $fallbackByUser[$rc['user_id']][] = $rc;
+            }
+
+            // Get last training name and reg status
+            $allRegistrations = $pesertaPelatihanModel->select('peserta_pelatihan.*, master_pelatihan.nama as nama_pelatihan')
+                ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
+                ->whereIn('peserta_pelatihan.user_id', $niks)
+                ->orderBy('peserta_pelatihan.id', 'ASC') // ASC so the last one overwrites previous in loop
+                ->findAll();
+
+            $totalSesiByPelatihan = [];
+            
+            foreach ($allRegistrations as $reg) {
+                $lastRegByUser[$reg['user_id']] = $reg;
+                $lastPelatByUser[$reg['user_id']] = $reg['nama_pelatihan'];
+            }
+
+            $lastRegIds = [];
+            $pelatihanIds = [];
+            foreach ($lastRegByUser as $reg) {
+                $lastRegIds[] = $reg['id'];
+                $pelatihanIds[] = $reg['pelatihan_id'];
+            }
+
+            if (!empty($pelatihanIds)) {
+                $totalSesiRows = $db->table('sesi_interaktif_pelatihan')
+                    ->select('pelatihan_id, COUNT(id) as total')
+                    ->whereIn('pelatihan_id', array_unique($pelatihanIds))
+                    ->groupBy('pelatihan_id')
+                    ->get()->getResultArray();
+                foreach ($totalSesiRows as $row) {
+                    $totalSesiByPelatihan[$row['pelatihan_id']] = $row['total'];
+                }
+            }
+
+            if (!empty($lastRegIds)) {
+                $hadirSesiRows = $db->table('peserta_presensi_pelatihan')
+                    ->select('peserta_pelat_id, COUNT(id) as total')
+                    ->whereIn('peserta_pelat_id', $lastRegIds)
+                    ->where('status_hadir', 'Hadir')
+                    ->groupBy('peserta_pelat_id')
+                    ->get()->getResultArray();
+                $hadirSesiByReg = [];
+                foreach ($hadirSesiRows as $row) {
+                    $hadirSesiByReg[$row['peserta_pelat_id']] = $row['total'];
+                }
+                
+                foreach ($lastRegByUser as $userId => $reg) {
+                    $tSesi = $totalSesiByPelatihan[$reg['pelatihan_id']] ?? 0;
+                    $hSesi = $hadirSesiByReg[$reg['id']] ?? 0;
+                    $progressByUser[$userId] = $tSesi > 0 ? ($hSesi / $tSesi) * 100 : 0;
+                }
+            }
+        }
+        
+        $capaianUpdateBatch = []; // For static column sync
+        foreach ($dbUsers as $u) {
+            $nik = $u['nik'];
+            $lastPelatName = $lastPelatByUser[$nik] ?? 'Belum Ada';
+            $regStatus = isset($lastRegByUser[$nik]) ? $lastRegByUser[$nik]['status_peserta'] : 'Tidak Ada';
+            $progressVal = $progressByUser[$nik] ?? 0;
+
+            $myCompletedPelat = $pelatByUser[$nik] ?? [];
+            $myApprovedCerts = $certsByUser[$nik] ?? [];
+            $myFallbackCerts = $fallbackByUser[$nik] ?? [];
             
             $completedJpl = 0;
             $history = [];
@@ -89,7 +162,7 @@ class ManajemenPeserta extends BaseController
                 ];
             }
 
-            foreach ($rsudFallbackCerts as $rc) {
+            foreach ($myFallbackCerts as $rc) {
                 $yearOfTraining = !empty($rc['tgl_selesai']) ? date('Y', strtotime($rc['tgl_selesai'])) : date('Y');
                 if ($yearOfTraining == $selectedYear) {
                     $completedJpl += (int)($rc['skp'] ?? 0);
@@ -103,37 +176,17 @@ class ManajemenPeserta extends BaseController
 
             // Sync static column only for current year calculations
             if ($selectedYear == date('Y')) {
-                $userModel->update($u['nik'], ['capaian_jpl' => $completedJpl]);
+                $capaianUpdateBatch[] = [
+                    'nik' => $nik,
+                    'capaian_jpl' => $completedJpl
+                ];
             }
 
-            // Get registration status of the last followed training
-            $lastReg = $pesertaPelatihanModel->where('user_id', $u['nik'])
-                ->orderBy('id', 'DESC')
-                ->first();
-            $regStatus = $lastReg ? $lastReg['status_peserta'] : 'Tidak Ada';
-
-            // Calculate progress based on sessions attended vs total sessions in the last class
-            $progressVal = 0;
-            if ($lastReg) {
-                $totalSesi = $db->table('sesi_interaktif_pelatihan')
-                    ->where('pelatihan_id', $lastReg['pelatihan_id'])
-                    ->countAllResults();
-                
-                if ($totalSesi > 0) {
-                    $hadirSesi = $db->table('peserta_presensi_pelatihan')
-                        ->where('peserta_pelat_id', $lastReg['id'])
-                        ->where('status_hadir', 'Hadir')
-                        ->countAllResults();
-                    $progressVal = ($hadirSesi / $totalSesi) * 100;
-                }
-            }
-
-            // Target mapping per profesi
             $kategoriTarget = $u['kategori_target'] ?: 'Non-Named';
             $targetJPLKaryawan = $u['target_jpl_profesi'] ?? 20;
             
             $stats[] = [
-                'nik' => $u['nik'],
+                'nik' => $nik,
                 'nama' => $u['nama_lengkap'],
                 'profesi' => $u['profesi'] ?? '-',
                 'kategori_target' => $kategoriTarget,
@@ -147,43 +200,31 @@ class ManajemenPeserta extends BaseController
             ];
         }
 
+        if (!empty($capaianUpdateBatch)) {
+            $userModel->updateBatch($capaianUpdateBatch, 'nik');
+        }
+
         // Room/Ruangan stats calculation
         $unitKerjaList = $db->table('unit_kerja_pelatihan')->get()->getResultArray();
+        
+        // Group employees by room
+        $employeesByRoom = [];
+        foreach ($dbUsers as $u) {
+            $employeesByRoom[$u['id_unit_kerja']][] = $u;
+        }
+
         $ruanganStats = [];
         foreach ($unitKerjaList as $ruang) {
-            $employeesInRoom = $userModel->select('users_pelatihan.*, profesi_pelatihan.nama_profesi as profesi, profesi_pelatihan.kategori_target as kategori_target, profesi_pelatihan.target_jpl as target_jpl_profesi')
-                ->join('profesi_pelatihan', 'profesi_pelatihan.id_profesi = users_pelatihan.id_profesi', 'left')
-                ->where('id_unit_kerja', $ruang['id_unit_kerja'])
-                ->where('role', 'peserta')
-                ->findAll();
+            $employeesInRoom = $employeesByRoom[$ruang['id_unit_kerja']] ?? [];
             $totalEmployees = count($employeesInRoom);
             
             $followedList = [];
             $notFollowedList = [];
             foreach ($employeesInRoom as $emp) {
-                // Get total JPL completed by user (where status is Lulus) IN THE SELECTED YEAR
-                $myCompletedPelat = $pesertaPelatihanModel->select('master_pelatihan.jpl, master_pelatihan.jadwal_selesai')
-                    ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
-                    ->where('peserta_pelatihan.user_id', $emp['nik'])
-                    ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                    ->where('master_pelatihan.cert_published', 1)
-                    ->findAll();
-                
-                // Get approved external certificates
-                $myApprovedCerts = $db->table('sertifikat_pelatihan')
-                    ->where('user_id', $emp['nik'])
-                    ->where('verifikasi', 'approved')
-                    ->where('jenis_dokumen !=', 'rsud')
-                    ->get()->getResultArray();
-
-                // Get approved RSUD certificates that do NOT have a corresponding peserta_pelatihan Lulus record
-                $rsudFallbackCerts = $db->table('sertifikat_pelatihan sp')
-                    ->select('sp.skp, sp.tgl_selesai')
-                    ->where('sp.user_id', $emp['nik'])
-                    ->where('sp.verifikasi', 'approved')
-                    ->where('sp.jenis_dokumen', 'rsud')
-                    ->where("NOT EXISTS (SELECT 1 FROM peserta_pelatihan pp WHERE pp.user_id = sp.user_id AND pp.pelatihan_id = sp.pelatihan_id AND pp.status_peserta = 'Lulus')", null, false)
-                    ->get()->getResultArray();
+                $nik = $emp['nik'];
+                $myCompletedPelat = $pelatByUser[$nik] ?? [];
+                $myApprovedCerts = $certsByUser[$nik] ?? [];
+                $myFallbackCerts = $fallbackByUser[$nik] ?? [];
 
                 $completedJpl = 0;
                 foreach ($myCompletedPelat as $cp) {
@@ -198,7 +239,7 @@ class ManajemenPeserta extends BaseController
                         $completedJpl += (int)($ac['skp'] ?? 0);
                     }
                 }
-                foreach ($rsudFallbackCerts as $rc) {
+                foreach ($myFallbackCerts as $rc) {
                     $yearOfTraining = !empty($rc['tgl_selesai']) ? date('Y', strtotime($rc['tgl_selesai'])) : date('Y');
                     if ($yearOfTraining == $selectedYear) {
                         $completedJpl += (int)($rc['skp'] ?? 0);
@@ -339,7 +380,7 @@ class ManajemenPeserta extends BaseController
             'is_read' => 0
         ]);
         
-        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $userModel = new UserPelatihanModel();
         $user = $userModel->where('nik', $nik)->first();
         
         return $this->response->setJSON(['status' => 'success']);
@@ -355,7 +396,7 @@ class ManajemenPeserta extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak ada peserta dipilih.']);
         }
         
-        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $userModel = new UserPelatihanModel();
         $pesertaPelatihanModel = new \App\Models\Pelatihan\PesertaPelatihanModel();
         $notifModel = new \App\Models\Pelatihan\NotifikasiPelatihanModel();
         $db = \Config\Database::connect();
@@ -469,7 +510,7 @@ class ManajemenPeserta extends BaseController
         $statusJpl = $this->request->getPost('status_jpl');
         $message = $this->request->getPost('message') ?: 'Pemberitahuan penting mengenai capaian program diklat Anda.';
         
-        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $userModel = new UserPelatihanModel();
         $pesertaPelatihanModel = new \App\Models\Pelatihan\PesertaPelatihanModel();
         $notifModel = new \App\Models\Pelatihan\NotifikasiPelatihanModel();
 
@@ -568,7 +609,7 @@ class ManajemenPeserta extends BaseController
             'is_read' => 0
         ]);
         
-        $userModel = new \App\Models\Pelatihan\UserPelatihanModel();
+        $userModel = new UserPelatihanModel();
         $user = $userModel->where('nik', $userId)->first();
         
         return redirect()->back()->with('success', 'Pengingat telah dikirim ke notifikasi peserta.');
@@ -966,7 +1007,7 @@ class ManajemenPeserta extends BaseController
         return $this->response->setJSON(['status' => 'success']);
     }
 
-    private function _findPresensiStepId($db, $pelatihanId, $sesiId): ?int
+    private function _findPresensiStepId(\CodeIgniter\Database\BaseConnection $db, string $pelatihanId, string $sesiId): ?int
     {
         $stepCounter = 1;
         $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
@@ -993,7 +1034,7 @@ class ManajemenPeserta extends BaseController
         return null;
     }
 
-    private function _countTotalSteps($db, $pelatihanId): int
+    private function _countTotalSteps(\CodeIgniter\Database\BaseConnection $db, string $pelatihanId): int
     {
         $stepCounter = 1;
         $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
@@ -1016,7 +1057,7 @@ class ManajemenPeserta extends BaseController
         return $stepCounter - 1;
     }
 
-    private function _updatePresensiProgress($db, $peserta, $pelatihanId, $sesiId, $status)
+    private function _updatePresensiProgress(\CodeIgniter\Database\BaseConnection $db, array $peserta, string $pelatihanId, string $sesiId, string $status)
     {
         $stepId = $this->_findPresensiStepId($db, $pelatihanId, $sesiId);
         if (!$stepId) return;

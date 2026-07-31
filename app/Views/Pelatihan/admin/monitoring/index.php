@@ -650,9 +650,13 @@
             cancelButtonColor: '#212529',
             confirmButtonText: 'Kirim Pengingat',
             cancelButtonText: 'Batal',
-            width: '500px'
+            width: '500px',
+            preConfirm: () => {
+                return document.getElementById('remindMsgIndividual').value;
+            }
         }).then((result) => {
             if (result.isConfirmed) {
+                let msg = result.value;
                 Swal.fire({
                     title: 'Mengirim Pengingat...',
                     html: 'Mohon tunggu, sedang mengirim pengingat.',
@@ -663,7 +667,6 @@
                     }
                 });
                 
-                let msg = document.getElementById('remindMsgIndividual').value;
                 fetch('<?= base_url("pelatihan/admin/monitoring/remind_individual") ?>', {
                         method: 'POST',
                         headers: {
@@ -782,9 +785,13 @@
             cancelButtonColor: '#212529',
             confirmButtonText: 'Kirim Pengingat',
             cancelButtonText: 'Batal',
-            width: '500px'
+            width: '500px',
+            preConfirm: () => {
+                return document.getElementById('remindMsgRoom').value;
+            }
         }).then((result) => {
             if (result.isConfirmed) {
+                let msg = result.value;
                 Swal.fire({
                     title: 'Mengirim Pengingat Ruangan...',
                     html: 'Mohon tunggu, sedang mengirim pengingat ke seluruh pegawai ruangan.',
@@ -795,7 +802,6 @@
                     }
                 });
                 
-                let msg = document.getElementById('remindMsgRoom').value;
                 let niksArray = employees.map(emp => emp.nik);
                 
                 fetch('<?= base_url("pelatihan/admin/monitoring/broadcast_room") ?>', {
