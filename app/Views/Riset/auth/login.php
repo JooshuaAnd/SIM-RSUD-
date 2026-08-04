@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* Hide native password reveal icon in Edge */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+
         :root {
             --primary-red: #e53935;
             --jakarta: 'Plus Jakarta Sans', sans-serif;
@@ -204,7 +210,12 @@
                         <label class="form-label-riset mb-0">Password</label>
                         <a href="<?= base_url('riset/lupa-password') ?>" class="text-decoration-none fw-bold" style="font-size: 10px; color: var(--primary-red);">Lupa Password?</a>
                     </div>
-                    <input type="password" name="password" class="form-control form-control-riset" placeholder="••••••••" required>
+                    <div class="position-relative">
+                        <input type="password" id="password" name="password" class="form-control form-control-riset pe-5" placeholder="••••••••" required>
+                        <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('password', 'toggleIcon')">
+                            <i class="fas fa-eye text-muted" id="toggleIcon"></i>
+                        </span>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-login-riset">Masuk Sekarang</button>
@@ -229,6 +240,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function togglePassword(inputId, iconId) {
+            var x = document.getElementById(inputId);
+            var icon = document.getElementById(iconId);
+            if (x.type === "password") {
+                x.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                x.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input[required]');
             inputs.forEach(input => {

@@ -6,6 +6,13 @@
  * @var array $user
  */
 ?>
+<style>
+    /* Hide native password reveal icon in Edge */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+</style>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">Profil Peneliti</h4>
@@ -147,15 +154,30 @@
                 <form action="<?= base_url('riset/peneliti/profil/update_password') ?>" method="POST" id="formGantiPassword">
                     <div class="mb-3">
                         <label class="form-label text-uppercase fw-bold text-muted" style="font-size: 10px; letter-spacing: 1px;">Password Saat Ini</label>
-                        <input type="password" name="old_password" class="form-control rounded-3" placeholder="••••••••" required>
+                        <div class="position-relative">
+                            <input type="password" id="old_password" name="old_password" class="form-control rounded-3 pe-5" placeholder="••••••••" required>
+                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('old_password', 'toggleIconOld')">
+                                <i class="fas fa-eye text-muted" id="toggleIconOld"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-uppercase fw-bold text-muted" style="font-size: 10px; letter-spacing: 1px;">Password Baru</label>
-                        <input type="password" name="new_password" id="new_password" class="form-control rounded-3" placeholder="Minimal 8 karakter" required minlength="8">
+                        <div class="position-relative">
+                            <input type="password" name="new_password" id="new_password" class="form-control rounded-3 pe-5" placeholder="Minimal 8 karakter" required minlength="8">
+                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('new_password', 'toggleIconNew')">
+                                <i class="fas fa-eye text-muted" id="toggleIconNew"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label class="form-label text-uppercase fw-bold text-muted" style="font-size: 10px; letter-spacing: 1px;">Konfirmasi Password Baru</label>
-                        <input type="password" name="confirm_password" id="confirm_password" class="form-control rounded-3" placeholder="Ulangi password baru" required minlength="8">
+                        <div class="position-relative">
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control rounded-3 pe-5" placeholder="Ulangi password baru" required minlength="8">
+                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('confirm_password', 'toggleIconConfirm')">
+                                <i class="fas fa-eye text-muted" id="toggleIconConfirm"></i>
+                            </span>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-danger w-100 py-3 rounded-3 fw-bold shadow-sm" style="font-size: 13px;">Simpan Perubahan Password</button>
                 </form>
@@ -165,6 +187,20 @@
 </div>
 
 <script>
+    function togglePassword(inputId, iconId) {
+        var x = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        if (x.type === "password") {
+            x.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            x.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Reset form when modal is closed
         const changePasswordModal = document.getElementById('changePasswordModal');
