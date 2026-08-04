@@ -15,6 +15,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* Hide native password reveal icon in Edge */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+
         :root {
             --primary-red: #e53935;
             --soft-bg: #f8f9fc;
@@ -204,11 +210,21 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Min. 8 karakter" required minlength="8">
+                        <div class="position-relative">
+                            <input type="password" id="password" name="password" class="form-control pe-5" placeholder="Min. 8 karakter" required minlength="8">
+                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('password', 'toggleIcon1')">
+                                <i class="fas fa-eye text-muted" id="toggleIcon1"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Konfirmasi Password</label>
-                        <input type="password" name="confirm_password" class="form-control" placeholder="Ulangi password" required minlength="8">
+                        <div class="position-relative">
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control pe-5" placeholder="Ulangi password" required minlength="8">
+                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3" style="cursor: pointer; z-index: 10;" onclick="togglePassword('confirm_password', 'toggleIcon2')">
+                                <i class="fas fa-eye text-muted" id="toggleIcon2"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -226,6 +242,20 @@
     </div>
 
     <script>
+        function togglePassword(inputId, iconId) {
+            var x = document.getElementById(inputId);
+            var icon = document.getElementById(iconId);
+            if (x.type === "password") {
+                x.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                x.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input[required], input[minlength]');
             inputs.forEach(input => {

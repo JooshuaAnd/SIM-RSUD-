@@ -3,6 +3,13 @@
 <?= $this->section('content') ?>
 
 <?php /** @var array $user */ ?>
+<style>
+    /* Hide native password reveal icon in Edge */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+</style>
 
 <?php if (session()->getFlashdata('success')) : ?>
     <div class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm" role="alert">
