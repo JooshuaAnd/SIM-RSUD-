@@ -71,9 +71,15 @@ class Certificate extends BaseController
     {
         $pelatihan = $this->masterPelatihanModel->orderBy('nama', 'ASC')->findAll();
         
+        $templates = $this->templateModel->findAll();
+        $templateMap = [];
+        foreach ($templates as $t) {
+            $templateMap[$t['pelatihan_id']] = $t;
+        }
+
         // Auto-create default template record for each training if not exists
         foreach ($pelatihan as $p) {
-            $exist = $this->templateModel->where('pelatihan_id', $p['id'])->first();
+            $exist = $templateMap[$p['id']] ?? null;
             if (!$exist) {
                 $noSertif = $this->generateNoSertifikat($p);
                 $this->templateModel->insert([

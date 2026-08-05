@@ -49,8 +49,17 @@ class Home extends BaseController
         $myProgress = $db->table('peserta_pelatihan')->where('user_id', $userId)->get()->getResultArray();
         
         $jadwal = [];
-        // Fetch active trainings for calendar with detailed timeline
         $activePelatihan = $db->table('master_pelatihan')->whereIn('status', ['Publish', 'Aktif'])->get()->getResultArray();
+        
+        $activeIds = array_column($activePelatihan, 'id');
+        $sesiGrouped = [];
+        if (!empty($activeIds)) {
+            $allSesi = $db->table('sesi_interaktif_pelatihan')->whereIn('pelatihan_id', $activeIds)->get()->getResultArray();
+            foreach ($allSesi as $s) {
+                $sesiGrouped[$s['pelatihan_id']][] = $s;
+            }
+        }
+
         foreach ($activePelatihan as $ap) {
             $jadwal[] = [
                 'tanggal' => $ap['jadwal_mulai'], 
@@ -60,8 +69,9 @@ class Home extends BaseController
                 'reg_buka' => $ap['reg_buka_tgl'],
                 'reg_tutup' => $ap['reg_tutup_tgl']
             ];
-            $sesi = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $ap['id'])->get()->getResultArray();
-            foreach ($sesi as $s) {
+            
+            $sesiList = $sesiGrouped[$ap['id']] ?? [];
+            foreach ($sesiList as $s) {
                 $jadwal[] = [
                     'tanggal' => $s['tanggal'], 
                     'event' => 'Sesi: ' . $s['nama_sesi'], 
@@ -133,8 +143,17 @@ class Home extends BaseController
             ->whereIn('status_pembayaran', ['Verified', 'Gratis'])
             ->get()->getResultArray();
 
+        $registeredPelatihanIds = array_column($registeredTrainings, 'pelatihan_id');
+        $masterTrainings = [];
+        if (!empty($registeredPelatihanIds)) {
+            $trainingsRaw = $db->table('master_pelatihan')->whereIn('id', $registeredPelatihanIds)->get()->getResultArray();
+            foreach ($trainingsRaw as $t) {
+                $masterTrainings[$t['id']] = $t;
+            }
+        }
+
         foreach ($registeredTrainings as $reg) {
-            $training = $db->table('master_pelatihan')->where('id', $reg['pelatihan_id'])->get()->getRowArray();
+            $training = $masterTrainings[$reg['pelatihan_id']] ?? null;
             if (!$training) continue;
 
             $regOpen = $training['reg_buka_tgl'] . ' ' . ($training['reg_buka_jam'] ?: '00:00:00');
