@@ -404,6 +404,11 @@ $nowTs = time();
         .content-card h2 { font-size: 1.3rem !important; }
     }
 
+    @keyframes bounceSmall {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
 </style>
 
 <div class="learning-layout">
@@ -470,8 +475,8 @@ $nowTs = time();
         
         <!-- Floating Navigasi Materi Button -->
         <button class="btn btn-lg rounded-pill text-dark d-inline-flex align-items-center gap-2 fw-bold shadow-lg" 
-                style="position: fixed; bottom: 30px; right: 30px; z-index: 1050; background: white; border: 2px solid #ce2127; transition: all 0.3s;" 
-                onmouseover="this.style.transform='translateY(-3px) scale(1.02)';" onmouseout="this.style.transform='translateY(0) scale(1)';"
+                style="position: fixed; top: 90px; left: 30px; z-index: 1050; background: white; border: 2px solid #ce2127; animation: bounceSmall 2s infinite ease-in-out;" 
+                onmouseover="this.style.animationPlayState='paused';" onmouseout="this.style.animationPlayState='running';"
                 type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
             <i class="fas fa-bars text-danger"></i> Navigasi Materi
         </button>
@@ -1007,9 +1012,9 @@ $nowTs = time();
                         </a>
                     </div>
                 <?php elseif ($active_step['tipe'] == 'post_test' && $post_test_status == 'Lulus' && !isset($_GET['retake'])) : ?>
-                    <div class="alert alert-success bg-opacity-10 rounded-4 border-0 p-4">
+                    <div class="alert rounded-4 p-5 text-center shadow-lg" style="background: #ffffff; border: 2px solid #e2e8f0 !important;">
                         <h5 class="fw-bold mb-3 text-success"><i class="fas fa-check-circle me-2"></i> Post-Test Berhasil Diselesaikan</h5>
-                        <div class="d-flex gap-5">
+                        <div class="d-flex justify-content-center gap-5">
                             <div>
                                 <div class="small text-muted fw-bold mb-1">Skor Pre-Test</div>
                                 <div class="fs-3 fw-bold text-dark"><?= $pre_test_score ?? 0 ?></div>
@@ -1019,7 +1024,7 @@ $nowTs = time();
                                 <div class="fs-3 fw-bold text-success"><?= $post_test_score ?? 0 ?></div>
                             </div>
                         </div>
-                        <div class="mt-4 pt-3 border-top border-success border-opacity-25 d-flex gap-3 flex-wrap">
+                        <div class="mt-4 pt-3 border-top d-flex gap-3 flex-wrap justify-content-center">
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 animate__animated animate__pulse animate__infinite" style="background: var(--primary-red); color: white; border: none;">
                                 SELESAI & LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
                             </a>
@@ -1031,9 +1036,9 @@ $nowTs = time();
                         </div>
                     </div>
                 <?php elseif ($active_step['tipe'] == 'post_test' && !empty($post_test_attempts) && $post_test_attempts >= 3) : ?>
-                    <div class="alert rounded-4 p-5 text-center" style="background: rgba(220, 38, 38, 0.15); border: 2px dashed rgba(220, 38, 38, 0.4) !important;">
-                        <h4 class="fw-bold mb-3 text-white"><i class="fas fa-lock me-2 text-warning"></i> Batas Post-Test Telah Tercapai</h4>
-                        <p class="mb-4 text-white-50 fs-6">Anda telah mencoba Post-Test sebanyak 3 kali. Anda tidak dapat mengulanginya lagi.</p>
+                    <div class="alert rounded-4 p-5 text-center shadow-lg" style="background: #ffffff; border: 2px solid #e2e8f0 !important;">
+                        <h4 class="fw-bold mb-3 text-danger"><i class="fas fa-lock me-2 text-warning"></i> Batas Post-Test Telah Tercapai</h4>
+                        <p class="mb-4 text-dark fs-6">Anda telah mencoba Post-Test sebanyak 3 kali. Anda tidak dapat mengulanginya lagi.</p>
                         <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #ce2127;">
                             LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
                         </a>
@@ -1043,34 +1048,34 @@ $nowTs = time();
                     $attempts = $_GET['attempts'] ?? 1;
                     $sisa_percobaan = 3 - $attempts;
                 ?>
-                    <div class="alert text-center p-5 rounded-4 mb-4 mx-auto" style="max-width: 800px; margin-top: 30px; background: rgba(220, 38, 38, 0.12); border: 2px dashed rgba(220, 38, 38, 0.35) !important;">
-                        <h3 class="fw-extrabold text-white mb-4"><i class="fas fa-exclamation-triangle me-2 text-warning animate__animated animate__flash animate__infinite"></i> Nilai Belum Memenuhi KKM</h3>
+                    <div class="alert text-center p-5 rounded-4 mb-4 mx-auto shadow-lg" style="max-width: 800px; margin-top: 30px; background: #ffffff; border: 2px solid #e2e8f0 !important;">
+                        <h3 class="fw-extrabold text-danger mb-4"><i class="fas fa-exclamation-triangle me-2 text-warning animate__animated animate__flash animate__infinite"></i> Nilai Belum Memenuhi KKM</h3>
                         
                         <div class="row g-3 justify-content-center mb-4">
                             <div class="col-sm-5">
-                                <div class="p-3 rounded-4" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
-                                    <div class="text-white-50 small fw-bold mb-1">SKOR PRE-TEST</div>
-                                    <div class="fs-2 fw-extrabold text-info"><?= number_format($pre_test_score ?? 0, 2) ?></div>
+                                <div class="p-3 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                    <div class="text-muted small fw-bold mb-1">SKOR PRE-TEST</div>
+                                    <div class="fs-2 fw-extrabold text-primary"><?= number_format($pre_test_score ?? 0, 2) ?></div>
                                 </div>
                             </div>
                             <div class="col-sm-5">
-                                <div class="p-3 rounded-4" style="background: rgba(220, 38, 38, 0.25); border: 1px solid rgba(220, 38, 38, 0.45);">
-                                    <div class="text-white-50 small fw-bold mb-1">SKOR POST-TEST SAAT INI</div>
+                                <div class="p-3 rounded-4" style="background: #fff1f2; border: 1px solid #fecdd3;">
+                                    <div class="text-danger small fw-bold mb-1">SKOR POST-TEST SAAT INI</div>
                                     <div class="fs-2 fw-extrabold text-danger animate__animated animate__shakeX"><?= number_format($lastScore, 2) ?></div>
                                 </div>
                             </div>
                         </div>
                         
-                        <p class="mb-4 text-white fs-5">Skor minimal kelulusan adalah <strong class="text-warning"><?= $post_test_kkm ?? 70 ?></strong>.</p>
+                        <p class="mb-4 text-dark fs-5">Skor minimal kelulusan adalah <strong class="text-danger"><?= $post_test_kkm ?? 70 ?></strong>.</p>
                         
                         <?php if ($sisa_percobaan > 0): ?>
-                            <p class="mb-2 fw-bold text-white fs-6">Apakah Anda ingin mengerjakan ulang Post-Test?</p>
-                            <p class="mb-4 text-white-50">Sisa kuota pengerjaan Anda: <strong class="text-warning"><?= $sisa_percobaan ?></strong> kali</p>
+                            <p class="mb-2 fw-bold text-dark fs-6">Apakah Anda ingin mengerjakan ulang Post-Test?</p>
+                            <p class="mb-4 text-muted">Sisa kuota pengerjaan Anda: <strong class="text-danger"><?= $sisa_percobaan ?></strong> kali</p>
                             <div class="d-flex justify-content-center gap-3 flex-wrap">
                                 <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$active_id.'&retake=1') ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #10b981;">
                                     <i class="fas fa-redo-alt me-2"></i> KERJAKAN ULANG SEKARANG
                                 </a>
-                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold hover-scale fs-5" style="border-width: 2px;">
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn btn-outline-danger px-5 py-3 rounded-pill fw-bold hover-scale fs-5" style="border-width: 2px;">
                                     LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
                             </div>
@@ -1102,7 +1107,7 @@ $nowTs = time();
                                 <button onclick="prevQuestion()" id="btnPrev" class="btn btn-outline-light px-5 py-3 rounded-pill fw-bold invisible" style="min-width: 220px; border-width: 2px;">
                                     <i class="fas fa-arrow-left me-2"></i> SEBELUMNYA
                                 </button>
-                                <button onclick="nextQuestionQuiz()" id="btnNext" class="btn shadow-lg px-5 py-3 rounded-pill fw-bold text-white border-0" style="background-color: #ce2127 !important; min-width: 220px; transition: all 0.3s ease;">
+                                <button onclick="nextQuestionQuiz()" id="btnNext" class="btn shadow-lg px-5 py-3 rounded-pill fw-bold border-0" style="background-color: #ffffff; color: #ce2127; min-width: 220px; transition: all 0.3s ease;">
                                     BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                                 </button>
                             </div>
@@ -1238,7 +1243,7 @@ $nowTs = time();
                         const navGrid = document.getElementById('quizNavGrid');
                         if (navGrid) {
                             navGrid.innerHTML = quizData.map((_, i) => `
-                                <button onclick="gotoQuestion(${i})" class="btn fw-bold p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; border-width: 2px; ${currentQ === i ? 'background: #ce2127; border-color: #ce2127; color: white !important;' : (answers[i] !== null ? 'background: #10b981; border-color: #10b981; color: white !important;' : 'background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: white !important;')}" >
+                                <button onclick="gotoQuestion(${i})" class="btn fw-bold p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; border-width: 2px; ${currentQ === i ? 'background: #ce2127; border-color: #ce2127; color: white !important;' : (answers[i] !== null ? 'background: #10b981; border-color: #10b981; color: white !important;' : 'background: #ffffff; border-color: #cbd5e1; color: #1e293b !important;')}" >
                                     ${i + 1}
                                 </button>
                             `).join('');
@@ -1263,7 +1268,7 @@ $nowTs = time();
                         area.innerHTML = `
                             <div class="question-card">
                                 ${mediaHtml}
-                                <h5 class="fw-bold mb-4" style="color: #fca5a5 !important; font-size: 1.3rem !important;">${q.q}</h5>
+                                <h5 class="fw-bold mb-4" style="color: #ffffff !important; font-size: 1.3rem !important;">${q.q}</h5>
                                 <div class="d-flex flex-column gap-3">
                                     ${q.a.map((opt, i) => `
                                         <div class="quiz-option ${answers[currentQ] === i ? 'selected' : ''}" onclick="selectOption(${i})">
@@ -1284,11 +1289,11 @@ $nowTs = time();
                         
                         // Apply brand red style if not finished, green if finished
                         if (currentQ < quizData.length - 1) {
-                            document.getElementById('btnNext').style.backgroundColor = '#ce2127';
-                            document.getElementById('btnNext').classList.remove('btn-dark', 'btn-primary');
+                            document.getElementById('btnNext').style.backgroundColor = '#ffffff';
+                            document.getElementById('btnNext').style.color = '#ce2127';
                         } else {
                             document.getElementById('btnNext').style.backgroundColor = '#10b981';
-                            document.getElementById('btnNext').classList.remove('btn-primary');
+                            document.getElementById('btnNext').style.color = '#ffffff';
                         }
                         renderNavGrid();
                     }
