@@ -120,7 +120,7 @@ $nowTs = time();
     }
 
     .content-card {
-        background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+        background: linear-gradient(135deg, rgba(110, 10, 15, 0.95) 0%, rgba(70, 0, 5, 0.98) 100%);
         border-radius: 0; /* Full screen card */
         box-shadow: none;
         padding: 40px;
@@ -470,7 +470,8 @@ $nowTs = time();
             </button>
         </div>
 
-        <div class="content-card">
+        <?php $bgImage = !empty($p['gambar_pelatihan']) ? "background-image: linear-gradient(135deg, rgba(110, 10, 15, 0.85) 0%, rgba(70, 0, 5, 0.95) 100%), url(" . base_url($p['gambar_pelatihan']) . "); background-size: cover; background-position: center;" : ""; ?>
+        <div class="content-card" <?= $bgImage ? 'style="'.$bgImage.'"' : '' ?>>
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
                 <div>
                     <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
