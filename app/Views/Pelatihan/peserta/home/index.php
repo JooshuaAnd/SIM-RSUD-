@@ -146,7 +146,7 @@
                         <div>
                             <span class="badge bg-white text-dark border-0 mb-2 shadow-sm"><?= $da['mekanisme'] ?></span>
                             <h6 class="fw-bold mb-1 text-white"><?= $da['nama'] ?></h6>
-                            <small class="text-white opacity-75 fw-bold"><i class="fas fa-calendar-alt me-1"></i> Mulai: <?= tanggal_indo($da['jadwal_mulai']) ?></small>
+                            <small class="text-white opacity-75 fw-bold"><i class="fas fa-calendar-alt me-1"></i> Selesai: <?= tanggal_indo($da['jadwal_selesai'] ?? $da['jadwal_mulai']) ?></small>
                         </div>
                         <a href="<?= base_url('pelatihan/peserta/belajar/'.$da['id']) ?>" class="btn btn-action-global text-white rounded-pill fw-bold px-4" style="background-color: #059669;">Lanjut Belajar</a>
                     </div>
@@ -167,11 +167,15 @@
                         <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="text-decoration-none text-white">
                             <div class="glass-card-global h-100 p-0 overflow-hidden hover-card-premium" style="transition: 0.3s; border-radius: 12px;">
                                 <?php if(!empty($p['gambar_pelatihan'])): ?>
-                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px; background: url('<?= base_url($p['gambar_pelatihan']) ?>') center/cover;">
+                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px;">
+                                    <img src="<?= base_url($p['gambar_pelatihan']) ?>" alt="<?= esc($p['nama']) ?>" class="w-100 h-100" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="w-100 h-100 p-2" style="display: none; background: linear-gradient(135deg, #0f172a 0%, #f59e0b 100%); flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid #f59e0b;">
+                                        <div class="fw-bold text-white text-center" style="font-size: 0.75rem; line-height: 1.2;"><?= esc($p['nama']) ?></div>
+                                    </div>
                                 </div>
                                 <?php else: ?>
-                                <div class="position-relative d-flex align-items-center justify-content-center p-2" style="height: 100px; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); border-bottom: 2px solid #f59e0b;">
-                                    <div class="fw-bold text-warning text-center" style="font-size: 0.85rem; line-height: 1.2;"><?= esc($p['nama']) ?></div>
+                                <div class="position-relative d-flex align-items-center justify-content-center p-2" style="height: 100px; background: linear-gradient(135deg, #0f172a 0%, #f59e0b 100%); border-bottom: 2px solid #f59e0b;">
+                                    <div class="fw-bold text-white text-center" style="font-size: 0.75rem; line-height: 1.2;"><?= esc($p['nama']) ?></div>
                                 </div>
                                 <?php endif; ?>
                                 <div class="p-3">

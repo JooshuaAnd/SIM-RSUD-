@@ -118,12 +118,12 @@ $req = $req ?? [];
                                     <?php if ($gambarPelatihan): ?>
                                         <img src="<?= $gambarPelatihan ?>" alt="<?= esc($p['nama']) ?>" class="w-100 h-100" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                         <div class="default-course-cover" style="display: none;">
-                                            <div class="fw-black text-white text-center px-4"><?= esc($p['program'] ?? 'Pelatihan') ?></div>
+                                            <div class="fw-black text-white text-center px-4" style="line-height: 1.3; font-size: 1.1rem;"><?= esc($p['nama']) ?></div>
                                             <small class="text-white-50 fw-bold mt-2">RSUD KOTA YOGYAKARTA</small>
                                         </div>
                                     <?php else: ?>
                                         <div class="default-course-cover">
-                                            <div class="fw-black text-white text-center px-4"><?= esc($p['program'] ?? 'Pelatihan') ?></div>
+                                            <div class="fw-black text-white text-center px-4" style="line-height: 1.3; font-size: 1.1rem;"><?= esc($p['nama']) ?></div>
                                             <small class="text-white-50 fw-bold mt-2">RSUD KOTA YOGYAKARTA</small>
                                         </div>
                                     <?php endif; ?>
