@@ -468,11 +468,13 @@ $nowTs = time();
     <!-- Content Area -->
     <div class="learning-content p-0">
         
-        <div class="mb-0 text-start px-4 px-lg-5 py-3" style="background: var(--bg-light); border-bottom: 1px solid #e5e7eb;">
-            <button class="btn btn-lg rounded-3 text-dark d-inline-flex align-items-center gap-2 fw-bold" style="background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
-                <i class="fas fa-bars text-danger"></i> Navigasi Materi
-            </button>
-        </div>
+        <!-- Floating Navigasi Materi Button -->
+        <button class="btn btn-lg rounded-pill text-dark d-inline-flex align-items-center gap-2 fw-bold shadow-lg" 
+                style="position: fixed; bottom: 30px; right: 30px; z-index: 1050; background: white; border: 2px solid #ce2127; transition: all 0.3s;" 
+                onmouseover="this.style.transform='translateY(-3px) scale(1.02)';" onmouseout="this.style.transform='translateY(0) scale(1)';"
+                type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
+            <i class="fas fa-bars text-danger"></i> Navigasi Materi
+        </button>
 
         <div class="content-card">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
