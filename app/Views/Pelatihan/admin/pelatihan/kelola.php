@@ -250,9 +250,9 @@ $kuesioner = $kuesioner ?? [];
             <?php endforeach; ?>
 
             const html = `
-                <div class="card border-0 shadow-sm rounded-lg mb-3 p-4">
-                    <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" onsubmit="simpanSoalAjax(event, this)">
-                        <input type="hidden" name="id_soal" value="${soal.id}">
+                <div class="card border-0 shadow-sm bg-light rounded-lg mb-3 p-4">
+                <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" class="form-kuis" onsubmit="simpanSoalAjax(event, this)">
+                    <input type="hidden" name="id_soal" value="${soal.id}">
                         <input type="hidden" name="ujian_id" value="${soal.ujian_id}">
                         
                         <div class="d-flex justify-content-between mb-3 align-items-center">
@@ -298,6 +298,12 @@ $kuesioner = $kuesioner ?? [];
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+        });
+
+        // Track changes to form inputs so we only save modified ones
+        document.querySelectorAll('#soalContainer form').forEach(form => {
+            form.addEventListener('input', () => { form.dataset.modified = "true"; });
+            form.addEventListener('change', () => { form.dataset.modified = "true"; });
         });
     }
 
@@ -349,9 +355,10 @@ $kuesioner = $kuesioner ?? [];
                     .then(res => res.json())
                     .then(data => {
                         showToast(data.message, data.status);
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
+                        if (data.status === 'success') {
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
+                        }
                     });
             }
         });
@@ -374,9 +381,8 @@ $kuesioner = $kuesioner ?? [];
                     .then(data => {
                         if (data.status == 'success') {
                             showToast('File berhasil dihapus', 'success');
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
                         }
                     });
             }
@@ -401,14 +407,31 @@ $kuesioner = $kuesioner ?? [];
                 
                 if (data.kategori.length === 0) {
                     container.innerHTML = `
+                        <div class="alert alert-warning small border-0 shadow-sm rounded-4 mb-4">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Kategori Wajib Evaluasi</h6>
+                            Kategori <strong>Materi</strong>, <strong>Narasumber</strong>, dan <strong>Penyelenggara</strong> wajib ada. Sistem sedang membuatkan template kuesioner standar secara otomatis untuk Anda...
+                        </div>
                         <div class="text-center text-muted small py-4">
-                            <i class="fas fa-inbox fa-3x mb-3 text-light"></i><br>
-                            Belum ada pertanyaan kuesioner evaluasi.<br><br>
-                            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="loadTemplateKuesioner()">
-                                <i class="fas fa-magic me-1"></i> Gunakan Template Kuesioner Standar
-                            </button>
+                            <i class="fas fa-spinner fa-spin fa-3x mb-3 text-primary"></i><br>
+                            Memproses pembuatan kuesioner otomatis...
                         </div>
                     `;
+                    // Auto-generate template
+                    fetch(`<?= base_url('pelatihan/admin/pelatihan/kuesioner/template') ?>/${pelatihan_id}`)
+                        .then(res => res.json())
+                        .then(resData => {
+                            if(resData.status === 'success') {
+                                Swal.fire({
+                                    title: 'Berhasil',
+                                    text: 'Template kuesioner wajib (Materi, Narasumber, Penyelenggara) berhasil dibuat otomatis!',
+                                    icon: 'success',
+                                    confirmButtonColor: '#ce2127',
+                                    customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-4 py-2 fw-bold text-uppercase' }
+                                }).then(() => {
+                                    loadKuesioner();
+                                });
+                            }
+                        });
                     return;
                 }
 
@@ -498,9 +521,8 @@ $kuesioner = $kuesioner ?? [];
                     if (data.kategori.length === 0) {
                         tabContainer.innerHTML = `
                             <div class="col-12 text-center text-muted py-5">
-                                <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
-                                <h6>Belum ada pertanyaan kuesioner.</h6>
-                                <p class="small mb-0">Klik "Edit Kuesioner" untuk menambahkan atau menggunakan template.</p>
+                                <i class="fas fa-clipboard-list fa-3x mb-3 text-light"></i><br>
+                                Belum ada kuesioner yang tersedia.<br>Silakan kelola kuesioner terlebih dahulu.
                             </div>
                         `;
                     } else {
@@ -544,9 +566,7 @@ $kuesioner = $kuesioner ?? [];
                 showToast(data.message, 'success');
                 form.reset();
                 toggleKategoriBaru('');
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                loadKuesioner();
             } else {
                 showToast(data.message, 'danger');
             }
@@ -575,9 +595,7 @@ $kuesioner = $kuesioner ?? [];
                     .then(data => {
                         showToast(data.message, data.status);
                         if(data.status === 'success') {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            loadKuesioner();
                         }
                     });
             }
@@ -687,7 +705,7 @@ $kuesioner = $kuesioner ?? [];
         
         const html = `
             <div class="card border-0 shadow-sm rounded-lg mb-3 p-4 animate__animated animate__fadeInUp">
-                <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" onsubmit="simpanSoalAjax(event, this)">
+                <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" class="form-kuis" data-modified="true" onsubmit="simpanSoalAjax(event, this)">
                     <input type="hidden" name="id_soal" value="">
                     <input type="hidden" name="ujian_id" value="${evaluasi_id}">
                     
@@ -751,7 +769,7 @@ $kuesioner = $kuesioner ?? [];
         let evaluasi_id = document.getElementById('current_evaluasi_id').value;
         const html = `
             <div class="card border-0 shadow-sm rounded-lg mb-3 p-4 animate__animated animate__fadeInUp">
-                <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" onsubmit="simpanSoalAjax(event, this)">
+                <form action="<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal/simpan') ?>" method="POST" enctype="multipart/form-data" class="form-kuis" data-modified="true" onsubmit="simpanSoalAjax(event, this)">
                     <input type="hidden" name="id_soal" value="">
                     <input type="hidden" name="ujian_id" value="${evaluasi_id}">
                     
@@ -851,7 +869,8 @@ $kuesioner = $kuesioner ?? [];
                     confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
                 }
             }).then(() => {
-                location.reload();
+                let type = document.getElementById('current_tipe_evaluasi').value;
+                setupQuiz(type);
             });
         })
         .catch(error => {
@@ -875,8 +894,10 @@ $kuesioner = $kuesioner ?? [];
     }
 
     function confirmSaveAll() {
-        let forms = document.getElementById('soalContainer').querySelectorAll('form');
-        if(forms.length === 0) {
+        let allForms = Array.from(document.getElementById('soalContainer').querySelectorAll('form'));
+        let modifiedForms = allForms.filter(f => f.dataset.modified === "true");
+
+        if(allForms.length === 0) {
             Swal.fire({
                 title: 'Peringatan',
                 text: 'Tidak ada soal untuk disimpan.',
@@ -888,10 +909,21 @@ $kuesioner = $kuesioner ?? [];
             });
             return;
         }
+
+        if(modifiedForms.length === 0) {
+            Swal.fire({
+                title: 'Info',
+                text: 'Tidak ada perubahan pada soal kuis yang perlu disimpan.',
+                icon: 'info',
+                confirmButtonColor: '#ce2127',
+                customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase' }
+            });
+            return;
+        }
         
         Swal.fire({
-            title: 'Simpan Seluruh Soal?',
-            text: 'Anda yakin ingin menyimpan seluruh perubahan pada soal kuis ini?',
+            title: 'Simpan Perubahan Soal?',
+            text: `Terdapat ${modifiedForms.length} soal yang diubah. Anda yakin ingin menyimpannya?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#ce2127',
@@ -901,36 +933,49 @@ $kuesioner = $kuesioner ?? [];
             customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase', cancelButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase ms-3' }
         }).then((result) => {
             if (result.isConfirmed) {
-                let promises = [];
-                forms.forEach(form => {
-                    let formData = new FormData(form);
-                    promises.push(
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData
-                        })
-                    );
-                });
-
-                showLoading('Menyimpan seluruh soal...');
-
-                Promise.all(promises).then(() => {
+                let processFormsSequentially = async () => {
+                    let total = modifiedForms.length;
+                    let current = 0;
+                    
                     Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Seluruh perubahan berhasil disimpan.',
-                        icon: 'success',
-                        showConfirmButton: true,
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#ce2127',
-                        padding: '2rem',
-                        customClass: {
-                            popup: 'rounded-4 shadow-lg border-0',
-                            confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
+                        title: 'Menyimpan Soal...',
+                        html: `Memproses soal <b>0</b> dari ${total}`,
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
                         }
-                    }).then(() => {
-                        location.reload();
                     });
-                }).catch(err => {
+
+                    try {
+                        for (let form of modifiedForms) {
+                            current++;
+                            Swal.getHtmlContainer().innerHTML = `Memproses soal <b>${current}</b> dari ${total}`;
+                            
+                            let formData = new FormData(form);
+                            await fetch(form.action, {
+                                method: 'POST',
+                                body: formData
+                            });
+                        }
+
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Seluruh perubahan berhasil disimpan.',
+                            icon: 'success',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ce2127',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'rounded-4 shadow-lg border-0',
+                                confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
+                            }
+                        }).then(() => {
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
+                        });
+                    } catch (err) {
                     Swal.fire({
                         title: 'Gagal!',
                         text: 'Sebagian soal gagal disimpan.',
@@ -939,8 +984,11 @@ $kuesioner = $kuesioner ?? [];
                         confirmButtonText: 'OK',
                         confirmButtonColor: '#ce2127',
                         customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase' }
-                    });
-                });
+                        });
+                    }
+                };
+
+                processFormsSequentially();
             }
         });
     }

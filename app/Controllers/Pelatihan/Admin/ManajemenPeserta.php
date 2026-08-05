@@ -673,8 +673,8 @@ class ManajemenPeserta extends BaseController
         
         $rules = [
             'nik'      => 'required|numeric|exact_length[16]|is_unique[users_pelatihan.nik]',
-            'nama'     => 'required|min_length[3]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
-            'email'    => 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]|is_unique[users_pelatihan.email]',
+            'nama'     => 'required|min_length[1]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
+            'email'    => 'required|valid_email|is_unique[users_pelatihan.email]',
             'wa'       => 'required|numeric|min_length[10]|max_length[15]',
         ];
 
@@ -688,8 +688,7 @@ class ManajemenPeserta extends BaseController
                 'regex_match'  => 'Nama hanya boleh mengandung huruf, spasi, titik, koma, atau tanda kutip.'
             ],
             'email' => [
-                'valid_email'  => 'Format email harus valid.',
-                'regex_match'  => 'Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau domain instansi pemerintah (.go.id).',
+                'valid_email'  => 'Format email tidak valid.',
                 'is_unique'    => 'Email sudah terdaftar.'
             ],
             'wa' => [
@@ -763,7 +762,7 @@ class ManajemenPeserta extends BaseController
         }
 
         $rules = [
-            'nama'     => 'required|min_length[3]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
+            'nama'     => 'required|min_length[1]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
             'wa'       => 'required|numeric|min_length[10]|max_length[15]',
         ];
 
@@ -775,9 +774,9 @@ class ManajemenPeserta extends BaseController
         }
 
         if ($newEmail !== $user['email']) {
-            $rules['email'] = 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]|is_unique[users_pelatihan.email]';
+            $rules['email'] = 'required|valid_email|is_unique[users_pelatihan.email]';
         } else {
-            $rules['email'] = 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)$/i]';
+            $rules['email'] = 'required|valid_email';
         }
 
 
@@ -791,8 +790,7 @@ class ManajemenPeserta extends BaseController
                 'regex_match'  => 'Nama hanya boleh mengandung huruf, spasi, titik, koma, atau tanda kutip.'
             ],
             'email' => [
-                'valid_email'  => 'Format email harus valid.',
-                'regex_match'  => 'Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau domain instansi pemerintah (.go.id).',
+                'valid_email'  => 'Format email tidak valid.',
                 'is_unique'    => 'Email sudah terdaftar.'
             ],
             'wa' => [

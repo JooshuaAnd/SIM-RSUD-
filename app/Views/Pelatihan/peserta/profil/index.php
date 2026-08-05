@@ -218,8 +218,8 @@
                         
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-white mb-1">EMAIL AKTIF</label>
-                            <input type="email" name="email" class="form-control form-control-custom" value="<?= $user['email'] ?? '' ?>" required pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)" title="Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau instansi pemerintah (.go.id).">
-                            <div class="form-text" style="font-size: 0.75rem;">Hanya @gmail.com, @students.ukcw.ac.id, atau .go.id</div>
+                            <input type="email" name="email" class="form-control form-control-custom" value="<?= $user['email'] ?? '' ?>" required>
+
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-white mb-1">NO. WHATSAPP</label>

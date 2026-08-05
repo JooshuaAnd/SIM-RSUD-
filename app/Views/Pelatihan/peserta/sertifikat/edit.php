@@ -105,7 +105,7 @@
                                 <?php endif; ?>
                                 <div class="bg-light p-4 rounded-4 border-2 border-dashed text-center mb-3">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                    <div class="small fw-bold text-dark mb-1">File format PDF/JPG/PNG (Max 2MB) - Biarkan kosong jika tidak ingin mengubah</div>
+                                    <div class="small fw-bold text-dark mb-1">File format PDF/JPG/PNG (Max 8MB) - Biarkan kosong jika tidak ingin mengubah</div>
                                     <input type="file" name="dokumen" class="form-control form-control-sm mt-2">
                                 </div>
                             </div>
@@ -120,7 +120,7 @@
                                 <?php endif; ?>
                                 <div class="bg-danger bg-opacity-10 p-4 rounded-4 border-2 border-dashed text-center mb-3 border-danger">
                                     <i class="fas fa-file-contract fa-3x text-danger mb-3"></i>
-                                    <div class="small fw-bold text-danger mb-1">Surat Tugas Resmi PDF/JPG (Max 2MB) - Biarkan kosong jika tidak ingin mengubah</div>
+                                    <div class="small fw-bold text-danger mb-1">Surat Tugas Resmi PDF/JPG (Max 8MB) - Biarkan kosong jika tidak ingin mengubah</div>
                                     <input type="file" name="dokumen_st" id="input_st" class="form-control form-control-sm mt-2 border-danger">
                                 </div>
                             </div>

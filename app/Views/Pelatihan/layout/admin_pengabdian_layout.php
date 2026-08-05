@@ -454,10 +454,12 @@
                 </div>
             </div>
             <div class="header-controls d-flex gap-3 align-items-center">
+                <?php if (!isset($title) || strpos(strtolower($title), 'profil') === false): ?>
                 <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white border" style="width: 250px;">
                     <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted small"></i></span>
                     <input type="text" id="globalSearchData" class="form-control border-0" placeholder="Cari nama peserta, judul, status...">
                 </div>
+                <?php endif; ?>
                 <a href="<?= base_url('pelatihan/admin_pengabdian/sertifikat') ?>" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold text-dark">
                     Sertifikat pending
                     <span class="badge bg-danger ms-1"><?= number_format($pending_pengabdian ?? 0) ?></span>
@@ -551,6 +553,44 @@
 
     <?= $this->renderSection('scripts') ?>
 
-</body>
+    <!-- Global File Size Validation -->
+    <script>
+        document.addEventListener('submit', function(e) {
+            let form = e.target;
+            let fileInputs = form.querySelectorAll('input[type="file"]');
+            let maxSize = 8 * 1024 * 1024; // 8MB
+            let tooLarge = false;
+            let fileName = '';
 
+            for (let i = 0; i < fileInputs.length; i++) {
+                let input = fileInputs[i];
+                if (input.files && input.files.length > 0) {
+                    for (let j = 0; j < input.files.length; j++) {
+                        if (input.files[j].size > maxSize) {
+                            tooLarge = true;
+                            fileName = input.files[j].name;
+                            break;
+                        }
+                    }
+                }
+                if (tooLarge) break;
+            }
+
+            if (tooLarge) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ukuran File Terlalu Besar',
+                        text: 'File "' + fileName + '" melebihi batas maksimal 8MB. Silakan kompres atau pilih file yang lebih kecil.',
+                        confirmButtonColor: '#ce2127',
+                        customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase' }
+                    });
+                } else {
+                    alert('File "' + fileName + '" terlalu besar! Maksimal ukuran file adalah 8MB.');
+                }
+            }
+        });
+    </script>
+</body>
 </html>

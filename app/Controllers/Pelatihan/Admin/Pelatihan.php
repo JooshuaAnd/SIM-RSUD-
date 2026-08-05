@@ -107,15 +107,55 @@ class Pelatihan extends BaseController
             ->orderBy('master_pelatihan.id', 'DESC')
             ->findAll();
         
+        $pelatihanIds = array_column($pelatihan, 'id');
+        
+        $pesertaCounts = [];
+        $narasumberGrouped = [];
+        $penyelenggaraGrouped = [];
+
+        if (!empty($pelatihanIds)) {
+            // Pre-fetch peserta count
+            $pesertaRows = $db->table('peserta_pelatihan')
+                ->select('pelatihan_id, COUNT(id) as total')
+                ->whereIn('pelatihan_id', $pelatihanIds)
+                ->groupBy('pelatihan_id')
+                ->get()->getResultArray();
+            foreach ($pesertaRows as $row) {
+                $pesertaCounts[$row['pelatihan_id']] = $row['total'];
+            }
+
+            // Pre-fetch narasumber
+            $narasumberRows = $db->table('narasumber_pelatihan np')
+                ->select('np.pelatihan_id, pt.id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+                ->join('pejabat_ttd_pelatihan pt', 'pt.id = np.pejabat_ttd_id')
+                ->whereIn('np.pelatihan_id', $pelatihanIds)
+                ->groupBy('np.pelatihan_id, pt.id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, pt.keahlian')
+                ->get()->getResultArray();
+            foreach ($narasumberRows as $row) {
+                $narasumberGrouped[$row['pelatihan_id']][] = $row;
+            }
+
+            // Pre-fetch penyelenggara
+            $penyelenggaraRows = $db->table('penyelenggara_pelatihan pp')
+                ->select('pp.pelatihan_id, mp.id, mp.nama, mp.fokus_bidang')
+                ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id')
+                ->whereIn('pp.pelatihan_id', $pelatihanIds)
+                ->groupBy('pp.pelatihan_id, mp.id, mp.nama, mp.fokus_bidang')
+                ->get()->getResultArray();
+            foreach ($penyelenggaraRows as $row) {
+                $penyelenggaraGrouped[$row['pelatihan_id']][] = $row;
+            }
+        }
+
         foreach ($pelatihan as &$p) {
-            $p['peserta'] = $this->pesertaModel->where('pelatihan_id', $p['id'])->countAllResults();
+            $p['peserta'] = $pesertaCounts[$p['id']] ?? 0;
             
-            $narasumberList = $this->getNarasumberForPelatihan($p['id']);
+            $narasumberList = $narasumberGrouped[$p['id']] ?? [];
             $p['narasumber'] = implode(', ', array_map(fn($n) => $this->formatNamaLengkap($n), $narasumberList));
             $p['narasumber_list'] = array_map(fn($n) => $this->formatNamaLengkap($n), $narasumberList);
             $p['narasumber_ids'] = array_column($narasumberList, 'id');
             
-            $penyelenggaraList = $this->getPenyelenggaraForPelatihan($p['id']);
+            $penyelenggaraList = $penyelenggaraGrouped[$p['id']] ?? [];
             $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
             $p['penyelenggara_list'] = array_column($penyelenggaraList, 'nama');
             $p['penyelenggara_ids'] = array_column($penyelenggaraList, 'id');
@@ -331,12 +371,21 @@ class Pelatihan extends BaseController
         $this->masterPelatihanModel->update($id, $updateData);
 
         // Update Narasumber (pivot)
-        $this->narasumberPelModel->where('pelatihan_id', $id)->delete();
         $narasumbers = $data['narasumber'] ?? [];
         if (!is_array($narasumbers)) $narasumbers = explode(',', $narasumbers);
+        $narasumbers = array_filter(array_map('trim', $narasumbers));
+
+        $existingNarasumber = $this->narasumberPelModel->where('pelatihan_id', $id)->findAll();
+        $existingPejabatIds = array_unique(array_column($existingNarasumber, 'pejabat_ttd_id'));
+
+        foreach ($existingNarasumber as $en) {
+            if (!in_array($en['pejabat_ttd_id'], $narasumbers)) {
+                $this->narasumberPelModel->delete($en['id']);
+            }
+        }
+
         foreach ($narasumbers as $nid) {
-            $nid = trim($nid);
-            if (!empty($nid) && is_numeric($nid)) {
+            if (is_numeric($nid) && !in_array($nid, $existingPejabatIds)) {
                 $this->narasumberPelModel->insert([
                     'pelatihan_id' => $id,
                     'pejabat_ttd_id' => (int)$nid,
@@ -346,12 +395,21 @@ class Pelatihan extends BaseController
         }
 
         // Update Penyelenggara (pivot)
-        $this->penyelenggaraPelModel->where('pelatihan_id', $id)->delete();
         $penyelenggaras = $data['penyelenggara'] ?? [];
         if (!is_array($penyelenggaras)) $penyelenggaras = explode(',', $penyelenggaras);
+        $penyelenggaras = array_filter(array_map('trim', $penyelenggaras));
+
+        $existingPenyelenggara = $this->penyelenggaraPelModel->where('pelatihan_id', $id)->findAll();
+        $existingPenyelenggaraIds = array_unique(array_column($existingPenyelenggara, 'penyelenggara_id'));
+
+        foreach ($existingPenyelenggara as $ep) {
+            if (!in_array($ep['penyelenggara_id'], $penyelenggaras)) {
+                $this->penyelenggaraPelModel->delete($ep['id']);
+            }
+        }
+
         foreach ($penyelenggaras as $pid) {
-            $pid = trim($pid);
-            if (!empty($pid) && is_numeric($pid)) {
+            if (is_numeric($pid) && !in_array($pid, $existingPenyelenggaraIds)) {
                 $this->penyelenggaraPelModel->insert([
                     'pelatihan_id' => $id,
                     'penyelenggara_id' => (int)$pid,

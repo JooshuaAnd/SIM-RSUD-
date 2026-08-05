@@ -41,18 +41,39 @@ class Catalog extends BaseController
 
         $pelatihan = $builder->orderBy('id', 'DESC')->get()->getResultArray();
             
+        $pelatihanIds = array_column($pelatihan, 'id');
+        
+        $pesertaCounts = [];
+        $penyelenggaraGrouped = [];
+        
+        if (!empty($pelatihanIds)) {
+            $pesertaRows = $db->table('peserta_pelatihan')
+                ->select('pelatihan_id, COUNT(id) as total')
+                ->whereIn('pelatihan_id', $pelatihanIds)
+                ->groupBy('pelatihan_id')
+                ->get()->getResultArray();
+            foreach ($pesertaRows as $row) {
+                $pesertaCounts[$row['pelatihan_id']] = $row['total'];
+            }
+            
+            $penyelenggaraRows = $db->table('penyelenggara_pelatihan pp')
+                ->select('pp.pelatihan_id, mp.nama')
+                ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id', 'left')
+                ->whereIn('pp.pelatihan_id', $pelatihanIds)
+                ->get()->getResultArray();
+            foreach ($penyelenggaraRows as $row) {
+                if (!empty($row['nama'])) {
+                    $penyelenggaraGrouped[$row['pelatihan_id']][] = $row['nama'];
+                }
+            }
+        }
+
         // Count participants for each training
         foreach ($pelatihan as &$p) {
-            $p['peserta'] = $db->table('peserta_pelatihan')
-                ->where('pelatihan_id', $p['id'])
-                ->countAllResults();
+            $p['peserta'] = $pesertaCounts[$p['id']] ?? 0;
             
-            $penyelenggaraList = $db->table('penyelenggara_pelatihan')
-                ->select('master_penyelenggara.nama')
-                ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
-                ->where('penyelenggara_pelatihan.pelatihan_id', $p['id'])
-                ->get()->getResultArray();
-            $p['penyelenggara'] = implode(', ', array_column($penyelenggaraList, 'nama'));
+            $penyelenggaraList = $penyelenggaraGrouped[$p['id']] ?? [];
+            $p['penyelenggara'] = implode(', ', array_unique($penyelenggaraList));
         }
 
         // Fetch filter options dynamically

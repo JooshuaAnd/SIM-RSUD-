@@ -104,7 +104,7 @@
                                 <label class="form-label small fw-bold text-white" id="label_dokumen_utama">DOKUMEN SERTIFIKAT / BUKTI (Wajib)</label>
                                 <div class="p-4 rounded-4 text-center mb-3" style="background: rgba(255,255,255,0.1); border: 2px dashed rgba(255,255,255,0.3);">
                                     <i class="fas fa-cloud-upload-alt fa-3x text-white opacity-50 mb-3"></i>
-                                    <div class="small fw-bold text-white mb-1">File format PDF/JPG/PNG (Max 2MB)</div>
+                                    <div class="small fw-bold text-white mb-1">File format PDF/JPG/PNG (Max 8MB)</div>
                                     <input type="file" name="dokumen" class="form-control form-control-sm mt-2" required>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@
                                 <label class="form-label small fw-bold text-warning">UNGGAH SURAT TUGAS (Wajib)</label>
                                 <div class="p-4 rounded-4 text-center mb-3" style="background: rgba(245, 158, 11, 0.1); border: 2px dashed #f59e0b;">
                                     <i class="fas fa-file-contract fa-3x text-warning mb-3"></i>
-                                    <div class="small fw-bold text-warning mb-1">Surat Tugas Resmi PDF/JPG (Max 2MB)</div>
+                                    <div class="small fw-bold text-warning mb-1">Surat Tugas Resmi PDF/JPG (Max 8MB)</div>
                                     <input type="file" name="dokumen_st" id="input_st" class="form-control form-control-sm mt-2" style="border-color: #f59e0b;">
                                 </div>
                             </div>

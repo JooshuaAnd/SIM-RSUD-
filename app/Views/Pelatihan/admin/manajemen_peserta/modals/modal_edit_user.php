@@ -44,8 +44,8 @@ $profesi = $profesi ?? [];
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold mb-1">EMAIL AKTIF</label>
-                            <input type="email" class="form-control" name="email" id="edit_email" required pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)" title="Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau instansi pemerintah (.go.id).">
-                            <div class="form-text" style="font-size: 0.65rem;">Hanya @gmail.com, @students.ukcw.ac.id, atau .go.id</div>
+                            <input type="email" class="form-control" name="email" id="edit_email" required>
+                            
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold mb-1">NO. WHATSAPP</label>
