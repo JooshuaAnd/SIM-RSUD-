@@ -120,7 +120,7 @@ $nowTs = time();
     }
 
     .content-card {
-        background: linear-gradient(135deg, rgba(110, 10, 15, 0.95) 0%, rgba(70, 0, 5, 0.98) 100%);
+        background: var(--primary-red);
         border-radius: 0; /* Full screen card */
         box-shadow: none;
         padding: 40px;
@@ -312,8 +312,8 @@ $nowTs = time();
     /* Quiz Interactivity */
     .quiz-option {
         padding: 20px;
-        background: rgba(0, 0, 0, 0.35);
-        border: 2px solid rgba(255, 255, 255, 0.15);
+        background: #ffffff;
+        border: 2px solid #ffffff;
         border-radius: 16px;
         cursor: pointer;
         transition: all 0.2s;
@@ -321,12 +321,15 @@ $nowTs = time();
         align-items: center;
         gap: 15px;
         position: relative;
-        color: white !important;
+        color: #1a202c !important;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
 
     .quiz-option:hover {
         border-color: #ce2127 !important;
-        background: rgba(255, 255, 255, 0.08);
+        background: #f8fafc;
+        transform: translateY(-2px);
     }
 
     .quiz-option input {
@@ -335,15 +338,16 @@ $nowTs = time();
 
     .quiz-option.selected {
         border-color: #ce2127 !important;
-        background: rgba(206, 33, 39, 0.25);
-        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.3);
+        background: #fff1f2;
+        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.15);
+        color: #ce2127 !important;
     }
 
     .quiz-option-circle {
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.4);
+        border: 2px solid #cbd5e1;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -470,8 +474,7 @@ $nowTs = time();
             </button>
         </div>
 
-        <?php $bgImage = !empty($p['gambar_pelatihan']) ? "background-image: linear-gradient(135deg, rgba(110, 10, 15, 0.85) 0%, rgba(70, 0, 5, 0.95) 100%), url(" . base_url($p['gambar_pelatihan']) . "); background-size: cover; background-position: center;" : ""; ?>
-        <div class="content-card" <?= $bgImage ? 'style="'.$bgImage.'"' : '' ?>>
+        <div class="content-card">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
                 <div>
                     <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
@@ -1080,13 +1083,13 @@ $nowTs = time();
                 <div class="test-area py-4" id="quizContainer">
                     <div class="row g-4">
                         <div class="col-lg-9">
-                            <div class="d-flex justify-content-between align-items-center mb-5 p-3 rounded-pill" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15) !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-5 p-3 rounded-pill" style="background: #ffffff; border: 1px solid #e2e8f0 !important; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                                 <div class="flex-grow-1 mx-4">
-                                    <div class="progress" style="height: 12px; border-radius: 20px; background: rgba(0,0,0,0.35);">
+                                    <div class="progress" style="height: 12px; border-radius: 20px; background: #f1f5f9;">
                                         <div class="progress-bar shadow-sm" id="quizProgress" style="width: 20%; background-color: #ce2127;"></div>
                                     </div>
                                 </div>
-                                <span class="fw-bold text-white me-3" id="quizCounter">SOAL 1/5</span>
+                                <span class="fw-bold text-dark me-3" id="quizCounter">SOAL 1/5</span>
                             </div>
                             
                             <div id="questionArea">
@@ -1103,9 +1106,9 @@ $nowTs = time();
                             </div>
                         </div>
                         <div class="col-lg-3">
-                            <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px; background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.15) !important;">
+                            <div class="card border-0 shadow-lg rounded-4 sticky-top" style="top: 100px; background: #ffffff; border: 1px solid #e2e8f0 !important;">
                                 <div class="card-body p-4">
-                                    <h6 class="fw-bold mb-4 text-center text-white">Navigasi Soal</h6>
+                                    <h6 class="fw-bold mb-4 text-center text-dark">Navigasi Soal</h6>
                                     <div class="d-flex flex-wrap gap-2 justify-content-center" id="quizNavGrid">
                                         <!-- Boxes injected via JS -->
                                     </div>
