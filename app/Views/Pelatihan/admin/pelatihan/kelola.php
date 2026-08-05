@@ -562,6 +562,7 @@ $kuesioner = $kuesioner ?? [];
         })
         .then(res => res.json())
         .then(data => {
+            Swal.close();
             if (data.status === 'success') {
                 showToast(data.message, 'success');
                 form.reset();
@@ -571,6 +572,7 @@ $kuesioner = $kuesioner ?? [];
                 showToast(data.message, 'danger');
             }
         })
+        .catch(() => Swal.close())
         .finally(() => {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Simpan Pertanyaan';
@@ -593,11 +595,13 @@ $kuesioner = $kuesioner ?? [];
                 fetch(`<?= base_url('pelatihan/admin/pelatihan/kuesioner/hapus') ?>/${id}`)
                     .then(res => res.json())
                     .then(data => {
+                        Swal.close();
                         showToast(data.message, data.status);
                         if(data.status === 'success') {
                             loadKuesioner();
                         }
-                    });
+                    })
+                    .catch(() => Swal.close());
             }
         });
     }
@@ -614,12 +618,15 @@ $kuesioner = $kuesioner ?? [];
         })
         .then(res => res.json())
         .then(data => {
+            Swal.close();
             if(data.status === 'success') {
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                showToast('Kuesioner berhasil diperbarui', 'success');
+                loadKuesioner();
+            } else {
+                showToast('Gagal memperbarui kuesioner', 'danger');
             }
-        });
+        })
+        .catch(() => Swal.close());
     }
 
     function loadTemplateKuesioner() {
@@ -639,13 +646,13 @@ $kuesioner = $kuesioner ?? [];
                 fetch(`<?= base_url('pelatihan/admin/pelatihan/kuesioner/template') ?>/${pelatihan_id}`)
                     .then(res => res.json())
                     .then(data => {
+                        Swal.close();
                         showToast(data.message, data.status);
                         if(data.status === 'success') {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            loadKuesioner();
                         }
-                    });
+                    })
+                    .catch(() => Swal.close());
             }
         });
     }
