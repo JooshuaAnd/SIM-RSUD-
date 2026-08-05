@@ -31,7 +31,6 @@ class Certificate extends BaseController
                                     ->where('ranah', 'Pengabdian')
                                     ->orWhere('jenis_dokumen', 'Pengabdian')
                                 ->groupEnd()
-                                ->orderBy("CASE WHEN verifikasi = 'pending' THEN 0 ELSE 1 END", 'ASC', false)
                                 ->orderBy('created_at', 'DESC')
                                 ->paginate(10, 'sertifikat');
         $pendingCount = $sertifikatModel->groupStart()

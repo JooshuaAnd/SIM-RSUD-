@@ -601,7 +601,7 @@
                     $notifs[] = ['title' => 'Sertifikat masuk', 'message' => "$s_masuk sertifikat eksternal menunggu keputusan admin.", 'url' => base_url('pelatihan/admin/sertifikat'), 'type' => 'primary', 'created_at' => date('Y-m-d H:i')];
                 }
 
-                $sp_masuk = $db->table('sertifikat_pelatihan')->where('verifikasi', 'pending')->groupStart()->where("LOWER(ranah) = 'pengabdian'", null, false)->orWhere("LOWER(jenis_dokumen) = 'pengabdian'", null, false)->groupEnd()->countAllResults();
+                $sp_masuk = $db->table('sertifikat_pelatihan')->where('verifikasi', 'pending')->groupStart()->where('ranah', 'Pengabdian')->orWhere('jenis_dokumen', 'Pengabdian')->groupEnd()->countAllResults();
                 if ($sp_masuk > 0) {
                     $notifs[] = ['title' => 'Sertifikat pengabdian masuk', 'message' => "$sp_masuk pengajuan pengabdian menunggu admin pengabdian.", 'url' => base_url('pelatihan/admin_pengabdian/sertifikat'), 'type' => 'success', 'created_at' => date('Y-m-d H:i')];
                 }
