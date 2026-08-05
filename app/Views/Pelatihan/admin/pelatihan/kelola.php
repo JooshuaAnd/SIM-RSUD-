@@ -898,37 +898,49 @@ $kuesioner = $kuesioner ?? [];
             customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase', cancelButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase ms-3' }
         }).then((result) => {
             if (result.isConfirmed) {
-                let promises = [];
-                forms.forEach(form => {
-                    let formData = new FormData(form);
-                    promises.push(
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData
-                        })
-                    );
-                });
-
-                showLoading('Menyimpan seluruh soal...');
-
-                Promise.all(promises).then(() => {
+                let processFormsSequentially = async () => {
+                    let total = forms.length;
+                    let current = 0;
+                    
                     Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Seluruh perubahan berhasil disimpan.',
-                        icon: 'success',
-                        showConfirmButton: true,
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#ce2127',
-                        padding: '2rem',
-                        customClass: {
-                            popup: 'rounded-4 shadow-lg border-0',
-                            confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
+                        title: 'Menyimpan Soal...',
+                        html: `Memproses soal <b>0</b> dari ${total}`,
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
                         }
-                    }).then(() => {
-                        let type = document.getElementById('current_tipe_evaluasi').value;
-                        setupQuiz(type);
                     });
-                }).catch(err => {
+
+                    try {
+                        for (let form of forms) {
+                            current++;
+                            Swal.getHtmlContainer().innerHTML = `Memproses soal <b>${current}</b> dari ${total}`;
+                            
+                            let formData = new FormData(form);
+                            await fetch(form.action, {
+                                method: 'POST',
+                                body: formData
+                            });
+                        }
+
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Seluruh perubahan berhasil disimpan.',
+                            icon: 'success',
+                            showConfirmButton: true,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ce2127',
+                            padding: '2rem',
+                            customClass: {
+                                popup: 'rounded-4 shadow-lg border-0',
+                                confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
+                            }
+                        }).then(() => {
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
+                        });
+                    } catch (err) {
                     Swal.fire({
                         title: 'Gagal!',
                         text: 'Sebagian soal gagal disimpan.',
@@ -937,8 +949,11 @@ $kuesioner = $kuesioner ?? [];
                         confirmButtonText: 'OK',
                         confirmButtonColor: '#ce2127',
                         customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase' }
-                    });
-                });
+                        });
+                    }
+                };
+
+                processFormsSequentially();
             }
         });
     }
