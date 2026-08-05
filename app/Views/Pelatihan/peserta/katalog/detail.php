@@ -224,6 +224,7 @@ $has_progress = $has_progress ?? false;
             <div class="col-lg-10 animate__animated animate__fadeInUp">
                 <div class="d-flex gap-2 mb-4 flex-wrap">
                     <span class="badge badge-premium rounded-pill text-white"><?= strtoupper($p['metode'] ?? 'ONLINE') ?></span>
+                    <span class="badge badge-premium rounded-pill text-white"><?= strtoupper($p['mekanisme'] ?? 'TERBUKA') ?></span>
                     <span class="badge badge-premium rounded-pill text-white"><?= strtoupper($p['biaya'] ?? 'GRATIS') ?></span>
                     <span class="badge badge-premium rounded-pill text-white"><i class="fas fa-tag me-1"></i> <?= strtoupper($p['kategori'] ?? 'UMUM') ?></span>
                 </div>
