@@ -608,7 +608,7 @@ $has_progress = $has_progress ?? false;
             title: 'Unggah Bukti Pembayaran',
             html: `
                 <div class="text-start mb-3">
-                    <p class="text-muted small">Format yang didukung: JPG, PNG, PDF (Maks. 2MB)</p>
+                    <p class="text-muted small">Format yang didukung: JPG, PNG, PDF (Maks. 8MB)</p>
                 </div>
                 <form id="uploadForm" action="<?= base_url('pelatihan/peserta/upload_bukti_bayar/'.$p['id']) ?>" method="POST" enctype="multipart/form-data">
                     <input type="file" name="bukti_bayar" id="bukti_bayar" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>

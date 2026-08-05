@@ -268,7 +268,7 @@
                         <div class="col-md-12">
                             <label class="form-label small fw-bold text-dark">GAMBAR PELATIHAN (OPSIONAL)</label>
                             <input type="file" name="gambar_pelatihan" id="f_gambar_pelatihan" class="form-control form-control-file rounded-pill border shadow-sm px-4 py-2" accept="image/*">
-                            <small class="text-muted d-block mt-1 ms-3">Format yang didukung: JPG, JPEG, PNG, WEBP. Maksimal 2MB. Biarkan kosong jika tidak ingin mengubah gambar.</small>
+                            <small class="text-muted d-block mt-1 ms-3">Format yang didukung: JPG, JPEG, PNG, WEBP. Maksimal 8MB. Biarkan kosong jika tidak ingin mengubah gambar.</small>
                             <small id="gambar_pelatihan_info" class="text-danger fw-bold d-none mt-1 ms-3"></small>
                         </div>
                     </div>
