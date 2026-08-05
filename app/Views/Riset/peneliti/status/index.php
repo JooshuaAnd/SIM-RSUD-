@@ -64,7 +64,7 @@
             
             <!-- 1. TAB STUDI PENDAHULUAN -->
             <div class="tab-pane fade show active" id="studi" role="tabpanel" aria-labelledby="studi-tab">
-                <?= view('riset/peneliti/status/partials/table_submissions', [
+                <?= view('Riset/peneliti/status/partials/table_submissions', [
                     'submissions' => $studi_pendahuluan,
                     'type' => 'studi',
                     'detail_route' => 'riset/peneliti/pengajuan/stupen/detail',
@@ -75,7 +75,7 @@
 
             <!-- 2. TAB IZIN PENELITIAN -->
             <div class="tab-pane fade" id="izin" role="tabpanel" aria-labelledby="izin-tab">
-                <?= view('riset/peneliti/status/partials/table_submissions', [
+                <?= view('Riset/peneliti/status/partials/table_submissions', [
                     'submissions' => $izin_penelitian,
                     'type' => 'izin',
                     'detail_route' => 'riset/peneliti/pengajuan/izin/detail',
@@ -86,7 +86,7 @@
 
             <!-- 5. TAB PUBLIKASI -->
             <div class="tab-pane fade" id="publikasi" role="tabpanel" aria-labelledby="publikasi-tab">
-                <?= view('riset/peneliti/status/partials/table_submissions', [
+                <?= view('Riset/peneliti/status/partials/table_submissions', [
                     'submissions' => $publikasi,
                     'type' => 'publikasi',
                     'detail_route' => 'riset/peneliti/publikasi/detail', // will pass ?id=
