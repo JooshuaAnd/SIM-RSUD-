@@ -482,14 +482,14 @@ $nowTs = time();
         </button>
 
         <div class="content-card">
-            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4">
+            <div class="d-flex flex-column justify-content-center align-items-center mb-4 border-bottom border-white border-opacity-20 pb-4 text-center">
+                <div class="badge bg-white text-dark px-4 py-2 rounded-pill fw-bold mb-3" style="font-size: 0.8rem; letter-spacing: 1px;"><?= strtoupper(str_replace('_', ' ', $active_step['tipe'])) ?></div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white fs-3"><?= strtoupper($active_step['judul']) ?></h2>
+                    <h2 class="fw-bold mb-0 text-white fs-2" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2);"><?= strtoupper($active_step['judul']) ?></h2>
                     <?php if ($active_step['tipe'] == 'presensi') : ?>
                         <p class="text-white-50 small mb-0 mt-2 fw-bold"><i class="fas fa-map-marker-alt me-1 text-warning"></i> LOKASI: RSUD KOTA YOGYAKARTA</p>
                     <?php endif; ?>
                 </div>
-                <div class="badge bg-white text-dark px-4 py-2 rounded-pill fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;"><?= strtoupper(str_replace('_', ' ', $active_step['tipe'])) ?></div>
             </div>
 
             <?php if ($active_step['tipe'] == 'presensi' || $active_step['tipe'] == 'sesi') : ?>
