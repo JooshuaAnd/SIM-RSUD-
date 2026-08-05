@@ -474,11 +474,11 @@ $nowTs = time();
     <div class="learning-content p-0">
         
         <!-- Floating Navigasi Materi Button -->
-        <button class="btn btn-lg rounded-pill text-dark d-inline-flex align-items-center gap-2 fw-bold shadow-lg" 
-                style="position: fixed; top: 90px; left: 30px; z-index: 1050; background: white; border: 2px solid #ce2127; animation: bounceSmall 2s infinite ease-in-out;" 
+        <button class="btn rounded-pill text-dark d-inline-flex align-items-center fw-extrabold shadow-lg" 
+                style="position: fixed; top: 90px; right: 30px; z-index: 1050; background: white; border: 3px solid #ce2127; animation: bounceSmall 2s infinite ease-in-out; padding: 16px 32px; font-size: 1.3rem; gap: 15px;" 
                 onmouseover="this.style.animationPlayState='paused';" onmouseout="this.style.animationPlayState='running';"
                 type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarBelajar" aria-controls="sidebarBelajar" title="Tampilkan Menu Progress Belajar">
-            <i class="fas fa-bars text-danger"></i> Navigasi Materi
+            <i class="fas fa-bars text-danger fa-lg"></i> Navigasi Materi
         </button>
 
         <div class="content-card">
