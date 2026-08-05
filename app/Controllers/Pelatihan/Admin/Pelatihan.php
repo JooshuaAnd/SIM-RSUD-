@@ -331,12 +331,21 @@ class Pelatihan extends BaseController
         $this->masterPelatihanModel->update($id, $updateData);
 
         // Update Narasumber (pivot)
-        $this->narasumberPelModel->where('pelatihan_id', $id)->delete();
         $narasumbers = $data['narasumber'] ?? [];
         if (!is_array($narasumbers)) $narasumbers = explode(',', $narasumbers);
+        $narasumbers = array_filter(array_map('trim', $narasumbers));
+
+        $existingNarasumber = $this->narasumberPelModel->where('pelatihan_id', $id)->findAll();
+        $existingPejabatIds = array_unique(array_column($existingNarasumber, 'pejabat_ttd_id'));
+
+        foreach ($existingNarasumber as $en) {
+            if (!in_array($en['pejabat_ttd_id'], $narasumbers)) {
+                $this->narasumberPelModel->delete($en['id']);
+            }
+        }
+
         foreach ($narasumbers as $nid) {
-            $nid = trim($nid);
-            if (!empty($nid) && is_numeric($nid)) {
+            if (is_numeric($nid) && !in_array($nid, $existingPejabatIds)) {
                 $this->narasumberPelModel->insert([
                     'pelatihan_id' => $id,
                     'pejabat_ttd_id' => (int)$nid,
@@ -346,12 +355,21 @@ class Pelatihan extends BaseController
         }
 
         // Update Penyelenggara (pivot)
-        $this->penyelenggaraPelModel->where('pelatihan_id', $id)->delete();
         $penyelenggaras = $data['penyelenggara'] ?? [];
         if (!is_array($penyelenggaras)) $penyelenggaras = explode(',', $penyelenggaras);
+        $penyelenggaras = array_filter(array_map('trim', $penyelenggaras));
+
+        $existingPenyelenggara = $this->penyelenggaraPelModel->where('pelatihan_id', $id)->findAll();
+        $existingPenyelenggaraIds = array_unique(array_column($existingPenyelenggara, 'penyelenggara_id'));
+
+        foreach ($existingPenyelenggara as $ep) {
+            if (!in_array($ep['penyelenggara_id'], $penyelenggaras)) {
+                $this->penyelenggaraPelModel->delete($ep['id']);
+            }
+        }
+
         foreach ($penyelenggaras as $pid) {
-            $pid = trim($pid);
-            if (!empty($pid) && is_numeric($pid)) {
+            if (is_numeric($pid) && !in_array($pid, $existingPenyelenggaraIds)) {
                 $this->penyelenggaraPelModel->insert([
                     'pelatihan_id' => $id,
                     'penyelenggara_id' => (int)$pid,
