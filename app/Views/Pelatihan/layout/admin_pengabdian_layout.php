@@ -551,6 +551,44 @@
 
     <?= $this->renderSection('scripts') ?>
 
-</body>
+    <!-- Global File Size Validation -->
+    <script>
+        document.addEventListener('submit', function(e) {
+            let form = e.target;
+            let fileInputs = form.querySelectorAll('input[type="file"]');
+            let maxSize = 8 * 1024 * 1024; // 8MB
+            let tooLarge = false;
+            let fileName = '';
 
+            for (let i = 0; i < fileInputs.length; i++) {
+                let input = fileInputs[i];
+                if (input.files && input.files.length > 0) {
+                    for (let j = 0; j < input.files.length; j++) {
+                        if (input.files[j].size > maxSize) {
+                            tooLarge = true;
+                            fileName = input.files[j].name;
+                            break;
+                        }
+                    }
+                }
+                if (tooLarge) break;
+            }
+
+            if (tooLarge) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ukuran File Terlalu Besar',
+                        text: 'File "' + fileName + '" melebihi batas maksimal 8MB. Silakan kompres atau pilih file yang lebih kecil.',
+                        confirmButtonColor: '#ce2127',
+                        customClass: { popup: 'rounded-4 shadow-lg border-0', confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase' }
+                    });
+                } else {
+                    alert('File "' + fileName + '" terlalu besar! Maksimal ukuran file adalah 8MB.');
+                }
+            }
+        });
+    </script>
+</body>
 </html>

@@ -349,9 +349,10 @@ $kuesioner = $kuesioner ?? [];
                     .then(res => res.json())
                     .then(data => {
                         showToast(data.message, data.status);
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
+                        if (data.status === 'success') {
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
+                        }
                     });
             }
         });
@@ -374,9 +375,8 @@ $kuesioner = $kuesioner ?? [];
                     .then(data => {
                         if (data.status == 'success') {
                             showToast('File berhasil dihapus', 'success');
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            let type = document.getElementById('current_tipe_evaluasi').value;
+                            setupQuiz(type);
                         }
                     });
             }
@@ -544,9 +544,7 @@ $kuesioner = $kuesioner ?? [];
                 showToast(data.message, 'success');
                 form.reset();
                 toggleKategoriBaru('');
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                loadKuesioner();
             } else {
                 showToast(data.message, 'danger');
             }
@@ -575,9 +573,7 @@ $kuesioner = $kuesioner ?? [];
                     .then(data => {
                         showToast(data.message, data.status);
                         if(data.status === 'success') {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
+                            loadKuesioner();
                         }
                     });
             }
@@ -851,7 +847,8 @@ $kuesioner = $kuesioner ?? [];
                     confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
                 }
             }).then(() => {
-                location.reload();
+                let type = document.getElementById('current_tipe_evaluasi').value;
+                setupQuiz(type);
             });
         })
         .catch(error => {
@@ -928,7 +925,8 @@ $kuesioner = $kuesioner ?? [];
                             confirmButton: 'rounded-pill px-5 py-2 fw-bold text-uppercase'
                         }
                     }).then(() => {
-                        location.reload();
+                        let type = document.getElementById('current_tipe_evaluasi').value;
+                        setupQuiz(type);
                     });
                 }).catch(err => {
                     Swal.fire({
