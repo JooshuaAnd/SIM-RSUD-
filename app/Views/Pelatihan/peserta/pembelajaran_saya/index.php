@@ -14,6 +14,8 @@
     :root {
         --primary-red: #ce2127;
         --primary-dark: #0f172a;
+        --primary-navy: #1e3a8a;
+        --primary-gold: #f59e0b;
         --primary-yellow: #ffc107;
         --soft-shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
@@ -55,16 +57,21 @@
         padding: 8px 15px;
         border-radius: 100px;
     }
-    .btn-green {
-        background-color: #10b981;
+    .btn-action-custom {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-gold) 100%);
         color: white;
         border: none;
     }
-    .btn-green:hover {
-        background-color: #059669;
+    .btn-action-custom:hover {
+        background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-red) 100%);
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .status-card {
+        background: rgba(15, 23, 42, 0.4); /* subtle navy background */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
     }
 </style>
 
@@ -87,7 +94,7 @@
             <div class="row g-4">
                 <?php foreach ($minta_akses as $p): ?>
                 <div class="col-md-4">
-                    <div class="glass-card-global h-100" style="border-top: 4px solid #f59e0b;">
+                    <div class="glass-card-global h-100 status-card" style="border-top: 4px solid var(--primary-gold);">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
                             <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
@@ -107,7 +114,7 @@
             <div class="row g-4">
                 <?php foreach ($belum_dimulai as $p): ?>
                 <div class="col-md-4">
-                    <div class="glass-card-global h-100" style="border-top: 4px solid #10b981;">
+                    <div class="glass-card-global h-100 status-card" style="border-top: 4px solid #10b981;">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
                             <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
@@ -119,7 +126,7 @@
                                     $waktu_selesai = $p['jadwal_selesai'] . ' ' . ($p['jam_selesai'] ?: '23:59:59');
                                     if ($now >= $mulai && $now <= $waktu_selesai):
                                 ?>
-                                    <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-global w-100 rounded-pill fw-bold shadow-sm" style="background-color: #2563eb; color: white;">MULAI BELAJAR</a>
+                                    <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-custom w-100 rounded-pill fw-bold shadow-sm">MULAI BELAJAR</a>
                                 <?php elseif ($now < $mulai): ?>
                                     <button class="btn btn-secondary w-100 rounded-pill fw-bold shadow-sm" disabled style="background: rgba(255,255,255,0.2); border: none;">BELUM MULAI</button>
                                 <?php else: ?>
@@ -138,7 +145,7 @@
             <div class="row g-4">
                 <?php foreach ($berjalan as $p): ?>
                 <div class="col-md-4">
-                    <div class="glass-card-global h-100" style="border-top: 4px solid #3b82f6;">
+                    <div class="glass-card-global h-100 status-card" style="border-top: 4px solid #3b82f6;">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
                             <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
@@ -153,7 +160,7 @@
                                 $waktu_selesai = $p['jadwal_selesai'] . ' ' . ($p['jam_selesai'] ?: '23:59:59');
                                 if ($now >= $mulai && $now <= $waktu_selesai):
                             ?>
-                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-global w-100 mt-auto rounded-pill fw-bold shadow-sm" style="background-color: #2563eb; color: white;">LANJUTKAN</a>
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id']) ?>" class="btn btn-action-custom w-100 mt-auto rounded-pill fw-bold shadow-sm">LANJUTKAN</a>
                             <?php else: ?>
                                 <button class="btn btn-secondary w-100 mt-auto rounded-pill fw-bold shadow-sm" disabled style="background: rgba(255,255,255,0.2); border: none;">MASA BERAKHIR</button>
                             <?php endif; ?>
@@ -168,7 +175,7 @@
             <div class="row g-4">
                 <?php foreach ($selesai as $p): ?>
                 <div class="col-md-4">
-                    <div class="glass-card-global h-100" style="border-top: 4px solid #8b5cf6;">
+                    <div class="glass-card-global h-100 status-card" style="border-top: 4px solid #8b5cf6;">
                         <div class="p-4 text-center">
                             <div class="p-3 rounded-circle d-inline-block mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.15);">
                                 <i class="fas fa-medal text-warning fs-4"></i>
@@ -176,7 +183,7 @@
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
                             <p class="small opacity-75 text-white fw-bold mb-3"><?= strtoupper($p['penyelenggara']) ?></p>
                             <span class="badge bg-warning text-dark badge-status fw-bold px-4 py-2 rounded-pill shadow-sm">DIKLAT SELESAI</span>
-                            <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn btn-action-global w-100 mt-4 rounded-pill fw-bold shadow-sm" style="background-color: #f59e0b; color: white;">LIHAT SERTIFIKAT</a>
+                            <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn btn-action-custom w-100 mt-4 rounded-pill fw-bold shadow-sm">LIHAT SERTIFIKAT</a>
                         </div>
                     </div>
                 </div>
@@ -188,7 +195,7 @@
             <div class="row g-4">
                 <?php foreach ($dibatalkan as $p): ?>
                 <div class="col-md-4">
-                    <div class="glass-card-global h-100" style="background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.2);">
+                    <div class="glass-card-global h-100 status-card" style="border-top: 4px solid #ef4444; border-style: dashed;">
                         <div class="p-4 text-center opacity-75">
                             <i class="fas fa-times-circle text-danger fs-1 mb-3 opacity-75"></i>
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>

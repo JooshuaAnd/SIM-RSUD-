@@ -60,14 +60,31 @@ class Home extends BaseController
             }
         }
 
+        $myProgressMap = [];
+        foreach ($myProgress as $p) {
+            $myProgressMap[$p['pelatihan_id']] = $p;
+        }
+
         foreach ($activePelatihan as $ap) {
+            $statusEnrollment = 'belum_daftar';
+            if (isset($myProgressMap[$ap['id']])) {
+                $p = $myProgressMap[$ap['id']];
+                if ($p['status_peserta'] == 'Lulus' || $p['status_peserta'] == 'Selesai') {
+                    $statusEnrollment = 'selesai';
+                } elseif ($p['status_peserta'] == 'Aktif') {
+                    $statusEnrollment = 'lanjutkan';
+                } else {
+                    $statusEnrollment = 'terdaftar';
+                }
+            }
             $jadwal[] = [
                 'tanggal' => $ap['jadwal_mulai'], 
                 'end' => $ap['jadwal_selesai'],
                 'event' => 'Mulai: ' . $ap['nama'], 
                 'tipe' => 'pelatihan',
                 'reg_buka' => $ap['reg_buka_tgl'],
-                'reg_tutup' => $ap['reg_tutup_tgl']
+                'reg_tutup' => $ap['reg_tutup_tgl'],
+                'status_enrollment' => $statusEnrollment
             ];
             
             $sesiList = $sesiGrouped[$ap['id']] ?? [];
@@ -76,7 +93,8 @@ class Home extends BaseController
                     'tanggal' => $s['tanggal'], 
                     'event' => 'Sesi: ' . $s['nama_sesi'], 
                     'tipe' => 'sesi',
-                    'jam' => $s['waktu']
+                    'jam' => $s['waktu'],
+                    'status_enrollment' => $statusEnrollment
                 ];
             }
         }

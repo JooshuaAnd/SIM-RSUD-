@@ -165,10 +165,15 @@
                     <?php foreach ($pelatihan_populer as $p) : ?>
                     <div style="min-width: 260px; max-width: 260px;">
                         <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="text-decoration-none text-white">
-                            <div class="glass-card-global h-100 p-0 overflow-hidden" style="transition: 0.3s;">
-                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px; background: rgba(0,0,0,0.2);">
-                                    <div style="position: absolute; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.05); top: -10px; right: -10px;"></div>
+                            <div class="glass-card-global h-100 p-0 overflow-hidden hover-card-premium" style="transition: 0.3s; border-radius: 12px;">
+                                <?php if(!empty($p['gambar_pelatihan'])): ?>
+                                <div class="position-relative d-flex align-items-center justify-content-center" style="height: 100px; background: url('<?= base_url($p['gambar_pelatihan']) ?>') center/cover;">
                                 </div>
+                                <?php else: ?>
+                                <div class="position-relative d-flex align-items-center justify-content-center p-2" style="height: 100px; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); border-bottom: 2px solid #f59e0b;">
+                                    <div class="fw-bold text-warning text-center" style="font-size: 0.85rem; line-height: 1.2;"><?= esc($p['nama']) ?></div>
+                                </div>
+                                <?php endif; ?>
                                 <div class="p-3">
                                     <span class="badge bg-white text-dark fw-bold mb-2 shadow-sm" style="font-size: 0.65rem;"><?= strtoupper($p['kategori']) ?></span>
                                     <h6 class="fw-bold mb-2 lh-base text-white" style="font-size: 0.9rem; min-height: 2.7rem;"><?= $p['nama'] ?></h6>
@@ -189,6 +194,12 @@
         <div class="col-lg-4 animate-fade" style="animation-delay: 0.2s;">
             <div class="card p-3 sticky-top border-0 shadow-sm" style="top: 100px; background: #ffffff; border-radius: 16px;">
                 <h6 class="fw-bold mb-3 px-2 border-start border-3 border-danger text-dark"><i class="far fa-calendar-alt me-2 text-danger"></i> Agenda Diklat</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3 px-2">
+                    <span class="badge bg-success" style="font-size: 0.65rem;">Lanjutkan</span>
+                    <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">Terdaftar</span>
+                    <span class="badge" style="background-color: #8b5cf6; font-size: 0.65rem;">Selesai</span>
+                    <span class="badge bg-secondary" style="font-size: 0.65rem;">Belum Daftar</span>
+                </div>
                 <div id='calendar' style="height: 400px; font-size: 0.85rem;" class="text-dark"></div>
             </div>
         </div>
@@ -205,7 +216,17 @@
         var scheduleData = <?= json_encode($jadwal) ?>;
         
         var formattedEvents = scheduleData.map(function(item) {
-            let color = item.tipe === 'pelatihan' ? '#ce2127' : '#111111';
+            let color = '#334155'; // default grey for belum daftar
+            if (item.status_enrollment === 'lanjutkan') {
+                color = '#10b981'; // green for Lanjutkan
+            } else if (item.status_enrollment === 'terdaftar') {
+                color = '#f59e0b'; // yellow/gold for Terdaftar
+            } else if (item.status_enrollment === 'selesai') {
+                color = '#8b5cf6'; // purple for Selesai
+            } else {
+                color = item.tipe === 'pelatihan' ? '#64748b' : '#334155';
+            }
+
             return {
                 title: item.event,
                 start: item.tanggal,
@@ -215,7 +236,8 @@
                     tipe: item.tipe,
                     reg_buka: item.reg_buka || null,
                     reg_tutup: item.reg_tutup || null,
-                    jam: item.jam || null
+                    jam: item.jam || null,
+                    status_enrollment: item.status_enrollment || 'belum_daftar'
                 }
             };
         });
@@ -259,7 +281,19 @@
                     `;
                 }
 
-                htmlContent += `</div>`;
+                // Add Status Badge
+                let statusBadge = '';
+                if (p.status_enrollment === 'lanjutkan') {
+                    statusBadge = '<span class="badge bg-success w-100 p-2">STATUS: SEDANG BERJALAN (LANJUTKAN)</span>';
+                } else if (p.status_enrollment === 'terdaftar') {
+                    statusBadge = '<span class="badge bg-warning text-dark w-100 p-2">STATUS: TERDAFTAR</span>';
+                } else if (p.status_enrollment === 'selesai') {
+                    statusBadge = '<span class="badge" style="background-color: #8b5cf6; width: 100%; padding: 0.5rem;">STATUS: SELESAI</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-secondary w-100 p-2">STATUS: BELUM MENDAFTAR</span>';
+                }
+                
+                htmlContent += `<div class="mt-4">${statusBadge}</div></div>`;
 
                 Swal.fire({
                     title: `<span class="fs-5 fw-bold text-dark">${info.event.title}</span>`,
