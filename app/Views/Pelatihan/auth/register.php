@@ -328,7 +328,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold mb-1">EMAIL AKTIF</label>
-                        <input type="email" name="email" class="form-control" placeholder="nama@email.com" value="<?= old('email') ?>" required pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|students\.ukcw\.ac\.id|[a-zA-Z0-9.-]+\.go\.id)" title="Email harus menggunakan domain @gmail.com, @students.ukcw.ac.id, atau instansi pemerintah (.go.id).">
+                        <input type="email" name="email" class="form-control" placeholder="nama@email.com" value="<?= old('email') ?>" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold mb-1">NO. WHATSAPP</label>

@@ -93,8 +93,8 @@ class Auth extends BaseController
     {
         $rules = [
             'nik'      => 'required|numeric|exact_length[16]|is_unique[users_pelatihan.nik]',
-            'nama'     => 'required|min_length[3]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
-            'email'    => 'required|valid_email|regex_match[/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|id|org|email)$/i]|is_unique[users_pelatihan.email]',
+            'nama'     => 'required|min_length[1]|max_length[150]|regex_match[/^[a-zA-Z\s.,\']+$/]',
+            'email'    => 'required|valid_email|is_unique[users_pelatihan.email]',
             'phone'    => 'required|numeric|min_length[10]|max_length[15]',
             'password' => 'required|min_length[8]|regex_match[/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/]',
             'role'     => 'required|in_list[named,nonnamed]',
@@ -107,12 +107,13 @@ class Auth extends BaseController
                 'is_unique'    => 'NIK sudah terdaftar.'
             ],
             'nama' => [
+                'min_length'   => 'Nama minimal 3 karakter.',
                 'regex_match'  => 'Nama hanya boleh mengandung huruf, spasi, titik, koma, atau tanda kutip.'
             ],
             'email' => [
-                'valid_email'  => 'Format email harus valid.',
-                'regex_match'  => 'Email harus menggunakan domain yang diizinkan (.com, .id, .org, .email).',
-                'is_unique'    => 'Email sudah terdaftar.'
+                'required'     => 'Email wajib diisi.',
+                'valid_email'  => 'Format email tidak valid.',
+                'is_unique'    => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.'
             ],
             'phone' => [
                 'numeric'      => 'No. WhatsApp harus berupa angka murni.',
