@@ -18,6 +18,21 @@ class MyLearning extends BaseController
             ->where('peserta_pelatihan.user_id', $userId)
             ->get()->getResultArray();
 
+        $pelatihanIds = array_column($registrations, 'id');
+        $penyelenggaraGrouped = [];
+        if (!empty($pelatihanIds)) {
+            $penyelenggaraRows = $db->table('penyelenggara_pelatihan pp')
+                ->select('pp.pelatihan_id, mp.nama')
+                ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id', 'left')
+                ->whereIn('pp.pelatihan_id', $pelatihanIds)
+                ->get()->getResultArray();
+            foreach ($penyelenggaraRows as $row) {
+                if (!empty($row['nama'])) {
+                    $penyelenggaraGrouped[$row['pelatihan_id']][] = $row['nama'];
+                }
+            }
+        }
+
         $list = [];
         foreach ($registrations as $reg) {
             $item = $reg;
@@ -42,13 +57,8 @@ class MyLearning extends BaseController
             $item['progress'] = $progressVal;
             $item['is_selesai'] = $isSelesai;
             
-            $penyelenggaraList = $db->table('penyelenggara_pelatihan')
-                ->select('master_penyelenggara.nama')
-                ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
-                ->where('penyelenggara_pelatihan.pelatihan_id', $reg['id'])
-                ->get()->getResultArray();
-            $penyelenggaraNames = array_unique(array_filter(array_column($penyelenggaraList, 'nama')));
-            $item['penyelenggara'] = implode(', ', $penyelenggaraNames);
+            $penyelenggaraList = $penyelenggaraGrouped[$reg['id']] ?? [];
+            $item['penyelenggara'] = implode(', ', array_unique($penyelenggaraList));
             
             $list[] = $item;
         }

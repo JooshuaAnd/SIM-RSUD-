@@ -673,6 +673,13 @@ $nowTs = time();
                                     <p class="text-white-50 fs-6 mb-0">Pada: <strong class="text-white"><?= date('d M Y H:i', strtotime($active_step['attended_at'])) ?> WIB</strong></p>
                                 <?php endif; ?>
                             </div>
+                            
+                            <?php if ($sessionOpen && $tipeSesiVal !== 'offline' && !empty($active_step['meeting_link'])): ?>
+                                <a href="<?= esc($active_step['meeting_link']) ?>" target="_blank" class="btn w-100 py-3 fw-bold rounded-pill text-white shadow-lg hover-scale fs-5 mb-3 border-0 animate__animated animate__pulse animate__infinite" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;">
+                                    GABUNG MEETING <i class="fas fa-video ms-2"></i>
+                                </a>
+                            <?php endif; ?>
+
                             <a href="<?= base_url('pelatihan/peserta/tandai_selesai/'.$p['id'].'/'.$active_id.'?next_step='.($active_id + 1).(isset($active_step['sesi_id']) ? '&sesi_id='.$active_step['sesi_id'] : '')) ?>" class="btn w-100 py-3 rounded-pill fw-extrabold shadow-lg hover-scale fs-5 border border-danger animate__animated animate__pulse animate__infinite" style="background: white; color: #ce2127;">
                                 SELESAI &amp; LANJUT KE MATERI <i class="fas fa-arrow-right ms-2"></i>
                             </a>
