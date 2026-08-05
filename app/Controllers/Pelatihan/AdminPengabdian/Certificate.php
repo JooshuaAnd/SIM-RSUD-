@@ -28,15 +28,15 @@ class Certificate extends BaseController
         $sertifikatModel = new \App\Models\Pelatihan\SertifikatPelatihanModel();
         
         $list = $sertifikatModel->groupStart()
-                                    ->where("LOWER(ranah) = 'pengabdian'", null, false)
-                                    ->orWhere("LOWER(jenis_dokumen) = 'pengabdian'", null, false)
+                                    ->where('ranah', 'Pengabdian')
+                                    ->orWhere('jenis_dokumen', 'Pengabdian')
                                 ->groupEnd()
-                                ->orderBy("CASE WHEN verifikasi = 'pending' THEN 0 ELSE 1 END", 'ASC')
+                                ->orderBy("CASE WHEN verifikasi = 'pending' THEN 0 ELSE 1 END", 'ASC', false)
                                 ->orderBy('created_at', 'DESC')
                                 ->paginate(10, 'sertifikat');
         $pendingCount = $sertifikatModel->groupStart()
-                ->where("LOWER(ranah) = 'pengabdian'", null, false)
-                ->orWhere("LOWER(jenis_dokumen) = 'pengabdian'", null, false)
+                ->where('ranah', 'Pengabdian')
+                ->orWhere('jenis_dokumen', 'Pengabdian')
             ->groupEnd()
             ->where('verifikasi', 'pending')
             ->countAllResults();

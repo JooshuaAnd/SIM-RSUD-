@@ -53,14 +53,14 @@ class Auth extends BaseController
         }
 
         // Get role directly from database
-        $dbRole = $user['role'];
+        $dbRole = strtolower($user['role']);
 
         // Set session data
         $this->session->set([
             'user_id'       => $user['nik'],
             'nama'          => $user['nama_lengkap'],
             'email'         => $user['email'],
-            'role'          => $user['role'],
+            'role'          => $dbRole,
             'jenis_peserta' => $user['jenis_peserta'],
             'logged_in'     => true,
             'force_password_reset' => password_verify('RSUDKotaYogyakarta2026', $user['password'])
