@@ -116,7 +116,11 @@ $req = $req ?? [];
                             <div class="position-relative">
                                 <div class="course-img-wrapper position-relative d-flex align-items-center justify-content-center" style="height: 180px; overflow: hidden; background: radial-gradient(circle at 20% 50%, #1f2937 0%, #0f172a 100%);">
                                     <?php if ($gambarPelatihan): ?>
-                                        <img src="<?= $gambarPelatihan ?>" alt="<?= esc($p['nama']) ?>" class="w-100 h-100" style="object-fit: cover;">
+                                        <img src="<?= $gambarPelatihan ?>" alt="<?= esc($p['nama']) ?>" class="w-100 h-100" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="default-course-cover" style="display: none;">
+                                            <div class="fw-black text-white text-center px-4"><?= esc($p['program'] ?? 'Pelatihan') ?></div>
+                                            <small class="text-white-50 fw-bold mt-2">RSUD KOTA YOGYAKARTA</small>
+                                        </div>
                                     <?php else: ?>
                                         <div class="default-course-cover">
                                             <div class="fw-black text-white text-center px-4"><?= esc($p['program'] ?? 'Pelatihan') ?></div>
@@ -203,7 +207,7 @@ $req = $req ?? [];
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #0f172a 0%, #ce2127 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #f59e0b 100%);
 }
 </style>
 
