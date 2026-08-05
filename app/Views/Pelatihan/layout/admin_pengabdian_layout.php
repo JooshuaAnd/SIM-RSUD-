@@ -454,10 +454,12 @@
                 </div>
             </div>
             <div class="header-controls d-flex gap-3 align-items-center">
+                <?php if (!isset($title) || strpos(strtolower($title), 'profil') === false): ?>
                 <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white border" style="width: 250px;">
                     <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted small"></i></span>
                     <input type="text" id="globalSearchData" class="form-control border-0" placeholder="Cari nama peserta, judul, status...">
                 </div>
+                <?php endif; ?>
                 <a href="<?= base_url('pelatihan/admin_pengabdian/sertifikat') ?>" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold text-dark">
                     Sertifikat pending
                     <span class="badge bg-danger ms-1"><?= number_format($pending_pengabdian ?? 0) ?></span>

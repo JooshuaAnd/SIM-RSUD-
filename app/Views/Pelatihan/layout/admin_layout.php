@@ -557,7 +557,7 @@
                 </div>
             </div>
             <div class="header-controls d-flex gap-3 align-items-center">
-                <?php if (isset($title) && strpos(strtolower($title), 'dashboard') === false && strpos(strtolower($title), 'pengaturan logo') === false): ?>
+                <?php if (isset($title) && strpos(strtolower($title), 'dashboard') === false && strpos(strtolower($title), 'pengaturan logo') === false && strpos(strtolower($title), 'profil') === false): ?>
                     <?php
                     $placeholderText = 'Cari data...';
                     if (isset($title)) {
