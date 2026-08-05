@@ -49,8 +49,8 @@ try {
         }
         
         .glass-wrapper-global {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, rgba(165, 15, 20, 0.95) 0%, rgba(130, 5, 10, 0.98) 100%);
+            box-shadow: 0 15px 35px rgba(165, 15, 20, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
             color: white;
             border-radius: 24px;
             padding: 2rem;
