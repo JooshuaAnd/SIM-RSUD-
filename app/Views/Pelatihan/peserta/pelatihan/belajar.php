@@ -302,11 +302,11 @@ $nowTs = time();
     }
 
     .rating-btn input:checked + label {
-        background: #ce2127;
-        border-color: #ce2127;
-        color: white !important;
+        background: #ffffff;
+        border-color: #ffffff;
+        color: #ce2127 !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(206, 33, 39, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     /* Quiz Interactivity */
@@ -817,7 +817,7 @@ $nowTs = time();
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$nextSessionStepId) ?>" class="btn btn-selanjutnya mt-3">LANJUT <i class="fas fa-arrow-right ms-2"></i></a>
                         </div>
                     <?php else : ?>
-                        <form id="evalSesiForm" action="<?= base_url('pelatihan/peserta/submit_evaluasi_sesi/'.$p['id']) ?>" method="POST">
+                        <form id="evalSesiForm" action="<?= base_url('pelatihan/peserta/submit_evaluasi_sesi/'.$p['id']) ?>" method="POST" onsubmit="Swal.fire({title: 'Menyimpan Evaluasi...', text: 'Mohon tunggu sebentar', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});">
                             <input type="hidden" name="sesi_id" value="<?= $sesiId ?>">
                             <input type="hidden" name="step_id" value="<?= $active_id ?>">
                             <div class="mb-5">
@@ -1370,6 +1370,14 @@ $nowTs = time();
                             sessionStorage.removeItem(quizStorageKey + '_idx');
                             
                             document.body.appendChild(form);
+                            Swal.fire({
+                                title: 'Memproses Jawaban...',
+                                text: 'Mohon tunggu sebentar',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
                             form.submit();
                         }
                     }
@@ -1398,7 +1406,7 @@ $nowTs = time();
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$certIndex) ?>" class="btn btn-selanjutnya mt-3">Lihat Sertifikat <i class="fas fa-arrow-right ms-2"></i></a>
                         </div>
                     <?php else : ?>
-                        <form id="evaluationForm" action="<?= base_url('pelatihan/peserta/submit_evaluasi/'.$p['id']) ?>" method="POST">
+                        <form id="evaluationForm" action="<?= base_url('pelatihan/peserta/submit_evaluasi/'.$p['id']) ?>" method="POST" onsubmit="Swal.fire({title: 'Menyimpan Evaluasi...', text: 'Mohon tunggu sebentar', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});">
 
                             <div class="d-flex align-items-center gap-4 mb-5 p-4 bg-light rounded-4 border-start border-danger border-5">
                                 <div class="p-3 rounded-circle text-white shadow-sm" style="background: var(--primary-red);">
@@ -1680,7 +1688,7 @@ $nowTs = time();
                             <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
                                 <?php if ($post_test_status == 'Lulus'): ?>
                                     <a href="<?= base_url('pelatihan/peserta/sertifikat_saya') ?>" class="btn px-5 py-3 shadow-lg fw-bold rounded-pill fs-5 d-flex align-items-center justify-content-center gap-2" style="background: var(--primary-red) !important; color: white !important;">
-                                        <i class="fas fa-file-download fs-4"></i> UNDUH SERTIFIKAT
+                                        <i class="fas fa-certificate fs-4"></i> LIHAT SERTIFIKAT SAYA
                                     </a>
                                 <?php endif; ?>
                                 <a href="<?= base_url('pelatihan/peserta/beranda') ?>" class="btn px-5 py-3 fw-bold rounded-pill fs-5 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="border: 2px solid #0f172a; color: #0f172a; background: transparent;">

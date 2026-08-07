@@ -136,6 +136,7 @@
   'findQualifiedNameFromPath' => 
   array (
     'D:\\magang\\SIM-RSUD-\\app\\Config\\Services.php' => 'Config\\Services',
+    'D:\\magang\\SIM-RSUD-\\vendor\\codeigniter4\\framework\\system\\Config\\Services.php' => false,
   ),
   'getClassname' => 
   array (
