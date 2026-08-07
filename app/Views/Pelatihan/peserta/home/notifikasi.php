@@ -122,7 +122,7 @@
             </div>
 
             <div class="text-center mt-5">
-                <button class="btn btn-action-global rounded-pill px-5 fw-bold small text-white border border-white" style="background: rgba(255,255,255,0.1);">Muat Lebih Banyak</button>
+                <button onclick="window.location.reload();" class="btn btn-action-global rounded-pill px-5 fw-bold small text-white border border-white" style="background: rgba(255,255,255,0.1);">Muat Lebih Banyak</button>
             </div>
         </div>
     </div>

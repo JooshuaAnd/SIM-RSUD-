@@ -76,7 +76,7 @@
     
     .form-control-custom:read-only, .form-control-custom:disabled {
         background-color: rgba(255,255,255,0.05) !important;
-        cursor: default;
+        cursor: text;
         color: rgba(255,255,255,0.7);
     }
     
