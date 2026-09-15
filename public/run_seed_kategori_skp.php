@@ -1,5 +1,5 @@
 <?php
-// Run from browser: http://localhost:8080/run_seed_kategori_skp.php
+// Run from browser: http://localhost:8081/run_seed_kategori_skp.php
 // Place this file at: public/run_seed_kategori_skp.php
 
 require __DIR__ . '/../app/Config/Paths.php';

@@ -7,12 +7,12 @@ services:
       dockerfile: Dockerfile
     image: simdiklatkp-app
     ports:
-      - "8080:80"
+      - "8081:80"
     restart: unless-stopped
     # Environment variables ini akan menimpa konfigurasi di .env
     environment:
       - CI_ENVIRONMENT=production
-      - app.baseURL=http://localhost:8080/
+      - app.baseURL=http://localhost:8081/
       # Konfigurasi database, sesuaikan dengan database server saat deploy
       # - database.default.hostname=db
       # - database.default.database=sim_diklat

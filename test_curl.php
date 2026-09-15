@@ -1,6 +1,6 @@
 <?php
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://localhost:8080/pelatihan/admin/monitoring/broadcast_room');
+curl_setopt($ch, CURLOPT_URL, 'http://localhost:8081/pelatihan/admin/monitoring/broadcast_room');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, '{"niks":["1234"],"message":"Test"}');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'X-Requested-With: XMLHttpRequest']);

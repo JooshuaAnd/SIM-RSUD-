@@ -1,6 +1,6 @@
 <?php
 // This script runs inside CodeIgniter as a controller
-// Access: http://localhost:8080/pelatihan/seed_kategori_skp
+// Access: http://localhost:8081/pelatihan/seed_kategori_skp
 namespace App\Controllers\Pelatihan;
 use App\Controllers\BaseController;
 

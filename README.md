@@ -28,6 +28,18 @@ to your `app` folder. The affected files can be copied or merged from
 Copy `env` to `.env` and tailor for your app, specifically the baseURL
 and any database settings.
 
+### Local development
+
+Run the CodeIgniter development server on port `8081`, then open
+`http://localhost:8081/`:
+
+```bash
+php spark serve --host localhost --port 8081
+```
+
+Port `8080` is not used by this project because it may be occupied by another
+local service.
+
 ## Important Change with index.php
 
 `index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
