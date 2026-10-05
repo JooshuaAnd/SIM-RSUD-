@@ -3,17 +3,11 @@
 
 <div class="row">
     <div class="col-12 mb-4">
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <h4 class="fw-bold">Detail Pengajuan</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= base_url('pendidikan/institusi/dashboard') ?>">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="<?= base_url('pendidikan/institusi/pengajuan/status') ?>">Status Pengajuan</a></li>
-                        <li class="breadcrumb-item active"><?= $pengajuan['no_pengajuan'] ?></li>
-                    </ol>
-                </nav>
-            </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <h4 class="fw-bold mb-0">Detail Pengajuan</h4>
+            <a href="<?= base_url('pendidikan/institusi/pengajuan/status') ?>" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Kembali
+            </a>
         </div>
     </div>
 </div>
@@ -26,39 +20,44 @@
                 <h6 class="mb-0 fw-bold">Informasi Institusi & Pengajuan</h6>
             </div>
             <div class="card-body">
-                <div class="row mb-4">
-                    <div class="col-sm-6">
-                        <p class="text-muted small mb-1">Nama Institusi</p>
-                        <h6 class="fw-bold"><?= $pengajuan['institusi'] ?></h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="bg-light rounded p-3">
+                            <div class="text-muted small mb-1">Nama Institusi</div>
+                            <div class="fw-bold text-dark mb-2 text-break"><?= $pengajuan['institusi'] ?></div>
+                            <div class="text-muted small mb-1">Program Studi</div>
+                            <div class="fw-semibold text-dark text-break"><?= $pengajuan['prodi'] ?></div>
+                        </div>
                     </div>
-                    <div class="col-sm-6">
-                        <p class="text-muted small mb-1">Prodi</p>
-                        <h6 class="fw-bold"><?= $pengajuan['prodi'] ?></h6>
+                    <div class="col-12 col-sm-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small mb-1">Periode Koas</div>
+                            <div class="fw-semibold text-dark"><?= $pengajuan['periode'] ?></div>
+                        </div>
                     </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-sm-4">
-                        <p class="text-muted small mb-1">Periode Koas</p>
-                        <h6 class="fw-bold"><?= $pengajuan['periode'] ?></h6>
+                    <div class="col-12 col-sm-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small mb-1">Tanggal Mulai</div>
+                            <div class="fw-semibold text-dark"><?= date('d M Y', strtotime($pengajuan['tgl_mulai'])) ?></div>
+                        </div>
                     </div>
-                    <div class="col-sm-4">
-                        <p class="text-muted small mb-1">Tanggal Mulai</p>
-                        <h6 class="fw-bold"><?= date('d M Y', strtotime($pengajuan['tgl_mulai'])) ?></h6>
+                    <div class="col-12 col-sm-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small mb-1">Tanggal Selesai</div>
+                            <div class="fw-semibold text-dark"><?= date('d M Y', strtotime($pengajuan['tgl_selesai'])) ?></div>
+                        </div>
                     </div>
-                    <div class="col-sm-4">
-                        <p class="text-muted small mb-1">Tanggal Selesai</p>
-                        <h6 class="fw-bold"><?= date('d M Y', strtotime($pengajuan['tgl_selesai'])) ?></h6>
+                    <div class="col-12 col-sm-6">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small mb-1">Penanggung Jawab</div>
+                            <div class="fw-semibold text-dark text-break"><?= $pengajuan['penanggung_jawab'] ?></div>
+                        </div>
                     </div>
-                </div>
-                <hr>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <p class="text-muted small mb-1">Penanggung Jawab</p>
-                        <h6 class="fw-bold"><?= $pengajuan['penanggung_jawab'] ?></h6>
-                    </div>
-                    <div class="col-sm-6 text-sm-end">
-                        <p class="text-muted small mb-1">Kontak PJ</p>
-                        <p class="mb-0 fw-bold"><?= $pengajuan['hp_pj'] ?></p>
+                    <div class="col-12 col-sm-6">
+                        <div class="border rounded p-3 h-100">
+                            <div class="text-muted small mb-1">Kontak PJ</div>
+                            <div class="fw-semibold text-dark text-break"><?= $pengajuan['hp_pj'] ?></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -68,57 +67,52 @@
             <div class="card-header bg-white py-3">
                 <h6 class="mb-0 fw-bold">Daftar Mahasiswa (<?= count($pengajuan['mahasiswa']) ?> Orang)</h6>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr class="small text-uppercase">
-                                <th class="ps-3">Mahasiswa</th>
-                                <th>NIM</th>
-                                <th>Tgl Lahir</th>
-                                <th>JK</th>
-                                <th>Semester</th>
-                                <th>Ijazah Terakhir</th>
-                                <th>Surat Ket. Mahasiswa</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($pengajuan['mahasiswa'] as $mhs) : ?>
-                                <tr>
-                                    <td class="ps-3">
-                                        <div class="d-flex align-items-center">
-                                            <?php if($mhs['file_foto']): ?>
-                                                <img src="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_foto']) ?>" class="rounded-circle me-3 shadow-sm" style="width: 45px; height: 45px; object-fit: cover; border: 2px solid #fff;" alt="Foto">
-                                            <?php else: ?>
-                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary me-3 shadow-sm" style="width: 45px; height: 45px; border: 2px solid #fff;">
-                                                    <i class="fas fa-user"></i>
-                                                </div>
-                                            <?php endif; ?>
-                                            <span class="fw-bold"><?= $mhs['nama'] ?></span>
-                                        </div>
-                                    </td>
-                                    <td><?= $mhs['nim'] ?></td>
-                                    <td><?= isset($mhs['dob']) ? date('d-m-Y', strtotime($mhs['dob'])) : '-' ?></td>
-                                    <td><?= $mhs['jk'] ?></td>
-                                    <td><?= $mhs['semester'] ?></td>
-                                    <td>
-                                        <?php if($mhs['file_ijazah']): ?>
-                                            <a href="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_ijazah']) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Lihat Ijazah"><i class="fas fa-file-pdf"></i></a>
-                                        <?php else: ?>
-                                            -
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if($mhs['file_sk']): ?>
-                                            <a href="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_sk']) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Lihat Surat Keterangan"><i class="fas fa-file-pdf"></i></a>
-                                        <?php else: ?>
-                                            -
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <?php foreach ($pengajuan['mahasiswa'] as $mhs) : ?>
+                        <div class="border rounded p-3">
+                            <div class="d-flex align-items-center gap-3 pb-3 mb-3 border-bottom">
+                                <?php if ($mhs['file_foto']): ?>
+                                    <img src="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_foto']) ?>" class="rounded-circle flex-shrink-0" style="width: 48px; height: 48px; object-fit: cover;" alt="Foto">
+                                <?php else: ?>
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary flex-shrink-0" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="min-w-0">
+                                    <div class="fw-bold text-dark text-break"><?= $mhs['nama'] ?></div>
+                                    <div class="text-muted small text-break">NIM: <?= $mhs['nim'] ?></div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-sm-4">
+                                    <div class="text-muted small mb-1">Tanggal Lahir</div>
+                                    <div class="fw-semibold"><?= isset($mhs['dob']) ? date('d-m-Y', strtotime($mhs['dob'])) : '-' ?></div>
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <div class="text-muted small mb-1">Jenis Kelamin</div>
+                                    <div class="fw-semibold"><?= $mhs['jk'] ?></div>
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <div class="text-muted small mb-1">Semester</div>
+                                    <div class="fw-semibold"><?= $mhs['semester'] ?></div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="text-muted small me-1">Dokumen:</span>
+                                <?php if ($mhs['file_ijazah']): ?>
+                                    <a href="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_ijazah']) ?>" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i> Ijazah Terakhir</a>
+                                <?php else: ?>
+                                    <span class="text-muted small">Ijazah belum tersedia</span>
+                                <?php endif; ?>
+                                <?php if ($mhs['file_sk']): ?>
+                                    <a href="<?= base_url('uploads/dokumen_mahasiswa/' . $mhs['file_sk']) ?>" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i> Surat Ket. Mahasiswa</a>
+                                <?php else: ?>
+                                    <span class="text-muted small">Surat keterangan belum tersedia</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

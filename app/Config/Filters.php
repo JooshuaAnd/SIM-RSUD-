@@ -38,6 +38,7 @@ class Filters extends BaseFilters
         'riset_auth'    => \App\Filters\RisetAuthFilter::class,
         'nocache'       => \App\Filters\NoCacheFilter::class,
         'pendidikan_auth' => \App\Filters\PendidikanAuthFilter::class,
+        'pendidikan_admin_csrf' => \App\Filters\PendidikanAdminCsrfFilter::class,
     ];
 
 
@@ -113,6 +114,7 @@ class Filters extends BaseFilters
      * @var array<string, array<string, list<string>>>
      */
     public array $filters = [
+        'pendidikan_admin_csrf' => ['before' => ['pendidikan/admin/diklat', 'pendidikan/admin/diklat/*']],
         'riset_auth:admin' => ['before' => ['riset/admin', 'riset/admin/*']],
         'riset_auth:peneliti' => ['before' => ['riset/peneliti', 'riset/peneliti/*']],
         'auth:admin' => ['before' => ['pelatihan/admin', 'pelatihan/admin/*']],

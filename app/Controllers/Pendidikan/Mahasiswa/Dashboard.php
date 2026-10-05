@@ -218,6 +218,10 @@ class Dashboard extends BaseController
         $stase_id = $this->request->getPost('stase_id');
         $ruangan_id = $this->request->getPost('ruangan_id');
 
+        if (!$file || !$file->isValid() || $file->hasMoved() || $file->getMimeType() !== 'application/pdf' || $file->getSize() > 2 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'Logbook harus berupa PDF yang valid dengan ukuran maksimal 2 MB.');
+        }
+
         $fileName = null;
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $db = \Config\Database::connect();
@@ -281,6 +285,10 @@ class Dashboard extends BaseController
         $tugas_id = $this->request->getPost('tugas_id');
         $stase_id = $this->request->getPost('stase_id');
         $file = $this->request->getFile('file_tugas');
+
+        if (!$file || !$file->isValid() || $file->hasMoved() || $file->getMimeType() !== 'application/pdf' || $file->getSize() > 2 * 1024 * 1024) {
+            return redirect()->to('/pendidikan/mahasiswa/stase/detail/' . $stase_id)->with('error', 'Tugas harus berupa PDF yang valid dengan ukuran maksimal 2 MB.');
+        }
 
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $fileName = $file->getRandomName();
@@ -409,7 +417,14 @@ class Dashboard extends BaseController
 
         foreach ($files as $inputName => $dbField) {
             $file = $this->request->getFile($inputName);
-            if ($file && $file->isValid() && !$file->hasMoved()) {
+            if ($file && $file->getError() !== UPLOAD_ERR_NO_FILE) {
+                if (!$file->isValid() || $file->hasMoved()) {
+                    return redirect()->back()->with('error', 'Dokumen yang diunggah tidak valid.');
+                }
+                $allowed = $inputName === 'pas_foto' ? ['image/jpeg', 'image/png'] : ['application/pdf'];
+                if (!in_array($file->getMimeType(), $allowed, true) || $file->getSize() > 2 * 1024 * 1024) {
+                    return redirect()->back()->with('error', 'Dokumen harus sesuai format yang dipilih dan maksimal 2 MB.');
+                }
                 $newName = $file->getRandomName();
                 $file->move(FCPATH . 'uploads/dokumen_mahasiswa', $newName);
                 $updateData[$dbField] = $newName;

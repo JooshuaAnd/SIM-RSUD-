@@ -146,15 +146,9 @@
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-12 mb-5 mt-4">
-            <div class="card border-0 bg-transparent">
-                <div class="card-body p-0 d-flex justify-content-between align-items-center gap-2">
-                    <a href="<?= base_url('pendidikan/mahasiswa/dashboard') ?>" class="btn btn-outline-secondary px-4 fw-bold"><i class="fas fa-arrow-left me-2"></i> KEMBALI</a>
-                    <button type="submit" class="btn btn-danger px-5 fw-bold"><i class="fas fa-save me-2"></i> SIMPAN PERUBAHAN</button>
+                    <div class="d-flex justify-content-end mt-3 pt-3 border-top">
+                        <button type="submit" class="btn btn-danger px-5 fw-bold"><i class="fas fa-save me-2"></i> SIMPAN PERUBAHAN</button>
+                    </div>
                 </div>
             </div>
         </div>

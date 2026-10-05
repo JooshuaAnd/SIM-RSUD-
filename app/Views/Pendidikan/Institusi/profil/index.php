@@ -25,6 +25,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
+        <?php if(session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-1"></i> <?= esc(session()->getFlashdata('error')) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3">
@@ -41,7 +47,7 @@
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Institusi</label>
-                        <input type="text" class="form-control" name="nama_institusi" value="<?= $institusi['nama_institusi'] ?>" required>
+                        <input type="text" class="form-control" name="nama_institusi" value="<?= esc($institusi['nama_institusi']) ?>" pattern="[A-Za-zÀ-ÖØ-öø-ÿ .,'-]+" title="Nama hanya boleh berisi huruf dan karakter . , ' -" required>
                     </div>
 
                     <div class="mb-3">
@@ -52,11 +58,11 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Nomor Telepon Institusi</label>
-                            <input type="text" class="form-control" name="no_telp" value="<?= $institusi['no_telp'] ?>" required>
+                            <input type="text" class="form-control" name="no_telp" value="<?= esc($institusi['no_telp']) ?>" inputmode="numeric" pattern="[0-9]+" title="Nomor telepon hanya boleh berisi angka." required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Nama Kontak (Penanggung Jawab)</label>
-                            <input type="text" class="form-control" name="nama_kontak" value="<?= $institusi['nama_kontak'] ?>" required>
+                            <input type="text" class="form-control" name="nama_kontak" value="<?= esc($institusi['nama_kontak']) ?>" pattern="[A-Za-zÀ-ÖØ-öø-ÿ .,'-]+" title="Nama hanya boleh berisi huruf dan karakter . , ' -" required>
                         </div>
                     </div>
 
@@ -68,11 +74,11 @@
                         <div class="col-md-6">
                             <div class="p-3 border rounded bg-light h-100">
                                 <label class="form-label small fw-bold">Dokumen MoU / PKS</label>
-                                <input type="file" class="form-control form-control-sm mb-2" name="file_mou" accept=".pdf">
+                                <input type="file" class="form-control form-control-sm mb-2" name="file_mou" accept=".pdf,application/pdf">
                                 <?php if(!empty($institusi['file_mou'])): ?>
                                     <div class="mt-2">
                                         <small class="text-muted d-block mb-1">Dokumen saat ini:</small>
-                                        <a href="<?= base_url('uploads/institusi/' . $institusi['file_mou']) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <a href="<?= base_url('pendidikan/institusi/dokumen/file/mou') ?>" target="_blank" class="btn btn-sm btn-outline-danger">
                                             <i class="fas fa-file-pdf me-1"></i> Lihat MoU
                                         </a>
                                     </div>
@@ -85,11 +91,11 @@
                         <div class="col-md-6">
                             <div class="p-3 border rounded bg-light h-100">
                                 <label class="form-label small fw-bold">Surat Permohonan</label>
-                                <input type="file" class="form-control form-control-sm mb-2" name="file_permohonan" accept=".pdf">
+                                <input type="file" class="form-control form-control-sm mb-2" name="file_permohonan" accept=".pdf,application/pdf">
                                 <?php if(!empty($institusi['file_permohonan'])): ?>
                                     <div class="mt-2">
                                         <small class="text-muted d-block mb-1">Dokumen saat ini:</small>
-                                        <a href="<?= base_url('uploads/institusi/' . $institusi['file_permohonan']) ?>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <a href="<?= base_url('pendidikan/institusi/dokumen/file/permohonan') ?>" target="_blank" class="btn btn-sm btn-outline-danger">
                                             <i class="fas fa-file-pdf me-1"></i> Lihat Permohonan
                                         </a>
                                     </div>

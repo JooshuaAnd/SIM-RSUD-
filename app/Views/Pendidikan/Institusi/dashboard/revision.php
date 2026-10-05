@@ -26,12 +26,12 @@
                 <h6 class="mb-0 fw-bold"><i class="fas fa-edit me-2"></i> Form Perbaikan Data</h6>
             </div>
             <div class="card-body p-4">
-                <form action="<?= base_url('pendidikan/institusi/dashboard/update') ?>" method="POST">
+                <form action="<?= base_url('pendidikan/institusi/dashboard/update') ?>" method="POST" enctype="multipart/form-data">
                     <!-- Data Institusi -->
                     <div class="row mb-3">
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Nama Institusi</label>
-                            <input type="text" class="form-control" name="nama" value="<?= $profile['nama'] ?>">
+                            <input type="text" class="form-control" name="nama" value="<?= esc($profile['nama']) ?>" pattern="[A-Za-zÀ-ÖØ-öø-ÿ .,'-]+" title="Nama hanya boleh berisi huruf dan karakter . , ' -" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Jenis</label>
@@ -54,7 +54,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nomor Telepon Kantor</label>
-                            <input type="text" class="form-control" name="telp_institusi" value="<?= $profile['telp'] ?>">
+                            <input type="text" class="form-control" name="telp_institusi" value="<?= esc($profile['telp']) ?>" inputmode="numeric" pattern="[0-9]+" title="Nomor telepon hanya boleh berisi angka." required>
                         </div>
                     </div>
 
@@ -62,7 +62,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nama Penanggung Jawab</label>
-                            <input type="text" class="form-control" name="pj" value="<?= $profile['pj'] ?>">
+                            <input type="text" class="form-control" name="pj" value="<?= esc($profile['pj']) ?>" pattern="[A-Za-zÀ-ÖØ-öø-ÿ .,'-]+" title="Nama hanya boleh berisi huruf dan karakter . , ' -" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Jabatan</label>
@@ -73,7 +73,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nomor HP / WhatsApp</label>
-                            <input type="text" class="form-control" name="hp_pj" value="<?= $profile['hp_pj'] ?>">
+                            <input type="text" class="form-control" name="hp_pj" value="<?= esc($profile['hp_pj']) ?>" inputmode="numeric" pattern="[0-9]+" title="Nomor HP/WhatsApp hanya boleh berisi angka." required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Email Penanggung Jawab</label>
@@ -87,15 +87,18 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="small text-muted">MoU / PKS (PDF)</label>
-                                <input type="file" class="form-control" name="file_mou">
+                                <input type="file" class="form-control" name="file_mou" accept=".pdf,application/pdf">
+                                <?php if (!empty($profile['file_mou'])): ?><a class="small" href="<?= base_url('pendidikan/institusi/dokumen/file/mou') ?>" target="_blank">Lihat dokumen saat ini</a><?php endif; ?>
                             </div>
                             <div class="col-md-6">
                                 <label class="small text-muted">Surat Permohonan (PDF)</label>
-                                <input type="file" class="form-control" name="file_permohonan">
+                                <input type="file" class="form-control" name="file_permohonan" accept=".pdf,application/pdf">
+                                <?php if (!empty($profile['file_permohonan'])): ?><a class="small" href="<?= base_url('pendidikan/institusi/dokumen/file/permohonan') ?>" target="_blank">Lihat dokumen saat ini</a><?php endif; ?>
                             </div>
                             <div class="col-12">
                                 <label class="small text-muted">Dokumen Pendukung Lainnya</label>
-                                <input type="file" class="form-control" name="file_lainnya">
+                                <input type="file" class="form-control" name="file_lainnya" accept=".pdf,application/pdf">
+                                <?php if (!empty($profile['file_lainnya'])): ?><a class="small" href="<?= base_url('pendidikan/institusi/dokumen/file/lainnya') ?>" target="_blank">Lihat dokumen saat ini</a><?php endif; ?>
                             </div>
                         </div>
                     </div>

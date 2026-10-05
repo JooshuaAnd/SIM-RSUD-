@@ -62,9 +62,9 @@
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                            <span class="fw-bold text-muted"><?= strtoupper(substr($inst['nama_institusi'] ?? '-', 0, 1)) ?></span>
+                                            <span class="fw-bold text-muted"><?= esc(strtoupper(substr($inst['nama_institusi'] ?? '-', 0, 1))) ?></span>
                                         </div>
-                                        <span class="fw-semibold"><?= $inst['nama_institusi'] ?? '-' ?></span>
+                                        <span class="fw-semibold"><?= esc($inst['nama_institusi'] ?? '-') ?></span>
                                     </div>
                                 </td>
                                 <td>
@@ -107,15 +107,18 @@
             <div style="max-height:300px;overflow-y:auto;">
                 <?php if (!empty($pendingList)): ?>
                     <?php foreach ($pendingList as $item): ?>
+                    <?php $isSubmittedRevision = ($item['status_verifikasi'] ?? '') === 'revision' && !empty($item['revisi_dikirim_at']); ?>
                     <div class="d-flex align-items-center gap-3 py-2 border-bottom">
-                        <div class="bg-warning bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;flex-shrink:0;">
-                            <span class="fw-bold text-warning"><?= strtoupper(substr($item['nama_institusi'] ?? '-', 0, 1)) ?></span>
+                        <div class="<?= $isSubmittedRevision ? 'bg-info' : 'bg-warning' ?> bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;flex-shrink:0;">
+                            <span class="fw-bold <?= $isSubmittedRevision ? 'text-info' : 'text-warning' ?>"><?= esc(strtoupper(substr($item['nama_institusi'] ?? '-', 0, 1))) ?></span>
                         </div>
                         <div class="flex-grow-1 min-width-0">
-                            <small class="fw-semibold d-block text-truncate"><?= $item['nama_institusi'] ?? '-' ?></small>
-                            <small class="text-muted">Menunggu verifikasi</small>
+                            <small class="fw-semibold d-block text-truncate"><?= esc($item['nama_institusi'] ?? '-') ?></small>
+                            <small class="<?= $isSubmittedRevision ? 'text-info fw-semibold' : 'text-muted' ?>">
+                                <?= $isSubmittedRevision ? 'Revisi sudah dikirim institusi' : 'Menunggu verifikasi' ?>
+                            </small>
                         </div>
-                        <small class="text-muted flex-shrink-0"><?= date('d/m/Y', strtotime($item['created_at'] ?? 'now')) ?></small>
+                        <small class="text-muted flex-shrink-0"><?= date('d/m/Y', strtotime($item['revisi_dikirim_at'] ?? $item['created_at'] ?? 'now')) ?></small>
                     </div>
                     <?php endforeach; ?>
                 <?php else: ?>

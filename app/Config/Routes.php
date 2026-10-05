@@ -138,6 +138,7 @@ $routes->group('pendidikan', function ($routes) {
 
         $routes->get('profil', 'Profil::index');
         $routes->post('profil/update', 'Profil::update');
+        $routes->get('dokumen/file/(:alpha)', 'Dokumen::file/$1');
 
         $routes->get('pengajuan/create', 'Pengajuan::create');
         $routes->post('pengajuan/store', 'Pengajuan::store');
@@ -150,6 +151,7 @@ $routes->group('pendidikan', function ($routes) {
         $routes->get('mahasiswa/lulus', 'Pengajuan::mahasiswa_lulus');
         $routes->get('mahasiswa/sertifikat/(:num)', 'Pengajuan::cetak_sertifikat/$1');
         $routes->post('mahasiswa/submit_payment', 'Pengajuan::submit_payment');
+        $routes->get('mahasiswa/bukti-bayar/(:num)', 'Pengajuan::unduh_bukti_bayar/$1');
         $routes->get('mahasiswa/get_nilai/(:num)', 'Pengajuan::get_nilai_mahasiswa/$1');
         $routes->post('mahasiswa/update_mahasiswa/(:num)', 'Pengajuan::update_mahasiswa/$1');
         $routes->post('mahasiswa/simpan_nilai_akhir', 'Pengajuan::simpan_nilai_akhir');
@@ -165,6 +167,7 @@ $routes->group('pendidikan', function ($routes) {
         $routes->post('logbook/upload', 'Dashboard::upload_logbook');
         $routes->post('tugas/upload', 'Dashboard::upload_tugas');
         $routes->get('penilaian', 'Dashboard::penilaian');
+        $routes->get('penilaian/download', 'NilaiController::download');
         $routes->get('sertifikat', 'Dashboard::sertifikat');
         $routes->get('sertifikat/download', 'Dashboard::download_sertifikat');
         $routes->get('profil', 'Dashboard::profil');
@@ -240,7 +243,7 @@ $routes->group('pendidikan', function ($routes) {
         $routes->post('ci', 'AdminDiklat::ciApiInsert');
         $routes->get('ci/(:num)', 'AdminDiklat::ciApiDetail/$1');
         $routes->post('ci/update/(:num)', 'AdminDiklat::ciApiUpdate/$1');
-        $routes->get('ci/delete/(:num)', 'AdminDiklat::ciApiDelete/$1');
+        $routes->post('ci/delete/(:num)', 'AdminDiklat::ciApiDelete/$1');
         $routes->post('mahasiswa/update/(:num)', 'AdminDiklat::mahasiswaUpdate/$1');
         $routes->post('mahasiswa/delete/(:num)', 'AdminDiklat::mahasiswaDelete/$1');
         $routes->post('mahasiswa/upload-invoice/(:num)', 'AdminDiklat::mahasiswaUploadInvoice/$1');
@@ -261,6 +264,7 @@ $routes->group('superadmin', ['namespace' => 'App\Controllers', 'filter' => 'pen
     $routes->get('dashboard', 'SuperAdmin::dashboard');
     $routes->post('create_admin', 'SuperAdmin::create_admin');
     $routes->post('reset_password_email', 'SuperAdmin::reset_password_email');
+    $routes->post('update_password', 'SuperAdmin::update_password');
 });
 
 // --- ENHANCED: Pelatihan Module ---

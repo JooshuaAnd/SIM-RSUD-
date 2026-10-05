@@ -60,9 +60,16 @@
             transition: all 0.3s;
         }
         
-        .nav-link:hover, .nav-link.active {
+        .sidebar .nav-link:hover {
+            color: #343a40;
+            background-color: #fff0f0;
+            border-left-color: transparent;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link.active:hover {
             color: var(--primary-red);
-            background-color: rgba(198, 40, 40, 0.05);
+            background-color: #fde2e2;
             border-left-color: var(--primary-red);
         }
         

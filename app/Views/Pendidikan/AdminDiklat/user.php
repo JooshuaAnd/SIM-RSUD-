@@ -34,16 +34,16 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <span class="fw-bold text-primary"><?= strtoupper(substr($u['nama_lengkap'] ?? '-', 0, 1)) ?></span>
+                                    <span class="fw-bold text-primary"><?= esc(strtoupper(substr($u['nama_lengkap'] ?? '-', 0, 1))) ?></span>
                                 </div>
                                 <div>
-                                    <span class="fw-semibold"><?= $u['nama_lengkap'] ?? '-' ?></span>
-                                    <br><small class="text-muted"><?= $u['email'] ?? '' ?></small>
+                                    <span class="fw-semibold"><?= esc($u['nama_lengkap'] ?? '-') ?></span>
+                                    <br><small class="text-muted"><?= esc($u['email'] ?? '') ?></small>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <small class="text-muted"><i class="fas fa-envelope me-1"></i><?= $u['email'] ?? '-' ?></small>
+                            <small class="text-muted"><i class="fas fa-envelope me-1"></i><?= esc($u['email'] ?? '-') ?></small>
                         </td>
                         <td>
                             <span class="badge bg-info bg-opacity-10 text-info">CI</span>
@@ -52,7 +52,7 @@
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="editCI(<?= htmlspecialchars(json_encode($u)) ?>)">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCI(<?= $u['id'] ?>, '<?= esc($u['nama_lengkap'] ?? '') ?>')">
+                            <button class="btn btn-sm btn-outline-danger" onclick='deleteCI(<?= (int) $u['id'] ?>, <?= esc(json_encode($u['nama_lengkap'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)'>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -172,18 +172,12 @@ function saveCI(e) {
 }
 
 function deleteCI(id, nama) {
-    Swal.fire({
-        title: 'Apakah anda benar ingin menghapus user ini?',
-        html: `User <b>${nama}</b> akan dihapus secara permanen.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
+    confirmDeleteAdminDiklat(
+        'Hapus User CI?',
+        'User "' + (nama || 'ini') + '" akan dihapus secara permanen dan tidak dapat dikembalikan.'
+    ).then((result) => {
         if (result.isConfirmed) {
-            fetch('<?= base_url('pendidikan/admin/diklat/api/ci/delete') ?>/' + id)
+            fetch('<?= base_url('pendidikan/admin/diklat/api/ci/delete') ?>/' + id, { method: 'POST' })
             .then(res => res.json())
             .then(res => {
                 if (res.status === 200 || res.success || res.message === 'Data berhasil dihapus') {
@@ -233,15 +227,15 @@ function deleteCI(id, nama) {
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:32px;height:32px;">
-                                    <span class="fw-bold text-primary"><?= strtoupper(substr($m['nama_lengkap'] ?? '-', 0, 1)) ?></span>
+                                    <span class="fw-bold text-primary"><?= esc(strtoupper(substr($m['nama_lengkap'] ?? '-', 0, 1))) ?></span>
                                 </div>
-                                <span class="fw-semibold"><?= $m['nama_lengkap'] ?? '-' ?></span>
+                                <span class="fw-semibold"><?= esc($m['nama_lengkap'] ?? '-') ?></span>
                             </div>
                         </td>
-                        <td><small class="text-muted"><?= $m['nim'] ?? '-' ?></small></td>
-                        <td><small><?= $m['nama_institusi'] ?? '-' ?></small></td>
-                        <td><small><?= $m['program_studi'] ?? '-' ?></small></td>
-                        <td><small><?= $m['jenjang'] ?? '-' ?></small></td>
+                        <td><small class="text-muted"><?= esc($m['nim'] ?? '-') ?></small></td>
+                        <td><small><?= esc($m['nama_institusi'] ?? '-') ?></small></td>
+                        <td><small><?= esc($m['program_studi'] ?? '-') ?></small></td>
+                        <td><small><?= esc($m['jenjang'] ?? '-') ?></small></td>
                         <td>
                             <?php $status = $m['status'] ?? ''; ?>
                             <?php if ($status === 'Disetujui' || $status === 'Aktif' || $status === '1'): ?>
@@ -249,7 +243,7 @@ function deleteCI(id, nama) {
                             <?php elseif ($status === 'Pending'): ?>
                                 <span class="badge badge-menunggu">Pending</span>
                             <?php else: ?>
-                                <span class="badge bg-secondary"><?= $status ?: '-' ?></span>
+                                <span class="badge bg-secondary"><?= esc($status ?: '-') ?></span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -276,7 +270,7 @@ function deleteCI(id, nama) {
                             <button class="btn btn-sm btn-outline-warning me-1" onclick="editMahasiswa(<?= htmlspecialchars(json_encode($m)) ?>)">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMahasiswa(<?= $m['id'] ?>, '<?= $m['nama_lengkap'] ?? '' ?>')">
+                            <button class="btn btn-sm btn-outline-danger" onclick='deleteMahasiswa(<?= (int) $m['id'] ?>, <?= esc(json_encode($m['nama_lengkap'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)'>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -317,6 +311,7 @@ function deleteCI(id, nama) {
                 <div class="mb-3 p-3 border rounded">
                     <p class="fw-semibold mb-2"><i class="fas fa-upload me-1"></i> Upload Invoice</p>
                     <form id="uploadInvoiceForm" enctype="multipart/form-data">
+                        <div id="payInvoiceLocked" class="alert alert-success small d-none">Pembayaran sudah lunas. Invoice dan nominal tidak dapat diubah.</div>
                         <div class="mb-2">
                             <label class="form-label">Nominal</label>
                             <input type="text" class="form-control" id="payNominal" placeholder="Rp" oninput="formatNominalInput(this)">
@@ -468,32 +463,38 @@ $('#editMahasiswaForm').submit(function(e) {
         success: function(res) {
             if (res.success) {
                 $('#editMahasiswaModal').modal('hide');
-                location.reload();
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Data mahasiswa berhasil diperbarui.').then(function() {
+                    location.reload();
+                });
             } else {
-                alert(res.message || 'Gagal menyimpan');
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal menyimpan');
             }
         },
         error: function(xhr) {
-            alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
         }
     });
 });
 
 function deleteMahasiswa(id, nama) {
-    if (!confirm('Hapus mahasiswa "' + nama + '"? Tindakan ini tidak dapat dibatalkan.')) return;
+    confirmDeleteAdminDiklat('Hapus mahasiswa?', 'Mahasiswa "' + nama + '" akan dihapus secara permanen dan tidak dapat dikembalikan.').then(function(result) {
+    if (!result.isConfirmed) return;
     $.ajax({
         url: '<?= base_url('pendidikan/admin/diklat/api/mahasiswa/delete') ?>/' + id,
         method: 'POST',
         success: function(res) {
             if (res.success) {
-                location.reload();
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Mahasiswa berhasil dihapus.').then(function() {
+                    location.reload();
+                });
             } else {
-                alert(res.message || 'Gagal menghapus');
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal menghapus');
             }
         },
         error: function(xhr) {
-            alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
         }
+    });
     });
 }
 
@@ -504,6 +505,8 @@ function kelolaPembayaran(m) {
     $('#payMhsNim').text(m.nim || '');
 
     var payStatus = m.payment_status || 'Belum Invoice';
+    $('#uploadInvoiceForm :input').prop('disabled', payStatus === 'Lunas');
+    $('#payInvoiceLocked').toggleClass('d-none', payStatus !== 'Lunas');
     var badgeHtml = '';
     if (payStatus === 'Lunas') {
         badgeHtml = '<span class="badge badge-disetujui">Lunas</span>';
@@ -548,7 +551,7 @@ function kelolaPembayaran(m) {
             verifHtml += '</div>';
         }
         if (payStatus === 'Ditolak' && m.alasan_penolakan) {
-            verifHtml += '<div class="alert alert-danger mt-2 mb-0 py-2 px-3"><small class="fw-semibold"><i class="fas fa-exclamation-circle me-1"></i> Alasan Penolakan:</small><br><small>' + m.alasan_penolakan + '</small></div>';
+            verifHtml += '<div class="alert alert-danger mt-2 mb-0 py-2 px-3"><small class="fw-semibold"><i class="fas fa-exclamation-circle me-1"></i> Alasan Penolakan:</small><br><small>' + escapeAdminDiklatHtml(m.alasan_penolakan) + '</small></div>';
         }
     } else {
         verifHtml += '<p class="text-muted small mb-0">Belum ada bukti bayar dari institusi</p>';
@@ -588,13 +591,13 @@ $('#uploadInvoiceForm').submit(function(e) {
     var nominal = $('#payNominal').val().replace(/\./g, '');
 
     if (!file && !nominal) {
-        alert('Pilih file PDF atau isi nominal');
+        showAdminDiklatNotification('warning', 'Data belum lengkap', 'Pilih file PDF atau isi nominal.');
         return;
     }
 
     if (file) {
         if (file.type !== 'application/pdf') {
-            alert('File harus berupa PDF');
+            showAdminDiklatNotification('error', 'File tidak valid', 'File harus berupa PDF.');
             return;
         }
         formData.append('invoice_file', file);
@@ -611,13 +614,16 @@ $('#uploadInvoiceForm').submit(function(e) {
         contentType: false,
         success: function(res) {
             if (res.success) {
-                location.reload();
+                $('#paymentModal').modal('hide');
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Invoice berhasil diunggah.').then(function() {
+                    location.reload();
+                });
             } else {
-                alert(res.message || 'Gagal upload');
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal upload');
             }
         },
         error: function(xhr) {
-            alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
         }
     });
 });

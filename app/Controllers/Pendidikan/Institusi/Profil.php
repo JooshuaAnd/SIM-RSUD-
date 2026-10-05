@@ -45,39 +45,50 @@ class Profil extends BaseController
         $institusi_id = $sessionData['institusi_id'];
         $institusi_lama = $institusiModel->find($institusi_id);
 
+        if (!$institusi_lama) {
+            return redirect()->to('pendidikan/login')->with('error', 'Data institusi tidak ditemukan.');
+        }
+
+        $namaInstitusi = trim((string) $this->request->getPost('nama_institusi'));
+        $namaKontak = trim((string) $this->request->getPost('nama_kontak'));
+        $noTelp = trim((string) $this->request->getPost('no_telp'));
+        if ($namaInstitusi === '' || $namaKontak === '' || !preg_match("/^[\\p{L}][\\p{L}\\s.,'-]*$/u", $namaInstitusi) || !preg_match("/^[\\p{L}][\\p{L}\\s.,'-]*$/u", $namaKontak)) {
+            return redirect()->back()->withInput()->with('error', 'Nama hanya boleh berisi huruf, spasi, titik, koma, apostrof, atau tanda hubung.');
+        }
+        if (!preg_match('/^[0-9]+$/D', $noTelp)) {
+            return redirect()->back()->withInput()->with('error', 'Nomor telepon hanya boleh berisi angka.');
+        }
+
         $dataUpdate = [
-            'nama_institusi' => $this->request->getPost('nama_institusi'),
-            'alamat'         => $this->request->getPost('alamat'),
-            'no_telp'        => $this->request->getPost('no_telp'),
-            'nama_kontak'    => $this->request->getPost('nama_kontak'),
+            'nama_institusi' => $namaInstitusi,
+            'alamat'         => trim((string) $this->request->getPost('alamat')),
+            'no_telp'        => $noTelp,
+            'nama_kontak'    => $namaKontak,
         ];
 
-        $uploadPath = FCPATH . 'uploads/institusi/';
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
+        $uploadPath = WRITEPATH . 'uploads/dokumen_institusi/';
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0775, true) && !is_dir($uploadPath)) {
+            return redirect()->back()->withInput()->with('error', 'Folder dokumen tidak dapat disiapkan.');
         }
 
-        $file_mou = $this->request->getFile('file_mou');
-        if ($file_mou && $file_mou->isValid() && !$file_mou->hasMoved()) {
-            $newNameMou = $file_mou->getRandomName();
-            $file_mou->move($uploadPath, $newNameMou);
-            $dataUpdate['file_mou'] = $newNameMou;
-            
-            // Delete old if exists
-            if (!empty($institusi_lama['file_mou']) && file_exists($uploadPath . $institusi_lama['file_mou'])) {
-                @unlink($uploadPath . $institusi_lama['file_mou']);
+        foreach (['file_mou', 'file_permohonan'] as $field) {
+            $file = $this->request->getFile($field);
+            if (!$file || $file->getError() === UPLOAD_ERR_NO_FILE) {
+                continue;
             }
-        }
+            if (!$file->isValid() || $file->hasMoved() || $file->getMimeType() !== 'application/pdf') {
+                return redirect()->back()->withInput()->with('error', 'Dokumen yang diunggah harus berupa file PDF yang valid.');
+            }
 
-        $file_permohonan = $this->request->getFile('file_permohonan');
-        if ($file_permohonan && $file_permohonan->isValid() && !$file_permohonan->hasMoved()) {
-            $newNamePermohonan = $file_permohonan->getRandomName();
-            $file_permohonan->move($uploadPath, $newNamePermohonan);
-            $dataUpdate['file_permohonan'] = $newNamePermohonan;
+            $newName = $file->getRandomName();
+            $file->move($uploadPath, $newName);
+            $dataUpdate[$field] = $newName;
 
-            // Delete old if exists
-            if (!empty($institusi_lama['file_permohonan']) && file_exists($uploadPath . $institusi_lama['file_permohonan'])) {
-                @unlink($uploadPath . $institusi_lama['file_permohonan']);
+            $oldName = $institusi_lama[$field] ?? null;
+            foreach ([WRITEPATH . 'uploads/dokumen_institusi/' . $oldName, FCPATH . 'uploads/institusi/' . $oldName] as $oldPath) {
+                if ($oldName && is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
             }
         }
 

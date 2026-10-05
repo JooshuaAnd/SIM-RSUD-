@@ -52,20 +52,20 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <span class="fw-bold text-primary"><?= strtoupper(substr($ci['nama_lengkap'] ?? '-', 0, 1)) ?></span>
+                                    <span class="fw-bold text-primary"><?= esc(strtoupper(substr($ci['nama_lengkap'] ?? '-', 0, 1))) ?></span>
                                 </div>
-                                <span class="fw-semibold"><?= $ci['nama_lengkap'] ?? '-' ?></span>
+                                <span class="fw-semibold"><?= esc($ci['nama_lengkap'] ?? '-') ?></span>
                             </div>
                         </td>
-                        <td><small><?= $ci['nip'] ?? '-' ?></small></td>
-                        <td><span class="badge bg-primary bg-opacity-10 text-primary"><?= $ci['nama_profesi'] ?? $ci['profesi'] ?? '-' ?></span></td>
-                        <td><small><i class="fas fa-map-pin text-muted me-1"></i><?= $ci['ruangan_tugas'] ?? '-' ?></small></td>
-                        <td><small><?= $ci['nomor_telepon'] ?? $ci['contact'] ?? '-' ?></small></td>
+                        <td><small><?= esc($ci['nip'] ?? '-') ?></small></td>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary"><?= esc($ci['nama_profesi'] ?? $ci['profesi'] ?? '-') ?></span></td>
+                        <td><small><i class="fas fa-map-pin text-muted me-1"></i><?= esc($ci['ruangan_tugas'] ?? '-') ?></small></td>
+                        <td><small><?= esc($ci['nomor_telepon'] ?? $ci['contact'] ?? '-') ?></small></td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="editCi(<?= htmlspecialchars(json_encode($ci)) ?>)">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCi(<?= $ci['id'] ?>, '<?= $ci['nama_lengkap'] ?? '' ?>')">
+                            <button class="btn btn-sm btn-outline-danger" onclick='deleteCi(<?= (int) $ci['id'] ?>, <?= esc(json_encode($ci['nama_lengkap'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)'>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -96,7 +96,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">NIP <span class="text-danger">*</span></label>
-                        <input type="text" name="nip" class="form-control" required placeholder="198001012005011002">
+                        <input type="text" name="nip" id="addCiNip" class="form-control" required minlength="18" maxlength="18" inputmode="numeric" pattern="[0-9]{18}" title="NIP harus tepat 18 digit angka" placeholder="198001012005011002">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
@@ -108,14 +108,14 @@
                             <option value="">-- Pilih Profesi --</option>
                             <?php if (!empty($profesiList)): ?>
                                 <?php foreach ($profesiList as $p): ?>
-                                <option value="<?= $p['id_profesi'] ?>"><?= $p['nama_profesi'] ?></option>
+                                <option value="<?= $p['id_profesi'] ?>"><?= esc($p['nama_profesi']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nomor Telepon</label>
-                        <input type="text" name="nomor_telepon" class="form-control" placeholder="0812-3456-7890">
+                        <input type="text" name="nomor_telepon" id="addCiTelp" class="form-control" inputmode="numeric" pattern="[0-9]*" title="Nomor telepon hanya boleh berisi angka" placeholder="081234567890">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Email Login <span class="text-danger">*</span></label>
@@ -132,7 +132,7 @@
                             <option value="">-- Pilih Ruangan --</option>
                             <?php if (!empty($unitKerjaList)): ?>
                                 <?php foreach ($unitKerjaList as $u): ?>
-                                <option value="<?= $u['id_unit_kerja'] ?>"><?= $u['nama_unit'] ?></option>
+                                <option value="<?= $u['id_unit_kerja'] ?>"><?= esc($u['nama_unit']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
@@ -160,7 +160,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">NIP <span class="text-danger">*</span></label>
-                        <input type="text" name="nip" id="editCiNip" class="form-control" required>
+                        <input type="text" name="nip" id="editCiNip" class="form-control" required minlength="18" maxlength="18" inputmode="numeric" pattern="[0-9]{18}" title="NIP harus tepat 18 digit angka">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Lengkap <span class="text-danger">*</span></label>
@@ -172,14 +172,14 @@
                             <option value="">-- Pilih Profesi --</option>
                             <?php if (!empty($profesiList)): ?>
                                 <?php foreach ($profesiList as $p): ?>
-                                <option value="<?= $p['id_profesi'] ?>"><?= $p['nama_profesi'] ?></option>
+                                <option value="<?= $p['id_profesi'] ?>"><?= esc($p['nama_profesi']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nomor Telepon</label>
-                        <input type="text" name="nomor_telepon" id="editCiTelp" class="form-control">
+                        <input type="text" name="nomor_telepon" id="editCiTelp" class="form-control" inputmode="numeric" pattern="[0-9]*" title="Nomor telepon hanya boleh berisi angka">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Email Login</label>
@@ -196,7 +196,7 @@
                             <option value="">-- Pilih Ruangan --</option>
                             <?php if (!empty($unitKerjaList)): ?>
                                 <?php foreach ($unitKerjaList as $u): ?>
-                                <option value="<?= $u['id_unit_kerja'] ?>"><?= $u['nama_unit'] ?></option>
+                                <option value="<?= $u['id_unit_kerja'] ?>"><?= esc($u['nama_unit']) ?></option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
@@ -212,17 +212,25 @@
 </div>
 
 <script>
+$('#addCiNip, #editCiNip').on('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 18);
+});
+
+$('#addCiTelp, #editCiTelp').on('input', function() {
+    this.value = this.value.replace(/\D/g, '');
+});
+
 $('#addCiForm').submit(function(e) {
     e.preventDefault();
     var data = $(this).serialize();
     $.post('<?= base_url('pendidikan/admin/diklat/api/ci') ?>', data, function(res) {
         if (res.success || res.id) {
-            location.reload();
+            reloadAdminDiklatAfterModal('#addCiModal', res.message || 'Clinical Instructor berhasil ditambahkan.');
         } else {
-            alert(res.message || 'Gagal menyimpan CI');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal menyimpan CI');
         }
     }).fail(function(xhr) {
-        alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+        showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
     });
 });
 
@@ -244,23 +252,33 @@ $('#editCiForm').submit(function(e) {
     var data = $(this).serialize();
     $.post('<?= base_url('pendidikan/admin/diklat/api/ci/update') ?>/' + id, data, function(res) {
         if (res.success) {
-            location.reload();
+            reloadAdminDiklatAfterModal('#editCiModal', res.message || 'Clinical Instructor berhasil diperbarui.');
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
     }).fail(function(xhr) {
-        alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+        showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
     });
 });
 
 function deleteCi(id, name) {
-    if (!confirm('Hapus CI "' + name + '"? Tindakan ini tidak dapat dibatalkan.')) return;
-    $.get('<?= base_url('pendidikan/admin/diklat/api/ci/delete') ?>/' + id, function(res) {
-        if (res.success) {
-            location.reload();
-        } else {
-            alert(res.message || 'Gagal');
-        }
+    confirmDeleteAdminDiklat(
+        'Hapus Clinical Instructor?',
+        'CI "' + (name || 'ini') + '" akan dihapus permanen dan tidak dapat dikembalikan.'
+    ).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        $.post('<?= base_url('pendidikan/admin/diklat/api/ci/delete') ?>/' + id, function(res) {
+            if (res.success || Number(res.status) === 200) {
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Clinical Instructor berhasil dihapus.').then(function() {
+                    location.reload();
+                });
+            } else {
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
+            }
+        }).fail(function(xhr) {
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
+        });
     });
 }
 </script>

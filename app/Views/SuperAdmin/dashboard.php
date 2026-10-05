@@ -50,11 +50,11 @@
                         </div>
                         <div class="mb-3" id="nik_container" style="display: none;">
                             <label class="form-label">NIK / Identitas</label>
-                            <input type="text" name="nik" id="nik" class="form-control" placeholder="Masukkan NIK">
+                            <input type="text" name="nik" id="nik" class="form-control" placeholder="Masukkan NIK" minlength="16" maxlength="16" inputmode="numeric" pattern="[0-9]{16}" title="NIK harus tepat 16 digit angka">
                         </div>
                         <div class="mb-3" id="nama_container" style="display: none;">
                             <label class="form-label">Nama Lengkap</label>
-                            <input type="text" name="nama_lengkap" id="nama_lengkap" class="form-control" placeholder="Masukkan Nama Lengkap">
+                            <input type="text" name="nama_lengkap" id="nama_lengkap" class="form-control" placeholder="Masukkan Nama Lengkap" pattern="[A-Za-zÀ-ÖØ-öø-ÿ ]+" title="Nama hanya boleh berisi huruf dan spasi">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
@@ -207,23 +207,43 @@
         const namaContainer = document.getElementById('nama_container');
         const namaInput = document.getElementById('nama_lengkap');
 
+        nikInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 16);
+        });
+
+        namaInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^\p{L} ]/gu, '');
+        });
+
         tipeAdminSelect.addEventListener('change', function() {
             const val = this.value;
             if (val === 'pelatihan' || val === 'admin_pengabdian') {
                 nikContainer.style.display = 'block';
                 nikInput.setAttribute('required', 'required');
+                nikInput.setAttribute('minlength', '16');
+                nikInput.setAttribute('maxlength', '16');
+                nikInput.setAttribute('pattern', '[0-9]{16}');
                 namaContainer.style.display = 'block';
                 namaInput.setAttribute('required', 'required');
             } else if (val === 'riset') {
                 nikContainer.style.display = 'none';
                 nikInput.removeAttribute('required');
+                nikInput.removeAttribute('minlength');
+                nikInput.removeAttribute('maxlength');
+                nikInput.removeAttribute('pattern');
+                nikInput.value = '';
                 namaContainer.style.display = 'block';
                 namaInput.setAttribute('required', 'required');
             } else if (val === 'pendidikan') {
                 nikContainer.style.display = 'none';
                 nikInput.removeAttribute('required');
+                nikInput.removeAttribute('minlength');
+                nikInput.removeAttribute('maxlength');
+                nikInput.removeAttribute('pattern');
+                nikInput.value = '';
                 namaContainer.style.display = 'none';
                 namaInput.removeAttribute('required');
+                namaInput.value = '';
             }
         });
     });

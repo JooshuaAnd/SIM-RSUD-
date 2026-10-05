@@ -60,17 +60,17 @@
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
                                     <i class="fas fa-route text-primary"></i>
                                 </div>
-                                <span class="fw-semibold"><?= $st['nama_stase'] ?? '-' ?></span>
+                                <span class="fw-semibold"><?= esc($st['nama_stase'] ?? '-') ?></span>
                             </div>
                         </td>
                         <td>
                             <?php if (!empty($st['nama_profesi'])): ?>
-                                <span class="badge bg-primary bg-opacity-10 text-primary"><?= $st['nama_profesi'] ?></span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary"><?= esc($st['nama_profesi']) ?></span>
                             <?php else: ?>
                                 <small class="text-muted">-</small>
                             <?php endif; ?>
                         </td>
-                        <td><small><i class="fas fa-map-pin text-muted me-1"></i><?= $st['ruangan'] ?? '-' ?></small></td>
+                        <td><small><i class="fas fa-map-pin text-muted me-1"></i><?= esc($st['ruangan'] ?? '-') ?></small></td>
                         <td>
                             <?php if (!empty($st['tanggal_mulai']) || !empty($st['tanggal_akhir'])): ?>
                                 <small><?= $st['tanggal_mulai'] ? date('d/m/Y', strtotime($st['tanggal_mulai'])) : '-' ?> → <?= $st['tanggal_akhir'] ? date('d/m/Y', strtotime($st['tanggal_akhir'])) : '-' ?></small>
@@ -100,7 +100,7 @@
                             <button class="btn btn-sm btn-outline-warning me-1" onclick='editStase(<?= htmlspecialchars(json_encode($st), ENT_QUOTES, "UTF-8") ?>)'>
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteStase(<?= $st['id'] ?>, '<?= $st['nama_stase'] ?? '' ?>')">
+                            <button class="btn btn-sm btn-outline-danger" onclick='deleteStase(<?= (int) $st['id'] ?>, <?= esc(json_encode($st['nama_stase'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)'>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -141,7 +141,7 @@
                                 <option value="">Pilih Profesi</option>
                                 <?php if (!empty($profesiList)): ?>
                                     <?php foreach ($profesiList as $p): ?>
-                                    <option value="<?= $p['id_profesi'] ?>"><?= $p['nama_profesi'] ?></option>
+                                    <option value="<?= $p['id_profesi'] ?>"><?= esc($p['nama_profesi']) ?></option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
@@ -153,7 +153,7 @@
                                     <?php foreach ($unitKerjaList as $u): ?>
                                     <div class="form-check">
                                         <input class="form-check-input stase-ruangan" type="checkbox" name="ruangan_ids[]" value="<?= $u['id_unit_kerja'] ?>" id="ruang_<?= $u['id_unit_kerja'] ?>">
-                                        <label class="form-check-label" for="ruang_<?= $u['id_unit_kerja'] ?>"><?= $u['nama_unit'] ?></label>
+                                        <label class="form-check-label" for="ruang_<?= $u['id_unit_kerja'] ?>"><?= esc($u['nama_unit']) ?></label>
                                     </div>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -180,7 +180,60 @@
     </div>
 </div>
 
+<!-- Stase Date Validation Modal -->
+<div class="modal fade" id="staseDateErrorModal" tabindex="-1" aria-labelledby="staseDateErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h6 class="modal-title fw-bold" id="staseDateErrorModalLabel"><i class="fas fa-calendar-times me-2"></i>Tanggal Tidak Valid</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="staseDateErrorMessage">Tanggal akhir tidak boleh lebih awal dari tanggal mulai.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Mengerti</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+function showStaseDateError(message) {
+    $('#staseDateErrorMessage').text(message || 'Tanggal akhir tidak boleh lebih awal dari tanggal mulai.');
+    $('#staseDateErrorModal').modal('show');
+}
+
+function isStaseDateRangeValid() {
+    var mulai = $('#staseMulai').val();
+    var akhir = $('#staseAkhir').val();
+    return !(mulai && akhir && akhir < mulai);
+}
+
+function syncStaseAkhirMin() {
+    var mulai = $('#staseMulai').val();
+    if (mulai) {
+        $('#staseAkhir').attr('min', mulai);
+    } else {
+        $('#staseAkhir').removeAttr('min');
+    }
+}
+
+$('#staseMulai').on('change', function() {
+    syncStaseAkhirMin();
+    if (!isStaseDateRangeValid()) {
+        $('#staseAkhir').val('');
+        showStaseDateError();
+    }
+});
+
+$('#staseAkhir').on('change', function() {
+    if (!isStaseDateRangeValid()) {
+        $(this).val('');
+        showStaseDateError();
+    }
+});
+
 function editStase(stase) {
     $('#staseId').val(stase.id);
     $('#staseModalTitle').text('Edit Stase');
@@ -188,6 +241,7 @@ function editStase(stase) {
     $('#staseProfesi').val(stase.profesi_id || '');
     $('#staseMulai').val(stase.tanggal_mulai || '');
     $('#staseAkhir').val(stase.tanggal_akhir || '');
+    syncStaseAkhirMin();
     
     $('.stase-ruangan').prop('checked', false);
     if (stase.ruangan) {
@@ -201,18 +255,34 @@ function editStase(stase) {
 }
 
 function deleteStase(id, name) {
-    if (!confirm('Hapus stase "' + name + '"? Tindakan ini tidak dapat dibatalkan.')) return;
-    $.post('<?= base_url('pendidikan/admin/diklat/api/stase/delete') ?>/' + id, function(res) {
-        if (res.success) {
-            location.reload();
-        } else {
-            alert(res.message || 'Gagal menghapus stase');
-        }
+    confirmDeleteAdminDiklat(
+        'Hapus Stase?',
+        'Stase "' + (name || 'ini') + '" akan dihapus permanen dan tidak dapat dikembalikan.'
+    ).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        $.post('<?= base_url('pendidikan/admin/diklat/api/stase/delete') ?>/' + id, function(res) {
+            if (res.success) {
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Stase berhasil dihapus.').then(function() {
+                    location.reload();
+                });
+            } else {
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal menghapus stase');
+            }
+        }).fail(function(xhr) {
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
+        });
     });
 }
 
 $('#staseForm').submit(function(e) {
     e.preventDefault();
+
+    if (!isStaseDateRangeValid()) {
+        showStaseDateError();
+        return;
+    }
+
     var id = $('#staseId').val();
     var isEdit = id ? true : false;
     var url = isEdit ? '<?= base_url('pendidikan/admin/diklat/api/stase/update') ?>/' + id : '<?= base_url('pendidikan/admin/diklat/api/stase') ?>';
@@ -237,13 +307,18 @@ $('#staseForm').submit(function(e) {
         data: JSON.stringify(data),
         success: function(res) {
             if (res.success) {
-                location.reload();
+                reloadAdminDiklatAfterModal('#addStaseModal', res.message || 'Stase berhasil disimpan.');
             } else {
-                alert(res.message || 'Gagal menyimpan stase');
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal menyimpan stase');
             }
         },
         error: function(xhr) {
-            alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+            var message = xhr.responseJSON?.message || 'Server error';
+            if (xhr.status === 422 && message === 'Tanggal akhir tidak boleh lebih awal dari tanggal mulai.') {
+                showStaseDateError(message);
+                return;
+            }
+            showAdminDiklatNotification('error', 'Gagal', message);
         }
     });
 });
@@ -252,6 +327,7 @@ $('#addStaseModal').on('hidden.bs.modal', function() {
     $('#staseId').val('');
     $('#staseForm')[0].reset();
     $('.stase-ruangan').prop('checked', false);
+    $('#staseAkhir').removeAttr('min');
     $('#staseModalTitle').text('Tambah Stase');
 });
 </script>

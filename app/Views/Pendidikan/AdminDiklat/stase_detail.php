@@ -6,7 +6,7 @@
         <a href="<?= base_url('pendidikan/admin/diklat/stase') ?>" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>
-        <h5 class="fw-bold text-dark mb-0">Mapping Detail Stase: <?= $stase['nama_stase'] ?? '-' ?></h5>
+        <h5 class="fw-bold text-dark mb-0">Mapping Detail Stase: <?= esc($stase['nama_stase'] ?? '-') ?></h5>
     </div>
 </div>
 
@@ -14,11 +14,11 @@
     <div class="row">
         <div class="col-md-4">
             <p class="mb-1 text-muted small fw-bold text-uppercase">Nama Stase</p>
-            <p class="mb-0 fw-semibold text-dark"><?= $stase['nama_stase'] ?? '-' ?></p>
+            <p class="mb-0 fw-semibold text-dark"><?= esc($stase['nama_stase'] ?? '-') ?></p>
         </div>
         <div class="col-md-4">
             <p class="mb-1 text-muted small fw-bold text-uppercase">Profesi</p>
-            <p class="mb-0 fw-semibold text-primary"><?= $stase['nama_profesi'] ?? '-' ?></p>
+            <p class="mb-0 fw-semibold text-primary"><?= esc($stase['nama_profesi'] ?? '-') ?></p>
         </div>
         <div class="col-md-4">
             <p class="mb-1 text-muted small fw-bold text-uppercase">Periode</p>
@@ -50,7 +50,7 @@
                 <div class="card shadow-sm border-0 rounded-3">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold text-dark">
-                            <i class="fas fa-door-open me-2 text-primary"></i> <?= $ruangan['nama_unit'] ?>
+                            <i class="fas fa-door-open me-2 text-primary"></i> <?= esc($ruangan['nama_unit']) ?>
                         </h6>
                     </div>
                     <div class="card-body p-4">
@@ -80,14 +80,14 @@
                                                 <?php if ($ci['id_unit_kerja'] == $rId): ?>
                                                     <?php $isCurrent = $currentCiId == $ci['id']; ?>
                                                     <option value="<?= $ci['id'] ?>" <?= $isCurrent ? 'selected' : '' ?> <?= ($ci['has_overlap'] && !$isCurrent) ? 'disabled' : '' ?>>
-                                                        <?= $ci['nama_lengkap'] ?>
+                                                        <?= esc($ci['nama_lengkap']) ?>
                                                         <?php if ($ci['has_overlap'] && !$isCurrent): ?> (Periode bertabrakan)<?php endif; ?>
                                                         <?php if ($isCurrent): ?> (CI saat ini)<?php endif; ?>
                                                     </option>
                                                 <?php endif; ?>
                                             <?php endforeach; ?>
                                         </select>
-                                        <small class="text-muted mt-2 d-block">* CI difilter berdasarkan profesi <b><?= $stase['nama_profesi'] ?? '-' ?></b>.</small>
+                                        <small class="text-muted mt-2 d-block">* CI difilter berdasarkan profesi <b><?= esc($stase['nama_profesi'] ?? '-') ?></b>.</small>
                                         <small class="text-warning fw-bold mt-1 d-none" id="ci-warning-<?= $rId ?>"><i class="fas fa-exclamation-triangle me-1"></i>Pilih CI terlebih dahulu sebelum menyimpan mahasiswa</small>
                                     </div>
                                 </div>
@@ -102,7 +102,7 @@
                                         <select class="form-select form-select-sm w-auto filter-institusi" data-target="mhs-container-<?= $rId ?>">
                                             <option value="all">Tampilkan Semua Institusi</option>
                                             <?php foreach ($institusiList as $inst): ?>
-                                                <option value="<?= $inst['id'] ?>"><?= $inst['nama_institusi'] ?></option>
+                                                <option value="<?= $inst['id'] ?>"><?= esc($inst['nama_institusi']) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -123,8 +123,8 @@
                                                     <div class="form-check p-2 border rounded bg-white <?= $isChecked ? 'border-primary bg-primary bg-opacity-10' : '' ?> <?= $hasOverlap ? 'border-warning bg-warning bg-opacity-5' : '' ?>" style="transition: all 0.2s;">
                                                         <input class="form-check-input ms-1 me-2 mhs-checkbox" type="checkbox" name="mahasiswa_ids[]" value="<?= $mhs['id'] ?>" id="mhs_<?= $rId ?>_<?= $mhs['id'] ?>" <?= $isChecked ? 'checked' : '' ?> <?= $hasOverlap ? 'disabled' : '' ?> onchange="toggleMhsHighlight(this)">
                                                         <label class="form-check-label w-100 cursor-pointer" for="mhs_<?= $rId ?>_<?= $mhs['id'] ?>">
-                                                            <span class="fw-semibold text-dark d-block" style="font-size:13px;"><?= $mhs['nama_lengkap'] ?></span>
-                                                            <span class="text-muted d-block" style="font-size:11px;"><?= $mhs['nim'] ?></span>
+                                                            <span class="fw-semibold text-dark d-block" style="font-size:13px;"><?= esc($mhs['nama_lengkap']) ?></span>
+                                                            <span class="text-muted d-block" style="font-size:11px;"><?= esc($mhs['nim']) ?></span>
                                                             <?php if ($hasOverlap): ?>
                                                                 <span class="d-block text-warning small fw-bold mt-1" style="font-size:10px;"><i class="fas fa-clock me-1"></i>Periode bertabrakan dengan stase lain</span>
                                                             <?php endif; ?>
@@ -224,7 +224,7 @@ function saveMapping(e, ruanganId) {
     
     // Client-side validation: CI wajib jika ada mahasiswa
     if (!ciId && mhsIds.length > 0) {
-        alert('Pilih CI terlebih dahulu sebelum menyimpan mahasiswa!');
+        showAdminDiklatNotification('warning', 'Data belum lengkap', 'Pilih CI terlebih dahulu sebelum menyimpan mahasiswa.');
         return;
     }
     
@@ -243,7 +243,8 @@ function saveMapping(e, ruanganId) {
         data: JSON.stringify(payload),
         success: function(res) {
             if(res.success) {
-                // Tampilkan notifikasi atau toast
+                showAdminDiklatNotification('success', 'Berhasil', res.message || 'Mapping mahasiswa berhasil disimpan.');
+                // Tampilkan status tersimpan pada tombol
                 let successBtn = $('<button type="button" class="btn btn-success px-4" disabled><i class="fas fa-check me-1"></i> Tersimpan!</button>');
                 btn.replaceWith(successBtn);
                 setTimeout(() => {
@@ -251,12 +252,12 @@ function saveMapping(e, ruanganId) {
                     btn.html(originalHtml).prop('disabled', false);
                 }, 2000);
             } else {
-                alert(res.message || 'Terjadi kesalahan.');
+                showAdminDiklatNotification('error', 'Gagal', res.message || 'Terjadi kesalahan.');
                 btn.html(originalHtml).prop('disabled', false);
             }
         },
         error: function(xhr) {
-            alert('Gagal menyimpan: ' + (xhr.responseJSON?.message || 'Server Error'));
+            showAdminDiklatNotification('error', 'Gagal menyimpan', xhr.responseJSON?.message || 'Server Error');
             btn.html(originalHtml).prop('disabled', false);
         }
     });
