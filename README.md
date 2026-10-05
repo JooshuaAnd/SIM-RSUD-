@@ -1,69 +1,172 @@
-# CodeIgniter 4 Application Starter
+# SIM-RSUD
 
-## What is CodeIgniter?
+Sistem berbasis CodeIgniter 4 untuk mengelola modul Pelatihan, Pendidikan,
+Riset, dan administrasi Super Admin.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Persyaratan
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- PHP 8.2 atau lebih tinggi
+- Composer
+- MySQL
+- XAMPP (Apache dan MySQL) untuk menjalankan secara lokal
+- Ekstensi PHP: `intl`, `mbstring`, `mysqli`, `curl`, dan `gd`
+- Ekstensi `sqlite3` untuk menjalankan pengujian dengan database sementara
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Menjalankan Project dari Awal
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Contoh berikut menggunakan XAMPP pada Windows.
 
-## Installation & updates
+### 1. Aktifkan Apache dan MySQL
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+Aktifkan Apache dan MySQL melalui XAMPP Control Panel.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### 2. Siapkan project dan konfigurasi lokal
 
-## Setup
+Jika belum memiliki project, clone repository lalu masuk ke foldernya:
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+```powershell
+git clone https://github.com/JooshuaAnd/SIM-RSUD-.git
+cd SIM-RSUD-
+```
 
-## Important Change with index.php
+Salin contoh konfigurasi menjadi file lokal:
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+```powershell
+Copy-Item .env.example .env
+```
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+Jika `.env` sudah ada, jangan ditimpa; sesuaikan konfigurasi yang diperlukan.
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### 3. Buat database
 
-## Repository Management
+Buat database dengan nama `sim_diklat` melalui phpMyAdmin atau MySQL:
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+```sql
+CREATE DATABASE sim_diklat;
+```
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+Pastikan konfigurasi `.env` sesuai:
 
-## Server Requirements
+```ini
+database.default.hostname = 127.0.0.1
+database.default.database = sim_diklat
+database.default.username = root
+database.default.password = YOUR_DB_PASSWORD
+database.default.DBDriver = MySQLi
+database.default.port = 3306
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+app.baseURL = 'http://localhost:8080/'
+app.indexPage = ''
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+### 4. Install dependency
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+Buka terminal pada folder project:
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+```powershell
+composer install
+```
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+### 5. Buat tabel database
+
+Pada database baru yang masih kosong, jalankan migration:
+
+```powershell
+php spark migrate --all
+```
+
+### 6. Jalankan seeder pada database development baru
+
+Gunakan seeder utama berikut:
+
+```powershell
+php spark db:seed "App\Database\Seeds\Pelatihan\DataAwalPelatihanSeeder"
+```
+
+Seeder ini memanggil seluruh seeder data Pelatihan, Pendidikan, dan Riset,
+termasuk role serta akun demo. Jangan menjalankan semua file seeder satu per
+satu karena beberapa seeder melakukan `truncate`. Seeder utama juga
+mengosongkan sejumlah tabel: jangan jalankan pada database yang berisi data
+operasional. Ganti password akun demo sebelum aplikasi digunakan bersama.
+
+### 7. Jalankan aplikasi
+
+```powershell
+php spark serve
+```
+
+Buka [http://localhost:8080](http://localhost:8080).
+
+> **Peringatan:** `php spark migrate:refresh` menghapus data lama. Gunakan
+> hanya pada database development atau setelah membuat backup.
+
+## Memperbarui Instalasi yang Sudah Berjalan
+
+Backup database dan seluruh file upload terlebih dahulu. Setelah mengambil
+perubahan kode, jalankan:
+
+```powershell
+composer install
+php spark migrate --all
+```
+
+Jangan menjalankan `migrate:refresh` atau seeder utama untuk pembaruan biasa.
+Migration `AddRevisiDikirimAtToInstitusiPendidikan` menambahkan kolom penanda
+pengiriman revisi yang diperlukan oleh alur verifikasi institusi.
+
+## Pengujian
+
+Jalankan dari folder project dengan ekstensi `sqlite3` aktif:
+
+```powershell
+php vendor/bin/phpunit tests --no-coverage --no-logging --do-not-cache-result
+```
+
+Jika `sqlite3` tersedia di XAMPP tetapi belum aktif di konfigurasi PHP,
+gunakan perintah berikut tanpa mengubah `php.ini`:
+
+```powershell
+php -d extension=sqlite3 vendor/bin/phpunit tests --no-coverage --no-logging --do-not-cache-result
+```
+
+Konfigurasi pengujian menggunakan SQLite `:memory:`. Tes Pendidikan
+memeriksa bahwa database tersebut terisolasi sebelum melakukan perubahan
+data. Tes mencakup pembayaran, unduh bukti bayar, rekap nilai PDF, validasi
+logbook, penempatan stase, perlindungan riwayat akademik, dan CSRF admin.
+
+## File yang Tidak Disimpan di Git
+
+File `.env`, backup konfigurasi, cache, log, session, dependency lokal,
+file upload pengguna, skrip diagnostik lokal, serta panduan lokal seperti
+`modul_admin.md` dan `panduan_pendidikan.md` tidak disertakan dalam repository.
+`.env.example`, kode aplikasi, migration, pengujian, dan file pengaman folder
+tetap disimpan. File upload yang sudah ada harus dibackup atau dipindahkan
+secara terpisah ketika memindahkan aplikasi.
+
+## Struktur Project
+
+```text
+SIM-RSUD-/
+├── app/
+│   ├── Config/              # Konfigurasi aplikasi, database, route, dan filter
+│   ├── Controllers/         # Logika request dan alur tiap modul
+│   ├── Database/
+│   │   ├── Migrations/      # Struktur tabel database
+│   │   └── Seeds/           # Data awal Pelatihan, Pendidikan, dan Riset
+│   ├── Filters/             # Pembatasan akses berdasarkan autentikasi/role
+│   ├── Models/              # Model dan akses data database
+│   └── Views/               # Tampilan halaman aplikasi
+├── public/
+│   ├── assets/              # CSS, JavaScript, gambar, dan aset publik
+│   └── index.php            # Entry point aplikasi
+├── tests/                   # Pengujian aplikasi
+├── writable/                # Cache, log, session, dan file upload
+├── .env                     # Konfigurasi environment lokal
+├── composer.json            # Dependency dan konfigurasi Composer
+├── docker-compose.yml       # Konfigurasi menjalankan aplikasi dengan Docker
+├── Dockerfile               # Image Docker aplikasi
+└── spark                    # CLI CodeIgniter 4
+```
+
+Modul utama berada di dalam folder `app/Controllers`, `app/Models`, dan
+`app/Views`, yaitu Pelatihan, Pendidikan, Riset, dan Super Admin.
