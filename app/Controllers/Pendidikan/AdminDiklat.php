@@ -181,10 +181,11 @@ class AdminDiklat extends BaseController
         $mahasiswaList = $this->mahasiswaModel->where('institusi_id', $id)->findAll();
         $dokumenList = $this->dokumenModel->where('institusi_id', $id)->findAll();
 
-        // Merge file_mou and file_permohonan from institusi_pendidikan into dokumenList
+        // Merge profile documents from institusi_pendidikan into dokumenList
         $fileFields = [
             'file_mou' => 'MOU / Perjanjian Kerja Sama',
             'file_permohonan' => 'Surat Permohonan Praktik',
+            'file_lainnya' => 'Dokumen Tambahan Institusi',
         ];
         foreach ($fileFields as $field => $label) {
             if (!empty($institusi[$field])) {
@@ -192,6 +193,7 @@ class AdminDiklat extends BaseController
                     'id' => null,
                     'institusi_id' => $id,
                     'judul' => $label,
+                    'jenis_file' => substr($field, 5),
                     'nama_file' => $institusi[$field],
                     'original_name' => null,
                     'tipe_file' => 'application/pdf',
@@ -214,7 +216,8 @@ class AdminDiklat extends BaseController
             'file_daftar_mhs' => 'Daftar Mahasiswa',
             'file_kompetensi' => 'Kompetensi',
             'file_sk_pembimbing' => 'SK Pembimbing',
-            'file_bukti_bayar' => 'Bukti Bayar'
+            'file_bukti_bayar' => 'Bukti Bayar',
+            'file_dokumen_penilaian' => 'Dokumen Penilaian',
         ];
         foreach ($pengajuanList as $pengajuan) {
             foreach ($pengajuanDocFields as $field => $label) {
@@ -731,7 +734,11 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
-        $kolom = ($jenis === 'mou') ? 'file_mou' : 'file_permohonan';
+        $fieldMap = ['mou' => 'file_mou', 'permohonan' => 'file_permohonan', 'lainnya' => 'file_lainnya'];
+        if (!isset($fieldMap[$jenis])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Jenis dokumen tidak valid'])->setStatusCode(404);
+        }
+        $kolom = $fieldMap[$jenis];
         $namaFile = $institusi[$kolom] ?? null;
 
         if (!$namaFile) {
@@ -1775,6 +1782,39 @@ class AdminDiklat extends BaseController
                 'success' => false,
                 'message' => 'Status tidak valid'
             ])->setStatusCode(422);
+        }
+
+        if ($status === 'Lunas') {
+            $hasUploadedFile = static function ($filename, array $directories): bool {
+                if (!is_string($filename) || trim($filename) === ''
+                    || strpbrk($filename, "/\\\0") !== false) {
+                    return false;
+                }
+                foreach ($directories as $directory) {
+                    $root = realpath($directory);
+                    $path = realpath($directory . $filename);
+                    if ($root !== false && $path !== false
+                        && str_starts_with($path, $root . DIRECTORY_SEPARATOR)
+                        && is_file($path) && is_readable($path)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            if (!$hasUploadedFile($mahasiswa['invoice_file'] ?? null, [FCPATH . 'uploads/invoices/'])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak dapat dilunaskan karena invoice belum tersedia di server.',
+                ])->setStatusCode(422);
+            }
+            if (!$hasUploadedFile($mahasiswa['file_bukti_bayar'] ?? null, [
+                FCPATH . 'uploads/dokumen_mahasiswa/', FCPATH . 'uploads/bukti_bayar/',
+            ])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak dapat dilunaskan karena bukti pembayaran belum tersedia di server.',
+                ])->setStatusCode(422);
+            }
         }
 
         $data = ['payment_status' => $status];

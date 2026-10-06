@@ -26,6 +26,7 @@ class PengajuanPraktikPendidikanModel extends Model
         'file_kompetensi',
         'file_sk_pembimbing',
         'file_bukti_bayar',
+        'file_dokumen_penilaian',
         'status',
         'catatan_admin'
     ];

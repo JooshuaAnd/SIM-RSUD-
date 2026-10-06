@@ -98,7 +98,8 @@
                     'file_daftar_mhs' => 'Daftar Mahasiswa',
                     'file_kompetensi' => 'Kompetensi',
                     'file_sk_pembimbing' => 'SK Pembimbing',
-                    'file_bukti_bayar' => 'Bukti Bayar'
+                    'file_bukti_bayar' => 'Bukti Bayar',
+                    'file_dokumen_penilaian' => 'Dokumen Penilaian',
                 ];
                 $hasDocs = false;
                 foreach ($docFields as $field => $label) {

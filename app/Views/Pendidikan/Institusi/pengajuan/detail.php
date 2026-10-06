@@ -191,6 +191,14 @@
                         <div class="small"><i class="fas fa-file-invoice-dollar text-success me-2"></i> 8. Bukti Pembayaran</div>
                         <a href="<?= $pengajuan['file_bukti_bayar'] ? base_url('uploads/dokumen_pengajuan/' . $pengajuan['file_bukti_bayar']) : '#' ?>" class="btn btn-sm btn-light" <?= $pengajuan['file_bukti_bayar'] ? 'target="_blank"' : 'disabled' ?>><i class="fas fa-eye"></i></a>
                     </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div class="small"><i class="fas fa-file-pdf text-danger me-2"></i> 9. Dokumen Penilaian</div>
+                        <?php if (!empty($pengajuan['file_dokumen_penilaian'])): ?>
+                            <a href="<?= esc(base_url('uploads/dokumen_pengajuan/' . $pengajuan['file_dokumen_penilaian']), 'attr') ?>" target="_blank" rel="noopener" class="btn btn-sm btn-light" aria-label="Lihat dokumen penilaian"><i class="fas fa-eye"></i></a>
+                        <?php else: ?>
+                            <span class="text-muted small">Belum ada file</span>
+                        <?php endif; ?>
+                    </li>
                 </ul>
             </div>
         </div>

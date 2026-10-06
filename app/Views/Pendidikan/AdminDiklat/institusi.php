@@ -150,7 +150,8 @@
                                     $fileUrl = base_url('uploads/dokumen_pengajuan/' . $d['nama_file']);
                                     $dlUrl = $fileUrl;
                                 } else {
-                                    $fileUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/view/' . $d['id']) : base_url('pendidikan/admin/diklat/api/institusi/file/' . $detail['id'] . '/' . ($d['judul'] === 'MOU / Perjanjian Kerja Sama' ? 'mou' : 'permohonan'));
+                                    $jenisFile = $d['jenis_file'] ?? ($d['judul'] === 'MOU / Perjanjian Kerja Sama' ? 'mou' : 'permohonan');
+                                    $fileUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/view/' . $d['id']) : base_url('pendidikan/admin/diklat/api/institusi/file/' . $detail['id'] . '/' . $jenisFile);
                                     $dlUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/download/' . $d['id']) : $fileUrl . '?download=1'; 
                                 }
                                 ?>

@@ -306,6 +306,7 @@ class Pengajuan extends BaseController
             'file_kompetensi' => $pengajuan['file_kompetensi'],
             'file_sk_pembimbing' => $pengajuan['file_sk_pembimbing'],
             'file_bukti_bayar' => $pengajuan['file_bukti_bayar'],
+            'file_dokumen_penilaian' => $pengajuan['file_dokumen_penilaian'] ?? null,
             'mahasiswa' => $mahasiswa
         ];
 
@@ -381,6 +382,7 @@ class Pengajuan extends BaseController
             'file_kompetensi' => $pengajuan['file_kompetensi'],
             'file_sk_pembimbing' => $pengajuan['file_sk_pembimbing'],
             'file_bukti_bayar' => $pengajuan['file_bukti_bayar'],
+            'file_dokumen_penilaian' => $pengajuan['file_dokumen_penilaian'] ?? null,
             'mahasiswa' => $mahasiswa
         ];
 
