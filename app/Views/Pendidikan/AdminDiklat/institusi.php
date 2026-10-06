@@ -6,7 +6,7 @@
     <div>
         <div class="btn-group btn-group-sm" role="group">
             <button type="button" class="btn <?= ($tab === 'inbox') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=inbox') ?>'">
-                Inbox <span class="badge bg-light text-dark ms-1"><?= $counts['inbox'] ?? 0 ?></span>
+                Inbox <span class="badge bg-light text-dark ms-1"><?= $counts['inbox'] ?? 0 ?></span><?php if (!empty($counts['revision_submitted'])): ?> <span class="badge bg-danger ms-1"><?= $counts['revision_submitted'] ?> revisi masuk</span><?php endif; ?>
             </button>
             <button type="button" class="btn <?= ($tab === 'approved') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=approved') ?>'">
                 Disetujui <span class="badge bg-light text-dark ms-1"><?= $counts['approved'] ?? 0 ?></span>
@@ -32,9 +32,9 @@
     <div class="col-lg-4">
         <div class="card p-4 text-center">
             <div class="bg-light rounded mx-auto d-flex align-items-center justify-content-center mb-3" style="width:80px;height:80px;">
-                <span class="fw-bold text-muted" style="font-size:2rem;"><?= strtoupper(substr($detail['nama_institusi'] ?? '-', 0, 1)) ?></span>
+                <span class="fw-bold text-muted" style="font-size:2rem;"><?= esc(strtoupper(substr($detail['nama_institusi'] ?? '-', 0, 1))) ?></span>
             </div>
-            <h5 class="fw-bold"><?= $detail['nama_institusi'] ?? '-' ?></h5>
+            <h5 class="fw-bold"><?= esc($detail['nama_institusi'] ?? '-') ?></h5>
             <span class="badge bg-primary mb-3">Institusi</span>
             <?php $status = $detail['status_verifikasi'] ?? 'pending'; ?>
             <?php if ($status === 'approved'): ?>
@@ -46,12 +46,15 @@
             <?php else: ?>
                 <span class="badge badge-menunggu">Menunggu</span>
             <?php endif; ?>
+            <?php if (!empty($detail['has_submitted_revision'])): ?>
+                <div class="alert alert-info small text-start mt-3 mb-0"><i class="fas fa-bell me-1"></i> Institusi telah mengirim perbaikan pada <?= date('d/m/Y H:i', strtotime($detail['revisi_dikirim_at'])) ?>.</div>
+            <?php endif; ?>
 
             <hr class="my-3">
             <div class="text-start small">
-                <p><i class="fas fa-envelope text-muted me-2"></i> <?= $detail['email'] ?? '-' ?></p>
-                <p><i class="fas fa-phone text-muted me-2"></i> <?= $detail['no_telp'] ?? '-' ?></p>
-                <p><i class="fas fa-map-marker-alt text-muted me-2"></i> <?= $detail['alamat'] ?? '-' ?></p>
+                <p><i class="fas fa-envelope text-muted me-2"></i> <?= esc($detail['email'] ?? '-') ?></p>
+                <p><i class="fas fa-phone text-muted me-2"></i> <?= esc($detail['no_telp'] ?? '-') ?></p>
+                <p><i class="fas fa-map-marker-alt text-muted me-2"></i> <?= esc($detail['alamat'] ?? '-') ?></p>
             </div>
 
             <?php if ($status === 'pending'): ?>
@@ -67,11 +70,15 @@
                 </button>
             </div>
             <?php elseif ($status === 'revision'): ?>
-            <div class="d-grid mt-3">
-                <button class="btn btn-outline-primary" onclick="resubmitInstitusi(<?= $detail['id'] ?>)">
-                    <i class="fas fa-undo me-1"></i> Tandai Sudah Direvisi
-                </button>
-            </div>
+                <?php if (!empty($detail['has_submitted_revision'])): ?>
+                <div class="d-grid mt-3">
+                    <button class="btn btn-outline-primary" onclick="resubmitInstitusi(<?= $detail['id'] ?>)">
+                        <i class="fas fa-check-double me-1"></i> Tandai Revisi Ditinjau
+                    </button>
+                </div>
+                <?php else: ?>
+                <p class="small text-muted mt-3 mb-0">Menunggu institusi mengirim perbaikan.</p>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>
@@ -102,9 +109,9 @@
                         <?php if (!empty($mahasiswaList)): ?>
                             <?php foreach ($mahasiswaList as $m): ?>
                             <tr>
-                                <td class="fw-semibold"><?= $m['nama_lengkap'] ?? '-' ?></td>
-                                <td><?= $m['nim'] ?? '-' ?></td>
-                                <td><?= $m['program_studi'] ?? '-' ?></td>
+                                <td class="fw-semibold"><?= esc($m['nama_lengkap'] ?? '-') ?></td>
+                                <td><?= esc($m['nim'] ?? '-') ?></td>
+                                <td><?= esc($m['program_studi'] ?? '-') ?></td>
                                 <td>
                                     <?php $mStatus = $m['status'] ?? 'Menunggu'; ?>
                                     <?php if (in_array($mStatus, ['Disetujui', 'Aktif', '1'])): ?>
@@ -132,7 +139,7 @@
                             <div class="d-flex align-items-center gap-3 mb-2">
                                 <i class="fas fa-file-alt fa-2x text-primary"></i>
                                 <div>
-                                    <small class="fw-semibold d-block"><?= $d['judul'] ?? '-' ?></small>
+                                    <small class="fw-semibold d-block"><?= esc($d['judul'] ?? '-') ?></small>
                                     <small class="text-muted"><?= date('d/m/Y', strtotime($d['created_at'] ?? 'now')) ?></small>
                                 </div>
                             </div>
@@ -143,14 +150,15 @@
                                     $fileUrl = base_url('uploads/dokumen_pengajuan/' . $d['nama_file']);
                                     $dlUrl = $fileUrl;
                                 } else {
-                                    $fileUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/view/' . $d['id']) : base_url('pendidikan/admin/diklat/api/institusi/file/' . $detail['id'] . '/' . ($d['judul'] === 'MOU / Perjanjian Kerja Sama' ? 'mou' : 'permohonan'));
+                                    $jenisFile = $d['jenis_file'] ?? ($d['judul'] === 'MOU / Perjanjian Kerja Sama' ? 'mou' : 'permohonan');
+                                    $fileUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/view/' . $d['id']) : base_url('pendidikan/admin/diklat/api/institusi/file/' . $detail['id'] . '/' . $jenisFile);
                                     $dlUrl = $d['id'] ? base_url('pendidikan/admin/diklat/api/dokumen/download/' . $d['id']) : $fileUrl . '?download=1'; 
                                 }
                                 ?>
-                                <a href="<?= $fileUrl ?>" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <a href="<?= esc($fileUrl) ?>" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1">
                                     <i class="fas fa-eye me-1"></i> Lihat
                                 </a>
-                                <a href="<?= $dlUrl ?>" class="btn btn-sm btn-outline-secondary" <?php if (isset($d['is_pengajuan']) && $d['is_pengajuan']) echo 'download'; ?>>
+                                <a href="<?= esc($dlUrl) ?>" class="btn btn-sm btn-outline-secondary" <?php if (isset($d['is_pengajuan']) && $d['is_pengajuan']) echo 'download'; ?>>
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <?php else: ?>
@@ -189,18 +197,18 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <span class="fw-bold text-muted"><?= strtoupper(substr($inst['nama_institusi'] ?? '-', 0, 1)) ?></span>
+                                    <span class="fw-bold text-muted"><?= esc(strtoupper(substr($inst['nama_institusi'] ?? '-', 0, 1))) ?></span>
                                 </div>
                                 <div>
-                                    <span class="fw-semibold"><?= $inst['nama_institusi'] ?? '-' ?></span>
-                                    <br><small class="text-muted"><?= $inst['email'] ?? '' ?></small>
+                                    <span class="fw-semibold"><?= esc($inst['nama_institusi'] ?? '-') ?></span>
+                                    <br><small class="text-muted"><?= esc($inst['email'] ?? '') ?></small>
                                 </div>
                             </div>
                         </td>
                         <td><small class="text-muted"><?= date('d/m/Y', strtotime($inst['created_at'] ?? 'now')) ?></small></td>
                         <td>
-                            <small class="fw-semibold"><?= $inst['nama_kontak'] ?? '-' ?></small>
-                            <br><small class="text-muted"><?= $inst['no_telp'] ?? '' ?></small>
+                            <small class="fw-semibold"><?= esc($inst['nama_kontak'] ?? '-') ?></small>
+                            <br><small class="text-muted"><?= esc($inst['no_telp'] ?? '') ?></small>
                         </td>
                         <td>
                             <?php $status = $inst['status_verifikasi'] ?? 'pending'; ?>
@@ -212,6 +220,9 @@
                                 <span class="badge badge-revisi">Revisi</span>
                             <?php else: ?>
                                 <span class="badge badge-menunggu">Menunggu</span>
+                            <?php endif; ?>
+                            <?php if (!empty($inst['has_submitted_revision'])): ?>
+                                <span class="badge bg-info text-dark ms-1">Revisi masuk</span>
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
@@ -293,23 +304,35 @@ function showDeclineModal(id) {
     $('#declineModal').modal('show');
 }
 function approveInstitusi(id) {
-    if (!confirm('Setujui institusi ini?')) return;
-    $.post('<?= base_url('pendidikan/admin/diklat/api/institusi/approve') ?>/' + id, function(res) {
+    confirmAdminDiklat('Setujui institusi?', 'Institusi ini akan disetujui.').then(function(result) {
+    if (!result.isConfirmed) return;
+        $.post('<?= base_url('pendidikan/admin/diklat/api/institusi/approve') ?>/' + id, function(res) {
         if (res.success) {
-            location.reload();
+            showAdminDiklatNotification('success', 'Berhasil', res.message || 'Institusi berhasil disetujui.').then(function() {
+                location.reload();
+            });
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
+        }).fail(function(xhr) {
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
+        });
     });
 }
 function resubmitInstitusi(id) {
-    if (!confirm('Tandai sudah direvisi?')) return;
-    $.post('<?= base_url('pendidikan/admin/diklat/api/institusi/resubmit') ?>/' + id, function(res) {
+    confirmAdminDiklat('Tandai revisi sudah ditinjau?', 'Penanda revisi masuk akan diselesaikan.').then(function(result) {
+    if (!result.isConfirmed) return;
+        $.post('<?= base_url('pendidikan/admin/diklat/api/institusi/resubmit') ?>/' + id, function(res) {
         if (res.success) {
-            location.reload();
+            showAdminDiklatNotification('success', 'Berhasil', res.message || 'Status institusi berhasil diperbarui.').then(function() {
+                location.reload();
+            });
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
+        }).fail(function(xhr) {
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
+        });
     });
 }
 
@@ -319,12 +342,12 @@ $('#revisionForm').submit(function(e) {
     var data = $(this).serialize();
     $.post(action, data, function(res) {
         if (res.success) {
-            location.reload();
+            reloadAdminDiklatAfterModal('#revisionModal');
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
     }).fail(function(xhr) {
-        alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+        showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
     });
 });
 
@@ -334,12 +357,12 @@ $('#declineForm').submit(function(e) {
     var data = $(this).serialize();
     $.post(action, data, function(res) {
         if (res.success) {
-            location.reload();
+            reloadAdminDiklatAfterModal('#declineModal');
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
     }).fail(function(xhr) {
-        alert('Gagal: ' + (xhr.responseJSON?.message || 'Server error'));
+        showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
     });
 });
 </script>

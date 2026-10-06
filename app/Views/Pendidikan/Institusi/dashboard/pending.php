@@ -47,12 +47,28 @@
                     <div class="col-sm-8"><?= $profile['hp_pj'] ?> / <?= $profile['email_pj'] ?></div>
                 </div>
                 <hr>
-                <div class="row">
-                    <div class="col-sm-4 text-muted small">Dokumen MoU</div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted small">Dokumen MoU / PKS</div>
                     <div class="col-sm-8">
-                        <span class="badge bg-light text-dark border"><i class="fas fa-file-pdf text-danger me-1"></i> mou_pks_2026.pdf</span>
+                        <?php if (!empty($profile['file_mou'])): ?>
+                            <a href="<?= base_url('pendidikan/institusi/dokumen/file/mou') ?>" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i>Lihat MoU / PKS</a>
+                        <?php else: ?><span class="text-muted small">Belum diunggah</span><?php endif; ?>
                     </div>
                 </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted small">Surat Permohonan</div>
+                    <div class="col-sm-8">
+                        <?php if (!empty($profile['file_permohonan'])): ?>
+                            <a href="<?= base_url('pendidikan/institusi/dokumen/file/permohonan') ?>" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i>Lihat Surat</a>
+                        <?php else: ?><span class="text-muted small">Belum diunggah</span><?php endif; ?>
+                    </div>
+                </div>
+                <?php if (!empty($profile['file_lainnya'])): ?>
+                <div class="row">
+                    <div class="col-sm-4 text-muted small">Dokumen Pendukung</div>
+                    <div class="col-sm-8"><a href="<?= base_url('pendidikan/institusi/dokumen/file/lainnya') ?>" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i>Lihat Dokumen</a></div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -77,7 +93,7 @@
 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="<?= base_url('pendidikan/institusi/dashboard/update') ?>" method="POST">
+            <form action="<?= base_url('pendidikan/institusi/dashboard/update') ?>" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">Edit Data Registrasi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -147,16 +163,16 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">MoU / PKS (PDF)</label>
-                            <input type="file" class="form-control" name="file_mou">
+                            <input type="file" class="form-control" name="file_mou" accept=".pdf,application/pdf">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold">Surat Permohonan (PDF)</label>
-                            <input type="file" class="form-control" name="file_permohonan">
+                            <input type="file" class="form-control" name="file_permohonan" accept=".pdf,application/pdf">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Dokumen Pendukung Lainnya</label>
-                        <input type="file" class="form-control" name="file_lainnya">
+                        <input type="file" class="form-control" name="file_lainnya" accept=".pdf,application/pdf">
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -9,7 +9,9 @@
                 <h5 class="modal-title" id="modalGantiPasswordAdminLabel">Ganti Password Admin</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?= base_url('pendidikan/admin/diklat/update_password') ?>" method="post">
+            <form action="<?= base_url(session()->get('role') === 'superadmin' ? 'superadmin/update_password' : 'pendidikan/admin/diklat/update_password') ?>" method="post">
+                <?php $adminCsrf = \App\Filters\PendidikanAdminCsrfFilter::security(); ?>
+                <input type="hidden" name="<?= esc($adminCsrf->getTokenName(), 'attr') ?>" value="<?= esc($adminCsrf->getHash(), 'attr') ?>">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="old_password" class="form-label">Password Lama</label>
@@ -37,6 +39,50 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function showAdminDiklatNotification(icon, title, text) {
+            return Swal.fire({
+                icon: icon,
+                title: title,
+                text: text,
+                confirmButtonColor: '#c62828'
+            });
+        }
+
+        function confirmAdminDiklat(title, text) {
+            return Swal.fire({
+                icon: 'question',
+                title: title,
+                text: text,
+                showCancelButton: true,
+                confirmButtonText: 'Ya, lanjutkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#c62828',
+                cancelButtonColor: '#6c757d'
+            });
+        }
+
+        function confirmDeleteAdminDiklat(title, text) {
+            return Swal.fire({
+                icon: 'warning',
+                title: title,
+                text: text,
+                showCancelButton: true,
+                confirmButtonText: 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#c62828',
+                cancelButtonColor: '#6c757d'
+            });
+        }
+
+        function reloadAdminDiklatAfterModal(selector, message) {
+            $(selector).modal('hide');
+            showAdminDiklatNotification('success', 'Berhasil', message || 'Data berhasil diperbarui.').then(function() {
+                location.reload();
+            });
+        }
+    </script>
     
     <script>
         $(document).ready(function() {
@@ -48,7 +94,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
-                    text: '<?= session()->getFlashdata('success') ?>',
+                    text: <?= json_encode(session()->getFlashdata('success'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
                 });
             <?php endif; ?>
 
@@ -56,7 +102,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
-                    text: '<?= session()->getFlashdata('error') ?>',
+                    text: <?= json_encode(session()->getFlashdata('error'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
                 });
             <?php endif; ?>
         });

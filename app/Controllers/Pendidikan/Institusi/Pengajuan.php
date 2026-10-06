@@ -31,10 +31,20 @@ class Pengajuan extends BaseController
     {
         $sessionData = session()->get();
         if (!isset($sessionData['institusi_id'])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Sesi berakhir. Silakan login kembali.', 'redirect' => base_url('pendidikan/login')]);
+            }
             return redirect()->to('pendidikan/login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $institusi_id = $sessionData['institusi_id'];
+
+        if ($validationError = $this->validatePengajuanInput(true)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(422)->setJSON(['success' => false] + $validationError);
+            }
+            return redirect()->back()->withInput()->with('error', $validationError['message']);
+        }
 
         $pengajuanModel = new \App\Models\PengajuanPraktikPendidikanModel();
         $mahasiswaModel = new \App\Models\MahasiswaPendidikanModel();
@@ -203,7 +213,12 @@ class Pengajuan extends BaseController
             }
         }
 
-        return redirect()->to('pendidikan/institusi/pengajuan/status')->with('success', 'Pengajuan berhasil dikirim dan sedang menunggu verifikasi.');
+        $statusUrl = base_url('pendidikan/institusi/pengajuan/status');
+        if ($this->request->isAJAX()) {
+            session()->setFlashdata('success', 'Pengajuan berhasil dikirim dan sedang menunggu verifikasi.');
+            return $this->response->setJSON(['success' => true, 'redirect' => $statusUrl]);
+        }
+        return redirect()->to($statusUrl)->with('success', 'Pengajuan berhasil dikirim dan sedang menunggu verifikasi.');
     }
 
     public function status()
@@ -291,6 +306,7 @@ class Pengajuan extends BaseController
             'file_kompetensi' => $pengajuan['file_kompetensi'],
             'file_sk_pembimbing' => $pengajuan['file_sk_pembimbing'],
             'file_bukti_bayar' => $pengajuan['file_bukti_bayar'],
+            'file_dokumen_penilaian' => $pengajuan['file_dokumen_penilaian'] ?? null,
             'mahasiswa' => $mahasiswa
         ];
 
@@ -366,6 +382,7 @@ class Pengajuan extends BaseController
             'file_kompetensi' => $pengajuan['file_kompetensi'],
             'file_sk_pembimbing' => $pengajuan['file_sk_pembimbing'],
             'file_bukti_bayar' => $pengajuan['file_bukti_bayar'],
+            'file_dokumen_penilaian' => $pengajuan['file_dokumen_penilaian'] ?? null,
             'mahasiswa' => $mahasiswa
         ];
 
@@ -381,6 +398,9 @@ class Pengajuan extends BaseController
     {
         $sessionData = session()->get();
         if (!isset($sessionData['institusi_id'])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Sesi berakhir. Silakan login kembali.', 'redirect' => base_url('pendidikan/login')]);
+            }
             return redirect()->to('pendidikan/login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
@@ -390,7 +410,17 @@ class Pengajuan extends BaseController
         $pengajuan = $pengajuanModel->where('id', $id)->where('institusi_id', $institusi_id)->first();
 
         if (!$pengajuan) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(404)->setJSON(['success' => false, 'message' => 'Data pengajuan tidak ditemukan.', 'redirect' => base_url('pendidikan/institusi/pengajuan/status')]);
+            }
             return redirect()->to('/pendidikan/institusi/pengajuan/status')->with('error', 'Data pengajuan tidak ditemukan.');
+        }
+
+        if ($validationError = $this->validatePengajuanInput(false)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(422)->setJSON(['success' => false] + $validationError);
+            }
+            return redirect()->back()->withInput()->with('error', $validationError['message']);
         }
 
         $mahasiswaModel = new \App\Models\MahasiswaPendidikanModel();
@@ -552,7 +582,12 @@ class Pengajuan extends BaseController
             }
         }
 
-        return redirect()->to('pendidikan/institusi/pengajuan/status')->with('success', 'Pengajuan berhasil diperbarui dan sedang menunggu verifikasi ulang.');
+        $statusUrl = base_url('pendidikan/institusi/pengajuan/status');
+        if ($this->request->isAJAX()) {
+            session()->setFlashdata('success', 'Pengajuan berhasil diperbarui dan sedang menunggu verifikasi ulang.');
+            return $this->response->setJSON(['success' => true, 'redirect' => $statusUrl]);
+        }
+        return redirect()->to($statusUrl)->with('success', 'Pengajuan berhasil diperbarui dan sedang menunggu verifikasi ulang.');
     }
 
     public function mahasiswa()
@@ -573,6 +608,7 @@ class Pengajuan extends BaseController
             mahasiswa_pendidikan.payment_status,
             mahasiswa_pendidikan.nominal,
             mahasiswa_pendidikan.invoice_file,
+            mahasiswa_pendidikan.file_bukti_bayar,
             mahasiswa_pendidikan.alasan_penolakan,
             mahasiswa_pendidikan.jenis_kelamin,
             mahasiswa_pendidikan.semester,
@@ -607,6 +643,7 @@ class Pengajuan extends BaseController
                 'payment_status' => $row['payment_status'] ?? 'Belum Invoice',
                 'nominal' => $row['nominal'] ?? 0,
                 'invoice_file' => $row['invoice_file'],
+                'file_bukti_bayar' => $row['file_bukti_bayar'] ?? null,
                 'alasan_penolakan' => $row['alasan_penolakan'] ?? null,
                 'jk' => $row['jenis_kelamin'],
                 'semester' => $row['semester'],
@@ -686,14 +723,27 @@ class Pengajuan extends BaseController
                 return $this->response->setJSON(['success' => false, 'message' => 'Data mahasiswa tidak ditemukan.']);
             }
 
+            $nama = trim((string) $this->request->getPost('nama_lengkap'));
+            $nim = trim((string) $this->request->getPost('nim'));
+            $tanggalLahir = (string) $this->request->getPost('tanggal_lahir');
+            $noHp = trim((string) $this->request->getPost('no_hp'));
+            $email = trim((string) $this->request->getPost('email'));
+            $semester = $this->request->getPost('semester');
+            if (!$this->isPersonName($nama) || !preg_match('/^[A-Za-z0-9.\/-]{3,30}$/', $nim) || !$this->isValidDate($tanggalLahir) || $tanggalLahir >= date('Y-m-d') || !in_array($this->request->getPost('jenis_kelamin'), ['L', 'P'], true) || !filter_var($semester, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 20]]) || ($noHp !== '' && !$this->isPhone($noHp)) || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$this->isText($this->request->getPost('program_studi'), 150) || !filter_var($this->request->getPost('id_profesi'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Data mahasiswa tidak valid.']);
+            }
+            foreach (['file_foto' => ['image/jpeg', 'image/png'], 'file_ijazah' => ['application/pdf'], 'file_sk' => ['application/pdf']] as $field => $mimes) {
+                if ($error = $this->validateFile($field, $mimes, false)) return $this->response->setJSON(['success' => false, 'message' => $error]);
+            }
+
             $dataUpdate = [
-                'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-                'nim' => $this->request->getPost('nim'),
-                'tanggal_lahir' => $this->request->getPost('tanggal_lahir') ?: null,
+                'nama_lengkap' => $nama,
+                'nim' => $nim,
+                'tanggal_lahir' => $tanggalLahir,
                 'jenis_kelamin' => $this->request->getPost('jenis_kelamin'),
-                'semester' => $this->request->getPost('semester') ?: null,
-                'no_hp' => $this->request->getPost('no_hp') ?: null,
-                'email' => $this->request->getPost('email') ?: null,
+                'semester' => $semester,
+                'no_hp' => $noHp ?: null,
+                'email' => $email,
                 'program_studi' => $this->request->getPost('program_studi') ?: null,
                 'id_profesi' => $this->request->getPost('id_profesi') ?: null,
             ];
@@ -753,8 +803,15 @@ class Pengajuan extends BaseController
             if (!$mahasiswa_id || $nilai_akhir === null) {
                 return $this->response->setJSON(['success' => false, 'message' => 'ID Mahasiswa dan Nilai Akhir wajib diisi.']);
             }
+            if (!is_string($nilai_akhir) || !preg_match('/^[0-9]+(?:,[0-9]+)?$/D', $nilai_akhir)) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Nilai akhir hanya boleh berisi angka dan satu koma desimal, misalnya 90 atau 90,5.']);
+            }
+            $nilai_akhir = str_replace(',', '.', $nilai_akhir);
+            if ($nilai_akhir < 0 || $nilai_akhir > 100) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Nilai akhir harus berupa angka antara 0 hingga 100.']);
+            }
 
-            $mahasiswaModel = new \App\Models\MahasiswaPendidikanModel();
+            $mahasiswaModel = model(\App\Models\MahasiswaPendidikanModel::class);
             $mahasiswa = $mahasiswaModel->where('id', $mahasiswa_id)->where('institusi_id', $institusi_id)->first();
 
             if (!$mahasiswa) {
@@ -851,6 +908,41 @@ class Pengajuan extends BaseController
         $dompdf->stream($filename . ".pdf", ["Attachment" => false]);
     }
 
+    public function unduh_bukti_bayar($id)
+    {
+        $institusiId = session()->get('institusi_id');
+        if (!$institusiId) {
+            return $this->response->setStatusCode(401)->setJSON(['message' => 'Silakan login terlebih dahulu.']);
+        }
+
+        $mahasiswa = model(\App\Models\MahasiswaPendidikanModel::class)
+            ->where('id', $id)
+            ->where('institusi_id', $institusiId)
+            ->first();
+        if (!$mahasiswa) {
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'Mahasiswa tidak ditemukan.']);
+        }
+        if (($mahasiswa['payment_status'] ?? '') !== 'Lunas') {
+            return $this->response->setStatusCode(403)->setJSON(['message' => 'Bukti pembayaran dapat diunduh setelah pembayaran diverifikasi dan lunas.']);
+        }
+
+        $filename = $mahasiswa['file_bukti_bayar'] ?? '';
+        if (!$filename || basename($filename) !== $filename || strpos($filename, '\\') !== false) {
+            return $this->response->setStatusCode(404)->setJSON(['message' => 'Bukti pembayaran tidak ditemukan.']);
+        }
+
+        foreach (['uploads/dokumen_mahasiswa/', 'uploads/bukti_bayar/'] as $folder) {
+            $directory = realpath(FCPATH . $folder);
+            $path = realpath(FCPATH . $folder . $filename);
+            if ($directory && $path && is_file($path) && is_readable($path)
+                && strncmp($path, $directory . DIRECTORY_SEPARATOR, strlen($directory . DIRECTORY_SEPARATOR)) === 0) {
+                return $this->response->download($path, null, true);
+            }
+        }
+
+        return $this->response->setStatusCode(404)->setJSON(['message' => 'File bukti pembayaran tidak ditemukan.']);
+    }
+
     public function submit_payment()
     {
         $sessionData = session()->get();
@@ -876,6 +968,9 @@ class Pengajuan extends BaseController
         if (!$file_bukti || !$file_bukti->isValid() || $file_bukti->hasMoved()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengunggah file bukti pembayaran.']);
         }
+        if (!in_array($file_bukti->getMimeType(), ['application/pdf', 'image/jpeg', 'image/png'], true) || $file_bukti->getSize() > 2 * 1024 * 1024) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Bukti pembayaran harus berupa PDF/JPG/PNG dengan ukuran maksimal 2 MB.']);
+        }
 
         $uploadPath = FCPATH . 'uploads/dokumen_mahasiswa/';
         if (!is_dir($uploadPath)) mkdir($uploadPath, 0777, true);
@@ -890,5 +985,101 @@ class Pengajuan extends BaseController
         ]);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Bukti Pembayaran berhasil diunggah! Pembayaran sedang diverifikasi.']);
+    }
+
+    private function validatePengajuanInput(bool $isNew): ?array
+    {
+        $program = (string) $this->request->getPost('jenis_program');
+        $allowedPrograms = ['Akademik', 'Spesialis (Residen)', 'Profesi (D1)', 'Koas', 'Magang'];
+        if (!in_array($program, $allowedPrograms, true)) return ['field' => 'jenis_program', 'message' => 'Pilih jenis program yang valid.'];
+
+        $start = (string) $this->request->getPost('tgl_mulai');
+        $end = (string) $this->request->getPost('tgl_selesai');
+        if (!$this->isValidDate($start)) return ['field' => 'tgl_mulai', 'message' => 'Tanggal mulai tidak valid.'];
+        if (!$this->isValidDate($end) || $end < $start) return ['field' => 'tgl_selesai', 'message' => 'Tanggal selesai harus valid dan tidak lebih awal dari tanggal mulai.'];
+        if (!filter_var($this->request->getPost('profesi_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) return ['field' => 'profesi_id', 'message' => 'Profesi wajib dipilih.'];
+        if (!$this->isText($this->request->getPost('prodi_asal'), 150)) return ['field' => 'prodi_asal', 'message' => 'Program studi wajib diisi, maksimal 150 karakter.'];
+        if (!$this->isPersonName($this->request->getPost('nama_pj'))) return ['field' => 'nama_pj', 'message' => 'Nama penanggung jawab harus berisi 2–150 karakter berupa huruf dan tanda baca nama.'];
+        if (!$this->isPhone($this->request->getPost('hp_pj'))) return ['field' => 'hp_pj', 'message' => 'Nomor HP penanggung jawab harus berisi 8–20 digit angka.'];
+
+        $fields = ['mhs_nama', 'mhs_nim', 'mhs_tgl_lahir', 'mhs_jk', 'mhs_semester', 'mhs_hp', 'mhs_email'];
+        $data = [];
+        foreach ($fields as $field) {
+            $data[$field] = $this->request->getPost($field);
+            if (!is_array($data[$field])) return ['field' => $field . '[0]', 'message' => 'Data mahasiswa tidak lengkap.'];
+        }
+        $count = count($data['mhs_nama']);
+        if ($count < 1 || $count > 200) return ['field' => 'mhs_nama[0]', 'message' => 'Jumlah mahasiswa harus antara 1 hingga 200.'];
+        foreach ($fields as $field) if (count($data[$field]) !== $count) return ['field' => $field . '[0]', 'message' => 'Data mahasiswa tidak lengkap.'];
+        for ($i = 0; $i < $count; $i++) {
+            $number = $i + 1;
+            if (!$this->isPersonName($data['mhs_nama'][$i])) return ['field' => "mhs_nama[$i]", 'message' => "Nama mahasiswa ke-$number harus berisi 2–150 karakter berupa huruf dan tanda baca nama."];
+            if (!preg_match('/^[A-Za-z0-9.\/-]{3,30}$/', (string) $data['mhs_nim'][$i])) return ['field' => "mhs_nim[$i]", 'message' => "NIM mahasiswa ke-$number harus berisi 3–30 karakter: huruf, angka, titik, garis miring, atau tanda hubung."];
+            if (!$this->isValidDate((string) $data['mhs_tgl_lahir'][$i]) || $data['mhs_tgl_lahir'][$i] >= date('Y-m-d')) return ['field' => "mhs_tgl_lahir[$i]", 'message' => "Tanggal lahir mahasiswa ke-$number harus valid dan sebelum hari ini."];
+            if (!in_array($data['mhs_jk'][$i], ['L', 'P'], true)) return ['field' => "mhs_jk[$i]", 'message' => "Jenis kelamin mahasiswa ke-$number tidak valid."];
+            if ($data['mhs_semester'][$i] !== '' && !filter_var($data['mhs_semester'][$i], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 20]])) return ['field' => "mhs_semester[$i]", 'message' => "Semester mahasiswa ke-$number harus berupa angka 1–20."];
+            if ($data['mhs_hp'][$i] !== '' && !$this->isPhone($data['mhs_hp'][$i])) return ['field' => "mhs_hp[$i]", 'message' => "Nomor HP mahasiswa ke-$number harus berisi 8–20 digit angka."];
+            if (!filter_var($data['mhs_email'][$i], FILTER_VALIDATE_EMAIL)) return ['field' => "mhs_email[$i]", 'message' => "Email mahasiswa ke-$number tidak valid."];
+            foreach (['mhs_foto_' . $number => ['image/jpeg', 'image/png'], 'mhs_ijazah_' . $number => ['application/pdf'], 'mhs_sk_' . $number => ['application/pdf']] as $field => $mimes) {
+                if ($error = $this->validateFile($field, $mimes, $isNew)) return ['field' => $field, 'message' => "Berkas mahasiswa ke-$number: $error"];
+            }
+        }
+        $documents = [
+            'doc_proposal' => ['application/pdf'], 'doc_pengantar' => ['application/pdf'], 'doc_logbook' => ['application/pdf'],
+            'doc_panduan' => ['application/pdf'], 'doc_daftar_mhs' => ['application/pdf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            'doc_kompetensi' => ['application/pdf'], 'doc_penilaian' => ['application/pdf'],
+            'doc_sk_pembimbing' => ['application/pdf'], 'doc_bukti_bayar' => ['application/pdf', 'image/jpeg', 'image/png'],
+        ];
+        foreach ($documents as $field => $mimes) {
+            $required = $isNew && !in_array($field, ['doc_sk_pembimbing', 'doc_bukti_bayar'], true);
+            if ($error = $this->validateFile($field, $mimes, $required)) return ['field' => $field, 'message' => $error];
+        }
+        return null;
+    }
+
+    private function validateFile(string $field, array $allowedMimes, bool $required): ?string
+    {
+        $labels = [
+            'mhs_foto' => 'Pas Foto', 'mhs_ijazah' => 'Ijazah Terakhir', 'mhs_sk' => 'Surat Keterangan Aktif',
+            'file_foto' => 'Pas Foto', 'file_ijazah' => 'Ijazah Terakhir', 'file_sk' => 'Surat Keterangan Aktif',
+            'doc_proposal' => 'Proposal', 'doc_pengantar' => 'Surat Pengantar', 'doc_logbook' => 'Log Book',
+            'doc_panduan' => 'Buku Panduan', 'doc_daftar_mhs' => 'Daftar Nama Mahasiswa',
+            'doc_kompetensi' => 'Surat Level Kompetensi', 'doc_penilaian' => 'Dokumen Penilaian',
+            'doc_sk_pembimbing' => 'SK Pembimbing', 'doc_bukti_bayar' => 'Bukti Pembayaran Batch',
+        ];
+        $label = $labels[preg_replace('/_\d+$/', '', $field)] ?? $field;
+        $mimeNames = [
+            'image/jpeg' => 'JPG', 'image/png' => 'PNG', 'application/pdf' => 'PDF',
+            'application/vnd.ms-excel' => 'XLS',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'XLSX',
+        ];
+        $formats = implode('/', array_map(static fn($mime) => $mimeNames[$mime] ?? $mime, $allowedMimes));
+        $file = $this->request->getFile($field);
+        if (!$file || $file->getError() === UPLOAD_ERR_NO_FILE) return $required ? $label . ' wajib diunggah.' : null;
+        if (!$file->isValid() || $file->hasMoved()) return $label . ' gagal diunggah. Pilih ulang file dan coba lagi.';
+        if (!in_array($file->getMimeType(), $allowedMimes, true)) return $label . ' harus berformat ' . $formats . '.';
+        if ($file->getSize() > 2 * 1024 * 1024) return $label . ' maksimal 2 MB.';
+        return null;
+    }
+
+    private function isPersonName($value): bool
+    {
+        return is_string($value) && preg_match("/^[\\p{L}][\\p{L}\\s.,'-]{1,149}$/u", trim($value));
+    }
+
+    private function isText($value, int $max): bool
+    {
+        return is_string($value) && trim($value) !== '' && mb_strlen(trim($value)) <= $max;
+    }
+
+    private function isPhone($value): bool
+    {
+        return is_string($value) && preg_match('/^[0-9]{8,20}$/D', trim($value));
+    }
+
+    private function isValidDate(string $date): bool
+    {
+        $parsed = \DateTime::createFromFormat('Y-m-d', $date);
+        return $parsed && $parsed->format('Y-m-d') === $date;
     }
 }

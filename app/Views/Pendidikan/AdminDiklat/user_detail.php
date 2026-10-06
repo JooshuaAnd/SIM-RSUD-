@@ -13,8 +13,8 @@
             <i class="fas fa-building fa-2x"></i>
         </div>
         <div>
-            <h5 class="fw-bold mb-1"><?= $institusi['nama_institusi'] ?? '-' ?></h5>
-            <small class="text-muted"><?= $institusi['tipe_institusi'] ?? 'Institusi' ?></small>
+            <h5 class="fw-bold mb-1"><?= esc($institusi['nama_institusi'] ?? '-') ?></h5>
+            <small class="text-muted"><?= esc($institusi['tipe_institusi'] ?? 'Institusi') ?></small>
         </div>
     </div>
 </div>
@@ -28,7 +28,7 @@
                     <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
                         <i class="fas fa-user-md text-muted"></i>
                     </div>
-                    <h6 class="fw-bold mb-0"><?= $prof ?></h6>
+                    <h6 class="fw-bold mb-0"><?= esc($prof) ?></h6>
                 </div>
                 <small class="text-muted">
                     <?php

@@ -3,6 +3,20 @@
  * Stase Management Module for Diklat Admin
  */
 ?>
+const confirmPendidikanDelete = async (title, text) => {
+    const result = await Swal.fire({
+        icon: 'warning',
+        title,
+        text,
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#c62828',
+        cancelButtonColor: '#6c757d',
+    });
+    return result.isConfirmed;
+};
+
 const StaseModule = ({ ciList, showToast, onViewDetail, editingStaseFromDetail, onClearEditStase }) => {
     const [staseList, setStaseList] = useState([]);
     const [profesiList, setProfesiList] = useState([]);
@@ -119,7 +133,7 @@ const StaseModule = ({ ciList, showToast, onViewDetail, editingStaseFromDetail, 
     };
 
     const handleDelete = async (stase) => {
-        if (!confirm(`Hapus stase "${stase.nama_stase}"?`)) return;
+        if (!(await confirmPendidikanDelete('Hapus Stase?', `Stase "${stase.nama_stase}" akan dihapus permanen dan tidak dapat dikembalikan.`))) return;
 
         try {
             const res = await fetch(`/pendidikan/admin/diklat/api/stase/delete/${stase.id}`, { method: 'POST' });
@@ -500,7 +514,6 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
     const [selectedMhsIds, setSelectedMhsIds] = useState([]);
     const [isLoadingMhs, setIsLoadingMhs] = useState(false);
     const [searchMhsTerm, setSearchMhsTerm] = useState('');
-    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     const fetchCiList = useCallback(async () => {
         try {
@@ -571,7 +584,7 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
     };
 
     const handleRemoveCi = async () => {
-        if (!confirm(`Lepaskan CI dari stase "${stase.nama_stase}"?`)) return;
+        if (!(await confirmPendidikanDelete('Lepaskan CI?', `CI akan dilepaskan dari stase "${stase.nama_stase}".`))) return;
         try {
             const res = await fetch(`/pendidikan/admin/diklat/api/stase/remove-ci/${stase.id}`, {
                 method: 'POST',
@@ -614,7 +627,7 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
     };
 
     const handleRemoveMahasiswa = async (penempatanId, nama) => {
-        if (!confirm(`Keluarkan mahasiswa "${nama}" dari stase ini?`)) return;
+        if (!(await confirmPendidikanDelete('Keluarkan Mahasiswa?', `Mahasiswa "${nama}" akan dikeluarkan dari stase ini.`))) return;
         try {
             const res = await fetch(`/pendidikan/admin/diklat/api/stase/remove-mahasiswa/${stase.id}`, {
                 method: 'POST',
@@ -630,6 +643,11 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
         } catch (error) {
             showToast?.('Gagal: ' + error.message, 'error');
         }
+    };
+
+    const handleDeleteStase = async () => {
+        if (!(await confirmPendidikanDelete('Hapus Stase?', `Stase "${stase.nama_stase}" akan dihapus permanen dan tidak dapat dikembalikan.`))) return;
+        onDelete?.(stase);
     };
 
     const toggleMhsSelection = (id) => {
@@ -873,7 +891,7 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsDeleteConfirmOpen(true)}
+                                onClick={handleDeleteStase}
                                 className="flex items-center justify-center gap-2 px-6 py-4 bg-danger/5 text-danger font-bold rounded-2xl hover:bg-danger hover:text-white transition-all border border-danger/10"
                             >
                                 <Icon name="trash-2" size={5} />
@@ -883,64 +901,6 @@ const StaseDetailModal = ({ stase, ciList, unitKerjaOptions, onClose, showToast,
                     </div>
                 )}
 
-            {isDeleteConfirmOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={() => !isDeleting && setIsDeleteConfirmOpen(false)}>
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-in" onClick={e => e.stopPropagation()}>
-                        <div className="px-6 py-5 bg-danger text-white flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/15 rounded-2xl flex items-center justify-center">
-                                    <Icon name="alert-triangle" size={5} className="text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-bold leading-tight">Hapus Stase</h3>
-                                    <p className="text-xs text-white/75 mt-0.5">Tindakan ini tidak dapat dibatalkan</p>
-                                </div>
-                            </div>
-                            <button type="button" onClick={() => !isDeleting && setIsDeleteConfirmOpen(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                                <Icon name="x" size={5} className="text-white" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div className="bg-danger/5 border border-danger/20 p-4 rounded-2xl flex gap-3">
-                                <Icon name="info" className="text-danger mt-1" size={5} />
-                                <div>
-                                    <p className="text-sm font-bold text-slate-700">Apakah Anda yakin ingin menghapus stase ini?</p>
-                                    <div className="mt-3 space-y-1 text-sm text-slate-600">
-                                        <p><span className="font-semibold">Nama:</span> {stase.nama_stase}</p>
-                                        <p><span className="font-semibold">Profesi:</span> {stase.nama_profesi || '-'}</p>
-                                        <p><span className="font-semibold">Ruangan:</span> {stase.ruangan || '-'}</p>
-                                        {assignedMahasiswa.length > 0 && (
-                                            <p className="text-danger font-semibold mt-2">{assignedMahasiswa.length} mahasiswa akan dikeluarkan dari stase ini</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    <div className="p-6 bg-slate-50 flex gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setIsDeleteConfirmOpen(false)}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-white transition-all text-xs"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setIsDeleteConfirmOpen(false);
-                                onDelete?.(stase);
-                            }}
-                            className="flex-1 px-6 py-2.5 bg-danger text-white font-bold rounded-xl hover:bg-danger-dark transition-all text-xs shadow-md shadow-danger/10 flex items-center justify-center gap-1.5"
-                        >
-                            <Icon name="trash-2" size={4} />
-                            Ya, Hapus
-                        </button>
-                    </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 

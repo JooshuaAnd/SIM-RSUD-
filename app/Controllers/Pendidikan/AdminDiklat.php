@@ -54,12 +54,18 @@ class AdminDiklat extends BaseController
         $totalCi = $this->ciModel->countAllResults();
         $totalStase = $this->staseModel->countAllResults();
 
-        $pendingList = $this->institusiModel
-            ->where('status_verifikasi', 'pending')
-            ->orderBy('created_at', 'DESC')
-            ->findAll(5);
+        $pendingList = array_values(array_filter($institusiList, static function ($institusi) {
+            return $institusi['status_verifikasi'] === 'pending'
+                || ($institusi['status_verifikasi'] === 'revision' && !empty($institusi['revisi_dikirim_at']));
+        }));
+        usort($pendingList, static function ($first, $second) {
+            $firstTime = $first['revisi_dikirim_at'] ?? $first['created_at'] ?? '';
+            $secondTime = $second['revisi_dikirim_at'] ?? $second['created_at'] ?? '';
+            return strcmp($secondTime, $firstTime);
+        });
 
         $pendingCount = count($pendingList);
+        $pendingList = array_slice($pendingList, 0, 5);
 
         return view('Pendidikan/AdminDiklat/dashboard', [
             'menu' => 'dashboard',
@@ -106,6 +112,10 @@ class AdminDiklat extends BaseController
         $viewMode = $this->request->getGet('view') ?? 'list';
 
         $allInst = $this->institusiModel->orderBy('created_at', 'DESC')->findAll();
+        foreach ($allInst as &$inst) {
+            $inst['has_submitted_revision'] = $inst['status_verifikasi'] === 'revision' && !empty($inst['revisi_dikirim_at']);
+        }
+        unset($inst);
 
         $statusMap = [
             'inbox' => 'pending',
@@ -118,15 +128,20 @@ class AdminDiklat extends BaseController
             return isset($statusMap[$tab]) && $inst['status_verifikasi'] === $statusMap[$tab];
         });
 
+        $pendingCount = $this->institusiModel->where('status_verifikasi', 'pending')->countAllResults();
+        $submittedRevisionCount = $this->institusiModel->where('status_verifikasi', 'revision')->where('revisi_dikirim_at IS NOT NULL', null, false)->countAllResults();
         $counts = [
-            'inbox' => $this->institusiModel->where('status_verifikasi', 'pending')->countAllResults(),
+            'inbox' => $pendingCount + $submittedRevisionCount,
             'approved' => $this->institusiModel->where('status_verifikasi', 'approved')->countAllResults(),
             'revision' => $this->institusiModel->where('status_verifikasi', 'revision')->countAllResults(),
+            'revision_submitted' => $submittedRevisionCount,
             'declined' => $this->institusiModel->where('status_verifikasi', 'rejected')->countAllResults(),
         ];
 
         if ($tab === 'inbox') {
-            $institusiList = $this->institusiModel->where('status_verifikasi', 'pending')->orderBy('created_at', 'DESC')->findAll();
+            $institusiList = array_values(array_filter($allInst, static function ($inst) {
+                return $inst['status_verifikasi'] === 'pending' || !empty($inst['has_submitted_revision']);
+            }));
         } elseif ($tab === 'approved') {
             $institusiList = $this->institusiModel->where('status_verifikasi', 'approved')->orderBy('created_at', 'DESC')->findAll();
         } elseif ($tab === 'revision') {
@@ -136,6 +151,10 @@ class AdminDiklat extends BaseController
         } else {
             $institusiList = $allInst;
         }
+        foreach ($institusiList as &$inst) {
+            $inst['has_submitted_revision'] = $inst['status_verifikasi'] === 'revision' && !empty($inst['revisi_dikirim_at']);
+        }
+        unset($inst);
 
         return view('Pendidikan/AdminDiklat/institusi', [
             'menu' => 'institusi',
@@ -156,15 +175,17 @@ class AdminDiklat extends BaseController
         if (!$institusi) {
             return redirect()->to(base_url('pendidikan/admin/diklat/institusi'))->with('error', 'Data tidak ditemukan');
         }
+        $institusi['has_submitted_revision'] = $institusi['status_verifikasi'] === 'revision' && !empty($institusi['revisi_dikirim_at']);
 
         $subTab = $this->request->getGet('tab') ?? 'documents';
         $mahasiswaList = $this->mahasiswaModel->where('institusi_id', $id)->findAll();
         $dokumenList = $this->dokumenModel->where('institusi_id', $id)->findAll();
 
-        // Merge file_mou and file_permohonan from institusi_pendidikan into dokumenList
+        // Merge profile documents from institusi_pendidikan into dokumenList
         $fileFields = [
             'file_mou' => 'MOU / Perjanjian Kerja Sama',
             'file_permohonan' => 'Surat Permohonan Praktik',
+            'file_lainnya' => 'Dokumen Tambahan Institusi',
         ];
         foreach ($fileFields as $field => $label) {
             if (!empty($institusi[$field])) {
@@ -172,6 +193,7 @@ class AdminDiklat extends BaseController
                     'id' => null,
                     'institusi_id' => $id,
                     'judul' => $label,
+                    'jenis_file' => substr($field, 5),
                     'nama_file' => $institusi[$field],
                     'original_name' => null,
                     'tipe_file' => 'application/pdf',
@@ -194,7 +216,8 @@ class AdminDiklat extends BaseController
             'file_daftar_mhs' => 'Daftar Mahasiswa',
             'file_kompetensi' => 'Kompetensi',
             'file_sk_pembimbing' => 'SK Pembimbing',
-            'file_bukti_bayar' => 'Bukti Bayar'
+            'file_bukti_bayar' => 'Bukti Bayar',
+            'file_dokumen_penilaian' => 'Dokumen Penilaian',
         ];
         foreach ($pengajuanList as $pengajuan) {
             foreach ($pengajuanDocFields as $field => $label) {
@@ -217,10 +240,13 @@ class AdminDiklat extends BaseController
             }
         }
 
+        $pendingCount = $this->institusiModel->where('status_verifikasi', 'pending')->countAllResults();
+        $submittedRevisionCount = $this->institusiModel->where('status_verifikasi', 'revision')->where('revisi_dikirim_at IS NOT NULL', null, false)->countAllResults();
         $counts = [
-            'inbox' => $this->institusiModel->where('status_verifikasi', 'pending')->countAllResults(),
+            'inbox' => $pendingCount + $submittedRevisionCount,
             'approved' => $this->institusiModel->where('status_verifikasi', 'approved')->countAllResults(),
             'revision' => $this->institusiModel->where('status_verifikasi', 'revision')->countAllResults(),
+            'revision_submitted' => $submittedRevisionCount,
             'declined' => $this->institusiModel->where('status_verifikasi', 'rejected')->countAllResults(),
         ];
 
@@ -493,7 +519,8 @@ class AdminDiklat extends BaseController
         }, $ciList);
 
         $mahasiswaModel = new \App\Models\MahasiswaPendidikanModel();
-        $mahasiswaList = $mahasiswaModel->where('id_profesi', $stase['profesi_id'])->findAll();
+        $mahasiswaList = $mahasiswaModel->where('id_profesi', $stase['profesi_id'])
+            ->whereIn('status', ['Disetujui', 'Aktif', '1'])->findAll();
 
         $overlappingMhsIds = $stase['tanggal_mulai'] && $stase['tanggal_akhir']
             ? $this->getOverlappingMahasiswaIds($stase['id'])
@@ -525,6 +552,7 @@ class AdminDiklat extends BaseController
             ->findAll();
 
         foreach ($institusi as &$inst) {
+            $inst['has_submitted_revision'] = $inst['status_verifikasi'] === 'revision' && !empty($inst['revisi_dikirim_at']);
             $inst['file_mou_url'] = $inst['file_mou']
                 ? base_url('pendidikan/admin/diklat/api/institusi/file/' . $inst['id'] . '/mou')
                 : null;
@@ -553,6 +581,8 @@ class AdminDiklat extends BaseController
                 'message' => 'Data institusi tidak ditemukan'
             ])->setStatusCode(404);
         }
+
+        $institusi['has_submitted_revision'] = $institusi['status_verifikasi'] === 'revision' && !empty($institusi['revisi_dikirim_at']);
 
         $institusi['file_mou_url'] = $institusi['file_mou']
             ? base_url('pendidikan/admin/diklat/api/institusi/file/' . $id . '/mou')
@@ -656,6 +686,7 @@ class AdminDiklat extends BaseController
         $this->institusiModel->update($id, [
             'status_verifikasi' => 'revision',
             'catatan_revisi' => $catatan,
+            'revisi_dikirim_at' => null,
         ]);
 
         return $this->response->setJSON([
@@ -674,21 +705,22 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
-        if ($institusi['status_verifikasi'] !== 'revision') {
+        if ($institusi['status_verifikasi'] !== 'revision' || empty($institusi['revisi_dikirim_at'])) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Status institusi bukan revision'
+                'message' => 'Belum ada revisi institusi yang menunggu peninjauan.'
             ])->setStatusCode(400);
         }
 
         $this->institusiModel->update($id, [
             'status_verifikasi' => 'pending',
             'catatan_revisi' => null,
+            'revisi_dikirim_at' => null,
         ]);
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => 'Institusi dikembalikan ke inbox untuk review ulang'
+            'message' => 'Revisi telah ditinjau. Data institusi dipindahkan ke inbox untuk keputusan admin.'
         ]);
     }
 
@@ -702,7 +734,11 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
-        $kolom = ($jenis === 'mou') ? 'file_mou' : 'file_permohonan';
+        $fieldMap = ['mou' => 'file_mou', 'permohonan' => 'file_permohonan', 'lainnya' => 'file_lainnya'];
+        if (!isset($fieldMap[$jenis])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Jenis dokumen tidak valid'])->setStatusCode(404);
+        }
+        $kolom = $fieldMap[$jenis];
         $namaFile = $institusi[$kolom] ?? null;
 
         if (!$namaFile) {
@@ -1020,10 +1056,17 @@ class AdminDiklat extends BaseController
         $tanggalMulai = $json['tanggal_mulai'] ?? null;
         $tanggalAkhir = $json['tanggal_akhir'] ?? null;
 
-        if ($namaStase === '') {
+        if (!preg_match("/^[\\p{L}0-9][\\p{L}0-9\\s.,'()\/-]{2,149}$/u", $namaStase)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Nama stase wajib diisi'
+            ])->setStatusCode(422);
+        }
+
+        if ($tanggalMulai && $tanggalAkhir && $tanggalAkhir < $tanggalMulai) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Tanggal akhir tidak boleh lebih awal dari tanggal mulai.'
             ])->setStatusCode(422);
         }
 
@@ -1076,10 +1119,17 @@ class AdminDiklat extends BaseController
         $tanggalMulai = $json['tanggal_mulai'] ?? null;
         $tanggalAkhir = $json['tanggal_akhir'] ?? null;
 
-        if ($namaStase === '') {
+        if (!preg_match("/^[\\p{L}0-9][\\p{L}0-9\\s.,'()\/-]{2,149}$/u", $namaStase)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Nama stase wajib diisi'
+            ])->setStatusCode(422);
+        }
+
+        if ($tanggalMulai && $tanggalAkhir && $tanggalAkhir < $tanggalMulai) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Tanggal akhir tidak boleh lebih awal dari tanggal mulai.'
             ])->setStatusCode(422);
         }
 
@@ -1108,16 +1158,28 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
-        $penempatanModel = new PenempatanPesertaPendidikanModel();
-        $usedCount = $penempatanModel->where('stase_id', $id)->countAllResults();
+        $db = \Config\Database::connect();
+        $db->transBegin();
+        $this->lockStaseAssignments($db);
+        $usedCount = $db->table('penempatan_peserta_pendidikan')->where('stase_id', $id)->countAllResults()
+            + $db->table('stase_ruangan_ci_pendidikan')->where('stase_id', $id)->countAllResults()
+            + $db->table('tugas_pendidikan')->where('stase_id', $id)->countAllResults();
+        if ($db->fieldExists('stase_id', 'logbook_pendidikan')) {
+            $usedCount += $db->table('logbook_pendidikan')->where('stase_id', $id)->countAllResults();
+        }
         if ($usedCount > 0) {
+            $db->transRollback();
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Stase tidak dapat dihapus karena sudah dipakai pada penempatan mahasiswa'
+                'message' => 'Stase tidak dapat dihapus karena masih memiliki penempatan, CI, atau riwayat akademik.'
             ])->setStatusCode(409);
         }
 
-        $staseModel->delete($id);
+        if (!$staseModel->delete($id) || !$db->transStatus()) {
+            $db->transRollback();
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal menghapus stase.'])->setStatusCode(500);
+        }
+        $db->transCommit();
 
         return $this->response->setJSON([
             'success' => true,
@@ -1160,7 +1222,19 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
-        $staseModel->update($id, ['ci_id' => $ciId]);
+        $db = \Config\Database::connect();
+        $db->transBegin();
+        $this->lockStaseAssignments($db);
+        $stase = $staseModel->find($id);
+        if ($error = $this->validateStaseAssignment($stase, $ciId, [])) {
+            $db->transRollback();
+            return $this->response->setJSON(['success' => false, 'message' => $error])->setStatusCode(422);
+        }
+        if (!$staseModel->update($id, ['ci_id' => $ciId]) || !$db->transStatus()) {
+            $db->transRollback();
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal menugaskan CI.'])->setStatusCode(500);
+        }
+        $db->transCommit();
 
         return $this->response->setJSON([
             'success' => true,
@@ -1288,6 +1362,94 @@ class AdminDiklat extends BaseController
         return array_unique($overlappingIds);
     }
 
+    private function lockStaseAssignments($db): void
+    {
+        // Semua endpoint penempatan memakai urutan lock yang sama untuk mencegah
+        // dua admin melewati pemeriksaan bentrok dengan data yang sama-sama lama.
+        if (in_array($db->DBDriver, ['MySQLi', 'Postgre'], true)) {
+            $table = $db->protectIdentifiers($db->prefixTable('stase_pendidikan'));
+            $db->query('SELECT id FROM ' . $table . ' ORDER BY id FOR UPDATE');
+        }
+    }
+
+    private function validateStaseAssignment(?array $stase, $ciId, array $mahasiswaIds, $ruanganId = null): ?string
+    {
+        if (!$stase) {
+            return 'Data stase tidak ditemukan.';
+        }
+        if ($ruanganId !== null) {
+            $rooms = array_map('trim', explode(',', $stase['ruangan'] ?? ''));
+            if (!filter_var($ruanganId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+                || !in_array((string) $ruanganId, $rooms, true)
+                || !$this->unitKerjaModel->find($ruanganId)) {
+                return 'Ruangan tidak terdaftar pada stase ini.';
+            }
+        }
+        if (!empty($mahasiswaIds) && empty($ciId) && $ruanganId !== null) {
+            return 'Pilih CI terlebih dahulu sebelum menyimpan mahasiswa';
+        }
+        if (!empty($ciId) || !empty($mahasiswaIds)) {
+            if (empty($stase['profesi_id']) || !$this->profesiModel->find($stase['profesi_id'])) {
+                return 'Pilih profesi stase yang valid sebelum menempatkan CI atau mahasiswa.';
+            }
+            foreach (['tanggal_mulai', 'tanggal_akhir'] as $field) {
+                $date = $stase[$field] ?? null;
+                $parsed = is_string($date) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
+                if (!$parsed || $parsed->format('Y-m-d') !== $date) {
+                    return 'Lengkapi periode stase yang valid sebelum menempatkan CI atau mahasiswa.';
+                }
+            }
+            if ($stase['tanggal_akhir'] < $stase['tanggal_mulai']) {
+                return 'Tanggal akhir stase tidak boleh lebih awal dari tanggal mulai.';
+            }
+        }
+        if (!empty($ciId)) {
+            if (!filter_var($ciId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
+                return 'CI tidak valid.';
+            }
+            $ci = $this->ciModel->find($ciId);
+            if (!$ci || (int) $ci['id_profesi'] !== (int) $stase['profesi_id']) {
+                return 'CI tidak ditemukan atau profesinya tidak sesuai stase.';
+            }
+            if ($ruanganId !== null && (int) $ci['id_unit_kerja'] !== (int) $ruanganId) {
+                return 'CI tidak bertugas pada ruangan yang dipilih.';
+            }
+            if (!empty($stase['tanggal_mulai']) && !empty($stase['tanggal_akhir'])) {
+                $db = \Config\Database::connect();
+                $mappingCount = $db->table('stase_ruangan_ci_pendidikan m')
+                    ->join('stase_pendidikan s', 's.id = m.stase_id')
+                    ->where('m.ci_id', $ciId)->where('m.stase_id !=', $stase['id'])
+                    ->where('s.tanggal_mulai <=', $stase['tanggal_akhir'])
+                    ->where('s.tanggal_akhir >=', $stase['tanggal_mulai'])->countAllResults();
+                $directCount = $db->table('stase_pendidikan')->where('ci_id', $ciId)
+                    ->where('id !=', $stase['id'])
+                    ->where('tanggal_mulai <=', $stase['tanggal_akhir'])
+                    ->where('tanggal_akhir >=', $stase['tanggal_mulai'])->countAllResults();
+                if ($mappingCount + $directCount > 0) {
+                    return 'Periode CI bertabrakan dengan stase lain.';
+                }
+            }
+        } elseif ($ciId !== null && $ciId !== '' && $ciId !== 0 && $ciId !== '0') {
+            return 'CI tidak valid.';
+        }
+        foreach ($mahasiswaIds as $mahasiswaId) {
+            if (!filter_var($mahasiswaId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])) {
+                return 'ID mahasiswa tidak valid.';
+            }
+            $mahasiswa = $this->mahasiswaModel->find($mahasiswaId);
+            if (!$mahasiswa || (int) $mahasiswa['id_profesi'] !== (int) $stase['profesi_id']) {
+                return 'Mahasiswa tidak ditemukan atau profesinya tidak sesuai stase.';
+            }
+            if (!in_array($mahasiswa['status'], ['Disetujui', 'Aktif', '1'], true)) {
+                return 'Hanya mahasiswa yang telah disetujui dan masih aktif yang dapat ditempatkan.';
+            }
+        }
+        if (!empty($mahasiswaIds) && !empty($this->getOverlappingMahasiswaIds($stase['id'], $mahasiswaIds))) {
+            return 'Periode mahasiswa bertabrakan dengan stase lain.';
+        }
+        return null;
+    }
+
     public function staseAvailableMahasiswa()
     {
         $staseId = $this->request->getGet('stase_id');
@@ -1341,6 +1503,17 @@ class AdminDiklat extends BaseController
 
         $stase = $staseModel->find($id);
         $mahasiswaIds = $json['mahasiswa_ids'];
+        if (!is_array($mahasiswaIds)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Daftar mahasiswa tidak valid.'])->setStatusCode(422);
+        }
+        $db = \Config\Database::connect();
+        $db->transBegin();
+        $this->lockStaseAssignments($db);
+        $stase = $staseModel->find($id);
+        if ($error = $this->validateStaseAssignment($stase, null, $mahasiswaIds)) {
+            $db->transRollback();
+            return $this->response->setJSON(['success' => false, 'message' => $error])->setStatusCode(422);
+        }
         $penempatanModel = new PenempatanPesertaPendidikanModel();
         $added = 0;
         $skipped = [];
@@ -1374,6 +1547,11 @@ class AdminDiklat extends BaseController
             $msg .= ". " . count($skipped) . " mahasiswa dilewati karena periode stase bertabrakan.";
         }
 
+        if (!$db->transStatus()) {
+            $db->transRollback();
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal menyimpan penempatan.'])->setStatusCode(500);
+        }
+        $db->transCommit();
         return $this->response->setJSON([
             'success' => true,
             'message' => $msg
@@ -1487,6 +1665,13 @@ class AdminDiklat extends BaseController
             ])->setStatusCode(404);
         }
 
+        if (($mahasiswa['payment_status'] ?? '') === 'Lunas') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Pembayaran sudah lunas. Invoice dan nominal tidak dapat diubah.'
+            ])->setStatusCode(409);
+        }
+
         $file = $this->request->getFile('invoice_file');
         $nominal = $this->request->getPost('nominal');
 
@@ -1499,10 +1684,10 @@ class AdminDiklat extends BaseController
                 ])->setStatusCode(422);
             }
             if (!$file->hasMoved()) {
-                if ($file->getMimeType() !== 'application/pdf') {
+                if ($file->getMimeType() !== 'application/pdf' || $file->getSize() > 2 * 1024 * 1024) {
                     return $this->response->setJSON([
                         'success' => false,
-                        'message' => 'File harus berupa PDF'
+                        'message' => 'File harus berupa PDF dengan ukuran maksimal 2 MB'
                     ])->setStatusCode(422);
                 }
                 $uploadPath = FCPATH . 'uploads/invoices';
@@ -1523,8 +1708,10 @@ class AdminDiklat extends BaseController
         }
 
         if ($nominal !== null && $nominal !== '') {
-            $cleanNominal = preg_replace('/[^0-9]/', '', $nominal);
-            $data['nominal'] = $cleanNominal ?: 0;
+            if (!preg_match('/^[0-9]+$/', (string) $nominal) || (int) $nominal < 0) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Nominal harus berupa angka nol atau lebih.'])->setStatusCode(422);
+            }
+            $data['nominal'] = (int) $nominal;
         }
 
         if (empty($data)) {
@@ -1590,14 +1777,61 @@ class AdminDiklat extends BaseController
         $json = $this->request->getJSON(true);
         $status = $json['status'] ?? '';
 
-        if (!in_array($status, ['Lunas', 'Belum Bayar', 'Menunggu Verifikasi'])) {
+        if (!in_array($status, ['Lunas', 'Belum Bayar', 'Menunggu Verifikasi', 'Ditolak'], true)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Status tidak valid'
             ])->setStatusCode(422);
         }
 
-        $mahasiswaModel->update($id, ['payment_status' => $status]);
+        if ($status === 'Lunas') {
+            $hasUploadedFile = static function ($filename, array $directories): bool {
+                if (!is_string($filename) || trim($filename) === ''
+                    || strpbrk($filename, "/\\\0") !== false) {
+                    return false;
+                }
+                foreach ($directories as $directory) {
+                    $root = realpath($directory);
+                    $path = realpath($directory . $filename);
+                    if ($root !== false && $path !== false
+                        && str_starts_with($path, $root . DIRECTORY_SEPARATOR)
+                        && is_file($path) && is_readable($path)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            if (!$hasUploadedFile($mahasiswa['invoice_file'] ?? null, [FCPATH . 'uploads/invoices/'])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak dapat dilunaskan karena invoice belum tersedia di server.',
+                ])->setStatusCode(422);
+            }
+            if (!$hasUploadedFile($mahasiswa['file_bukti_bayar'] ?? null, [
+                FCPATH . 'uploads/dokumen_mahasiswa/', FCPATH . 'uploads/bukti_bayar/',
+            ])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak dapat dilunaskan karena bukti pembayaran belum tersedia di server.',
+                ])->setStatusCode(422);
+            }
+        }
+
+        $data = ['payment_status' => $status];
+        if ($status === 'Ditolak') {
+            $alasan = $json['alasan_penolakan'] ?? '';
+            if (!is_string($alasan) || trim($alasan) === '') {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Alasan penolakan harus diisi!'
+                ])->setStatusCode(422);
+            }
+            $data['alasan_penolakan'] = trim($alasan);
+        } elseif ($status === 'Lunas') {
+            $data['alasan_penolakan'] = null;
+        }
+
+        $mahasiswaModel->update($id, $data);
 
         return $this->response->setJSON([
             'success' => true,
@@ -1610,77 +1844,69 @@ class AdminDiklat extends BaseController
     public function staseSaveRoomMapping($id)
     {
         $input = $this->request->getJSON();
-        if (!$input || (!isset($input->ruangan_id) && !isset($input->mappings))) {
+        if (!is_object($input) || (!isset($input->ruangan_id) && !isset($input->mappings))) {
             return $this->response->setJSON(['success' => false, 'status' => 'error', 'message' => 'Invalid data'])->setStatusCode(400);
         }
-
+        $singleRoom = isset($input->ruangan_id);
+        if ($singleRoom && (!is_int($input->ruangan_id) && !is_string($input->ruangan_id))) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ruangan tidak valid.'])->setStatusCode(422);
+        }
+        $rows = $singleRoom ? [$input->ruangan_id => $input] : ($input->mappings ?? null);
+        if (!is_array($rows) && !is_object($rows)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Mapping tidak valid.'])->setStatusCode(422);
+        }
         $mappingModel = new \App\Models\StaseRuanganCiModel();
-
         $db = \Config\Database::connect();
-        $db->transStart();
-
-        $hasMahasiswa = !empty($input->mahasiswa_ids);
-        $hasCi = !empty($input->ci_id);
-
-        if ($hasMahasiswa && !$hasCi) {
-            $db->transRollback();
-            return $this->response->setJSON([
-                'success' => false,
-                'status' => 'error',
-                'message' => 'Pilih CI terlebih dahulu sebelum menyimpan mahasiswa'
-            ])->setStatusCode(422);
-        }
-
-        if (isset($input->ruangan_id)) {
-            $mappingModel->where('stase_id', $id)->where('ruangan_id', $input->ruangan_id)->delete();
-
-            $ciId = $hasCi ? $input->ci_id : null;
-            $mhsIds = $hasMahasiswa ? json_encode($input->mahasiswa_ids) : null;
-
-            if ($ciId || $mhsIds) {
-                $mappingModel->insert([
-                    'stase_id' => $id,
-                    'ruangan_id' => $input->ruangan_id,
-                    'ci_id' => $ciId,
-                    'mahasiswa_ids' => $mhsIds,
-                ]);
+        $db->transBegin();
+        try {
+            $this->lockStaseAssignments($db);
+            $stase = $this->staseModel->find($id);
+            if (!$stase) {
+                $db->transRollback();
+                return $this->response->setJSON(['success' => false, 'message' => 'Data stase tidak ditemukan.'])->setStatusCode(404);
             }
-        } else {
-            $mappingModel->where('stase_id', $id)->delete();
-
-            foreach ($input->mappings as $ruanganId => $data) {
-                $hasMhs = !empty($data->mahasiswa_ids);
-                $hasC = !empty($data->ci_id);
-
-                if ($hasMhs && !$hasC) {
+            $validatedRows = [];
+            foreach ($rows as $ruanganId => $row) {
+                if (!is_object($row) || !is_array($row->mahasiswa_ids ?? [])) {
                     $db->transRollback();
-                    return $this->response->setJSON([
-                        'success' => false,
-                        'status' => 'error',
-                        'message' => "Ruangan $ruanganId: pilih CI terlebih dahulu sebelum menyimpan mahasiswa"
-                    ])->setStatusCode(422);
+                    return $this->response->setJSON(['success' => false, 'message' => 'Daftar mahasiswa tidak valid.'])->setStatusCode(422);
                 }
-
-                $ciId = $hasC ? $data->ci_id : null;
-                $mhsIds = $hasMhs ? json_encode($data->mahasiswa_ids) : null;
-
-                if ($ciId || $mhsIds) {
-                    $mappingModel->insert([
+                $ciId = $row->ci_id ?? null;
+                $mahasiswaIds = $row->mahasiswa_ids ?? [];
+                if ($error = $this->validateStaseAssignment($stase, $ciId, $mahasiswaIds, $ruanganId)) {
+                    $db->transRollback();
+                    return $this->response->setJSON(['success' => false, 'status' => 'error', 'message' => $error])->setStatusCode(422);
+                }
+                if (!empty($ciId)) {
+                    $validatedRows[] = [
                         'stase_id' => $id,
-                        'ruangan_id' => $ruanganId,
-                        'ci_id' => $ciId,
-                        'mahasiswa_ids' => $mhsIds,
-                    ]);
+                        'ruangan_id' => (int) $ruanganId,
+                        'ci_id' => (int) $ciId,
+                        'mahasiswa_ids' => empty($mahasiswaIds) ? null : json_encode(array_values(array_unique(array_map('intval', $mahasiswaIds)))),
+                    ];
                 }
             }
-        }
-
-        $db->transComplete();
-
-        if ($db->transStatus() === false) {
+            $mappingModel->where('stase_id', $id);
+            if ($singleRoom) {
+                $mappingModel->where('ruangan_id', $input->ruangan_id);
+            }
+            if (!$mappingModel->delete()) {
+                throw new \RuntimeException('Gagal mengganti mapping.');
+            }
+            foreach ($validatedRows as $row) {
+                if (!$mappingModel->insert($row)) {
+                    throw new \RuntimeException('Gagal menyimpan mapping.');
+                }
+            }
+            if (!$db->transStatus()) {
+                throw new \RuntimeException('Transaksi mapping gagal.');
+            }
+            $db->transCommit();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Gagal menyimpan mapping stase: {message}', ['message' => $e->getMessage()]);
             return $this->response->setJSON(['success' => false, 'status' => 'error', 'message' => 'Gagal menyimpan mapping'])->setStatusCode(500);
         }
-
         return $this->response->setJSON(['success' => true, 'status' => 'success', 'message' => 'Mapping berhasil disimpan']);
     }
 
@@ -1770,11 +1996,45 @@ class AdminDiklat extends BaseController
         $email = trim($input->email ?? '');
         $password = $input->password ?? '';
 
-        if (empty($email)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Email wajib diisi'])->setStatusCode(400);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Format email tidak valid'])->setStatusCode(400);
         }
         if (strlen($password) < 6) {
             return $this->response->setJSON(['success' => false, 'message' => 'Password minimal 6 karakter'])->setStatusCode(400);
+        }
+
+        if (isset($data['nama_lengkap']) && !preg_match("/^[\\p{L}][\\p{L}\\s.,'-]{1,149}$/u", trim((string) $data['nama_lengkap']))) return $this->response->setJSON(['success' => false, 'message' => 'Nama mahasiswa tidak valid.'])->setStatusCode(422);
+        if (isset($data['nim']) && !preg_match('/^[A-Za-z0-9.\/-]{3,30}$/', trim((string) $data['nim']))) return $this->response->setJSON(['success' => false, 'message' => 'NIM tidak valid.'])->setStatusCode(422);
+        if (isset($data['no_hp']) && $data['no_hp'] !== '' && !preg_match('/^[0-9]{8,20}$/D', trim((string) $data['no_hp']))) return $this->response->setJSON(['success' => false, 'message' => 'Nomor HP hanya boleh berisi angka.'])->setStatusCode(422);
+        if (isset($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) return $this->response->setJSON(['success' => false, 'message' => 'Format email tidak valid.'])->setStatusCode(422);
+        if (isset($data['semester']) && (!filter_var($data['semester'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 20]]))) return $this->response->setJSON(['success' => false, 'message' => 'Semester harus antara 1 hingga 20.'])->setStatusCode(422);
+        if (isset($data['jenis_kelamin']) && !in_array($data['jenis_kelamin'], ['L', 'P'], true)) return $this->response->setJSON(['success' => false, 'message' => 'Jenis kelamin tidak valid.'])->setStatusCode(422);
+        if (isset($data['tanggal_lahir'])) {
+            $date = \DateTime::createFromFormat('Y-m-d', (string) $data['tanggal_lahir']);
+            if (!$date || $date->format('Y-m-d') !== $data['tanggal_lahir'] || $data['tanggal_lahir'] >= date('Y-m-d')) return $this->response->setJSON(['success' => false, 'message' => 'Tanggal lahir tidak valid.'])->setStatusCode(422);
+        }
+        if (isset($data['status']) && !in_array($data['status'], ['Menunggu', 'Disetujui', 'Aktif', 'Ditolak', 'Lulus'], true)) return $this->response->setJSON(['success' => false, 'message' => 'Status mahasiswa tidak valid.'])->setStatusCode(422);
+
+        $nip = trim((string) ($input->nip ?? ''));
+        $nomorTelepon = trim((string) ($input->nomor_telepon ?? $input->contact ?? ''));
+        $namaLengkap = trim((string) ($input->nama_lengkap ?? $input->name ?? ''));
+
+        if (!preg_match("/^[\\p{L}][\\p{L}\\s.,'-]{1,149}$/u", $namaLengkap)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nama CI tidak valid.'])->setStatusCode(422);
+        }
+
+        if (!preg_match('/^[0-9]{18}$/D', $nip)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'NIP harus tepat 18 digit dan hanya boleh berisi angka.'
+            ])->setStatusCode(422);
+        }
+
+        if ($nomorTelepon !== '' && !preg_match('/^[0-9]+$/D', $nomorTelepon)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nomor telepon hanya boleh berisi angka.'
+            ])->setStatusCode(422);
         }
 
         // Check email unique
@@ -1802,11 +2062,11 @@ class AdminDiklat extends BaseController
 
             $ciData = [
                 'user_id' => $userId,
-                'nama_lengkap' => $input->nama_lengkap ?? $input->name ?? '',
-                'nip' => $input->nip ?? '',
+                'nama_lengkap' => $namaLengkap,
+                'nip' => $nip,
                 'id_profesi' => $input->id_profesi ?? null,
                 'id_unit_kerja' => $input->id_unit_kerja ?? null,
-                'nomor_telepon' => $input->nomor_telepon ?? $input->contact ?? '',
+                'nomor_telepon' => $nomorTelepon,
                 'email' => $email,
             ];
 
@@ -1889,25 +2149,56 @@ class AdminDiklat extends BaseController
             return $this->response->setJSON(['message' => 'Data tidak ditemukan'])->setStatusCode(404);
         }
 
+        if (property_exists($input, 'nip')) {
+            $nip = trim((string) $input->nip);
+            if (!preg_match('/^[0-9]{18}$/D', $nip)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'NIP harus tepat 18 digit dan hanya boleh berisi angka.'
+                ])->setStatusCode(422);
+            }
+        }
+
+        if (property_exists($input, 'nama_lengkap') || property_exists($input, 'name')) {
+            $namaLengkap = trim((string) ($input->nama_lengkap ?? $input->name));
+            if (!preg_match("/^[\\p{L}][\\p{L}\\s.,'-]{1,149}$/u", $namaLengkap)) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Nama CI tidak valid.'])->setStatusCode(422);
+            }
+        }
+        if (property_exists($input, 'email') && trim((string) $input->email) !== '' && !filter_var($input->email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Format email tidak valid.'])->setStatusCode(422);
+        }
+
+        $teleponProperty = property_exists($input, 'nomor_telepon')
+            ? 'nomor_telepon'
+            : (property_exists($input, 'contact') ? 'contact' : null);
+        if ($teleponProperty !== null) {
+            $nomorTelepon = trim((string) $input->{$teleponProperty});
+            if ($nomorTelepon !== '' && !preg_match('/^[0-9]+$/D', $nomorTelepon)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Nomor telepon hanya boleh berisi angka.'
+                ])->setStatusCode(422);
+            }
+        }
+
         $db = \Config\Database::connect();
         $db->transBegin();
 
         try {
             $updateData = [];
             if (isset($input->nama_lengkap))
-                $updateData['nama_lengkap'] = $input->nama_lengkap;
+                $updateData['nama_lengkap'] = $namaLengkap;
             else if (isset($input->name))
-                $updateData['nama_lengkap'] = $input->name;
+                $updateData['nama_lengkap'] = $namaLengkap;
             if (property_exists($input, 'id_profesi'))
                 $updateData['id_profesi'] = $input->id_profesi ?: null;
-            if (isset($input->nip))
-                $updateData['nip'] = $input->nip;
+            if (isset($nip))
+                $updateData['nip'] = $nip;
             if (property_exists($input, 'id_unit_kerja'))
                 $updateData['id_unit_kerja'] = $input->id_unit_kerja ?: null;
-            if (isset($input->nomor_telepon))
-                $updateData['nomor_telepon'] = $input->nomor_telepon;
-            else if (isset($input->contact))
-                $updateData['nomor_telepon'] = $input->contact;
+            if (isset($nomorTelepon))
+                $updateData['nomor_telepon'] = $nomorTelepon;
             if (!empty($input->email))
                 $updateData['email'] = $input->email;
 
@@ -1943,9 +2234,42 @@ class AdminDiklat extends BaseController
         if (!$existing) {
             return $this->response->setJSON(['message' => 'Data tidak ditemukan'])->setStatusCode(404);
         }
-        $this->ciModel->delete($id);
+        $db = \Config\Database::connect();
+        $db->transBegin();
+        try {
+            $this->lockStaseAssignments($db);
+            $usedCount = $db->table('stase_pendidikan')->where('ci_id', $id)->countAllResults()
+                + $db->table('stase_ruangan_ci_pendidikan')->where('ci_id', $id)->countAllResults()
+                + $db->table('tugas_pendidikan')->where('ci_id', $id)->countAllResults();
+            if ($usedCount > 0) {
+                $db->transRollback();
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'CI tidak dapat dihapus karena masih memiliki penugasan atau riwayat tugas akademik.'
+                ])->setStatusCode(409);
+            }
+            $userId = $existing['user_id'] ?? null;
+            if ($userId && (
+                $db->table('ci_pendidikan')->where('user_id', $userId)->where('id !=', $id)->countAllResults()
+                + $db->table('mahasiswa_pendidikan')->where('user_id', $userId)->countAllResults()
+                + $db->table('institusi_pendidikan')->where('user_id', $userId)->countAllResults() > 0
+            )) {
+                $db->transRollback();
+                return $this->response->setJSON(['success' => false, 'message' => 'Akun CI masih terhubung dengan profil lain.'])->setStatusCode(409);
+            }
+            if (!$this->ciModel->delete($id)
+                || ($userId && !$this->usersModel->delete($userId)) || !$db->transStatus()) {
+                throw new \RuntimeException('Transaksi penghapusan CI gagal.');
+            }
+            $db->transCommit();
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Gagal menghapus CI: {message}', ['message' => $e->getMessage()]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Gagal menghapus CI.'])->setStatusCode(500);
+        }
 
         return $this->response->setJSON([
+            'success' => true,
             'status' => 200,
             'message' => 'Data CI berhasil dihapus!',
         ]);

@@ -20,13 +20,58 @@ class SuperAdmin extends BaseController
         ]);
     }
 
+    public function update_password()
+    {
+        $userId = session()->get('user_id');
+        $oldPassword = $this->request->getPost('old_password');
+        $newPassword = $this->request->getPost('new_password');
+        $confirmPassword = $this->request->getPost('confirm_password');
+
+        if ($newPassword !== $confirmPassword) {
+            return redirect()->back()->with('error', 'Konfirmasi password baru tidak cocok.');
+        }
+
+        if (strlen((string) $newPassword) < 6) {
+            return redirect()->back()->with('error', 'Password baru minimal 6 karakter.');
+        }
+
+        $userModel = new \App\Models\UserPendidikanModel();
+        $user = $userModel->find($userId);
+
+        if (!$user || !password_verify((string) $oldPassword, $user['password'])) {
+            return redirect()->back()->with('error', 'Password lama salah.');
+        }
+
+        $userModel->update($userId, [
+            'password' => password_hash((string) $newPassword, PASSWORD_DEFAULT),
+        ]);
+
+        return redirect()->back()->with('success', 'Password Super Admin berhasil diubah.');
+    }
+
     public function create_admin()
     {
-        $tipeAdmin = $this->request->getPost('tipe_admin');
-        $nik = $this->request->getPost('nik');
-        $namaLengkap = $this->request->getPost('nama_lengkap');
+        $tipeAdmin = trim((string) $this->request->getPost('tipe_admin'));
+        $nik = trim((string) $this->request->getPost('nik'));
+        $namaLengkap = trim((string) $this->request->getPost('nama_lengkap'));
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
+
+        if (in_array($tipeAdmin, ['pelatihan', 'admin_pengabdian'], true)
+            && !preg_match('/^\d{16}$/', $nik)) {
+            return redirect()->back()->with(
+                'error',
+                'NIK harus tepat 16 digit dan hanya boleh berisi angka.'
+            );
+        }
+
+        if (in_array($tipeAdmin, ['riset', 'pelatihan', 'admin_pengabdian'], true)
+            && !preg_match('/^\p{L}+(?:[ \p{L}]+)*$/u', $namaLengkap)) {
+            return redirect()->back()->with(
+                'error',
+                'Nama lengkap hanya boleh berisi huruf dan spasi.'
+            );
+        }
 
         $db = \Config\Database::connect();
 

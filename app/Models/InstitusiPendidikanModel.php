@@ -30,6 +30,7 @@ class InstitusiPendidikanModel extends Model
         'status_verifikasi',
         'status_pembayaran',
         'catatan_revisi',
+        'revisi_dikirim_at',
         'alasan_penolakan',
     ];
 

@@ -41,7 +41,7 @@
                             <tr>
                                 <th class="ps-4">No. Pengajuan</th>
                                 <th>Periode</th>
-                                <th class="text-center">Jml Mahasiswa</th>
+                                <th class="text-center">Jumlah Mahasiswa</th>
                                 <th>Tgl Pengajuan</th>
                                 <th>Status Pengajuan</th>
                                 <th class="text-center pe-4">Aksi</th>
@@ -107,7 +107,7 @@
                             <tr>
                                 <th class="ps-4">No. Pengajuan</th>
                                 <th>Periode</th>
-                                <th class="text-center">Jml Mahasiswa</th>
+                                <th class="text-center">Jumlah Mahasiswa</th>
                                 <th>Tgl Pengajuan</th>
                                 <th>Status Pengajuan</th>
                                 <th class="text-center pe-4">Aksi</th>

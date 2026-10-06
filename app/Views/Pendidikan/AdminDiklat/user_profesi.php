@@ -13,8 +13,8 @@
             <i class="fas fa-user-md fa-2x text-muted"></i>
         </div>
         <div>
-            <h5 class="fw-bold mb-1"><?= $profesi ?></h5>
-            <small class="text-muted"><?= $institusi['nama_institusi'] ?? '-' ?></small>
+            <h5 class="fw-bold mb-1"><?= esc($profesi) ?></h5>
+            <small class="text-muted"><?= esc($institusi['nama_institusi'] ?? '-') ?></small>
         </div>
     </div>
 </div>
@@ -39,12 +39,12 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <span class="fw-bold text-primary"><?= strtoupper(substr($m['nama_lengkap'] ?? '-', 0, 1)) ?></span>
+                                    <span class="fw-bold text-primary"><?= esc(strtoupper(substr($m['nama_lengkap'] ?? '-', 0, 1))) ?></span>
                                 </div>
-                                <span class="fw-semibold"><?= $m['nama_lengkap'] ?? '-' ?></span>
+                                <span class="fw-semibold"><?= esc($m['nama_lengkap'] ?? '-') ?></span>
                             </div>
                         </td>
-                        <td><small><?= $m['nim'] ?? '-' ?></small></td>
+                        <td><small><?= esc($m['nim'] ?? '-') ?></small></td>
                         <td>
                             <?php $mStatus = $m['status'] ?? 'Menunggu'; ?>
                             <?php if (in_array($mStatus, ['Disetujui', 'Aktif', '1'])): ?>

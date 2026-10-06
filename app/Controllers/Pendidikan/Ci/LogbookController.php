@@ -14,6 +14,10 @@ class LogbookController extends BaseCiController
         $status = $json['status_validasi'] ?? 'Disetujui';
         $catatan = trim($json['catatan_ci'] ?? '');
 
+        if (!in_array($status, ['Disetujui', 'Revisi', 'Ditolak'], true)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Status validasi tidak valid']);
+        }
+
         // Verify logbook exists
         $logbook = $this->db->table('logbook_pendidikan')->where('id', $logbookId)->get()->getRowArray();
         if (!$logbook) {

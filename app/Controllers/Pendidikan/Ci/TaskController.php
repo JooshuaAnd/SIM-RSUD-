@@ -20,6 +20,10 @@ class TaskController extends BaseCiController
         if (!$staseId || !$ruanganId || empty($namaTugas) || empty($deadline)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Data tidak lengkap']);
         }
+        $deadlineDate = \DateTime::createFromFormat('Y-m-d\\TH:i', str_replace(' ', 'T', $deadline));
+        if (mb_strlen($namaTugas) > 150 || !$deadlineDate) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nama tugas atau deadline tidak valid']);
+        }
 
         // Verify access
         $this->verifyCiAccess($staseId, $ruanganId);
@@ -53,8 +57,8 @@ class TaskController extends BaseCiController
         $nilai = isset($json['nilai']) ? (int)$json['nilai'] : null;
         $catatan = trim($json['catatan_ci'] ?? '');
 
-        if ($nilai === null) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Nilai wajib diisi']);
+        if ($nilai === null || $nilai < 0 || $nilai > 100) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nilai harus diisi antara 0 hingga 100']);
         }
 
         // Verify submission exists

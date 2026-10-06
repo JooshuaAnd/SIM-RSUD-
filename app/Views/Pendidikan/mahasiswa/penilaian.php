@@ -21,9 +21,9 @@
                         <span class="text-muted small">NIM: <?= $mahasiswa['nim'] ?? '123458' ?></span>
                     </div>
                     <div class="ms-auto">
-                        <button class="btn btn-danger btn-sm fw-bold">
+                        <a href="<?= base_url('pendidikan/mahasiswa/penilaian/download') ?>" class="btn btn-danger btn-sm fw-bold">
                             <i class="fas fa-download me-1"></i> Download Semua Nilai (PDF)
-                        </button>
+                        </a>
                     </div>
                 </div>
 

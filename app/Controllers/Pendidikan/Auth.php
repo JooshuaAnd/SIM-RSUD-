@@ -160,42 +160,103 @@ class Auth extends BaseController
 
     public function processRegister()
     {
-        $password = $this->request->getPost('password');
-        $confirmPassword = $this->request->getPost('confirm_password');
+        $password = (string) $this->request->getPost('password');
+        $confirmPassword = (string) $this->request->getPost('confirm_password');
+        $email = trim((string) $this->request->getPost('email_institusi'));
+        $emailPj = trim((string) $this->request->getPost('email_pj'));
+        $telpInstitusi = trim((string) $this->request->getPost('telp_institusi'));
+        $hpPj = trim((string) $this->request->getPost('hp_pj'));
+        $namaPj = trim((string) $this->request->getPost('nama_pj'));
+        $tglMulaiMou = $this->request->getPost('tgl_mulai_mou') ?: null;
+        $tglSelesaiMou = $this->request->getPost('tgl_selesai_mou') ?: null;
         
         if ($password !== $confirmPassword) {
-            return redirect()->back()->with('error', 'Konfirmasi password tidak cocok!');
+            return redirect()->back()->withInput()->with('error', 'Konfirmasi password tidak cocok!');
         }
 
-        $email = $this->request->getPost('email_institusi');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !filter_var($emailPj, FILTER_VALIDATE_EMAIL)) {
+            return redirect()->back()->withInput()->with('error', 'Email institusi dan email penanggung jawab harus menggunakan format email yang valid.');
+        }
+
+        if (!preg_match('/^[0-9]+$/D', $telpInstitusi) || !preg_match('/^[0-9]+$/D', $hpPj)) {
+            return redirect()->back()->withInput()->with('error', 'Nomor telepon dan nomor HP/WhatsApp hanya boleh berisi angka.');
+        }
+
+        if (!preg_match("/^[\\p{L}][\\p{L}\\s.,'-]*$/u", $namaPj)) {
+            return redirect()->back()->withInput()->with('error', 'Nama penanggung jawab hanya boleh berisi huruf, spasi, titik, koma, apostrof, atau tanda hubung.');
+        }
+
+        if (!$tglMulaiMou || !$tglSelesaiMou) {
+            return redirect()->back()->withInput()->with('error', 'Tanggal mulai dan tanggal selesai MoU wajib diisi.');
+        }
+
+        if ($tglSelesaiMou < $tglMulaiMou) {
+            return redirect()->back()->withInput()->with('error', 'Tanggal selesai MoU tidak boleh lebih awal dari tanggal mulai MoU.');
+        }
         
         // Pengecekan email apakah sudah ada
         $userModel = new \App\Models\UsersPendidikanModel();
         if ($userModel->where('email', $email)->first()) {
-            return redirect()->back()->with('error', 'Email institusi sudah terdaftar!');
+            return redirect()->back()->withInput()->with('error', 'Email institusi sudah terdaftar!');
         }
 
         // Handle File Uploads
         $fileMou = $this->request->getFile('file_mou');
         $filePermohonan = $this->request->getFile('file_permohonan');
+
+        if (!$fileMou || $fileMou->getError() === UPLOAD_ERR_NO_FILE) {
+            return redirect()->back()->withInput()->with('error', 'Dokumen MoU / PKS wajib diunggah.');
+        }
+
+        if (!$filePermohonan || $filePermohonan->getError() === UPLOAD_ERR_NO_FILE) {
+            return redirect()->back()->withInput()->with('error', 'Surat Permohonan Kerja Sama wajib diunggah.');
+        }
+
+        foreach ([
+            'Dokumen MoU / PKS' => $fileMou,
+            'Surat Permohonan Kerja Sama' => $filePermohonan,
+        ] as $label => $file) {
+            if (!$file->isValid() || $file->hasMoved()) {
+                return redirect()->back()->withInput()->with('error', $label . ' tidak dapat diunggah.');
+            }
+
+            if ($file->getMimeType() !== 'application/pdf') {
+                return redirect()->back()->withInput()->with('error', $label . ' harus berupa file PDF.');
+            }
+        }
+
+        $fileLainnya = $this->request->getFile('file_lainnya');
+        if ($fileLainnya && $fileLainnya->getError() !== UPLOAD_ERR_NO_FILE) {
+            if (!$fileLainnya->isValid() || $fileLainnya->hasMoved()) {
+                return redirect()->back()->withInput()->with('error', 'Dokumen pendukung lainnya tidak dapat diunggah.');
+            }
+
+            if ($fileLainnya->getMimeType() !== 'application/pdf') {
+                return redirect()->back()->withInput()->with('error', 'Dokumen pendukung lainnya harus berupa file PDF.');
+            }
+        }
         
+        $uploadPath = WRITEPATH . 'uploads/dokumen_institusi';
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0775, true) && !is_dir($uploadPath)) {
+            return redirect()->back()->withInput()->with('error', 'Folder dokumen tidak dapat disiapkan.');
+        }
+
         $mouName = null;
         if ($fileMou && $fileMou->isValid() && !$fileMou->hasMoved()) {
             $mouName = $fileMou->getRandomName();
-            $fileMou->move(WRITEPATH . 'uploads/dokumen_institusi', $mouName);
+            $fileMou->move($uploadPath, $mouName);
         }
 
         $permohonanName = null;
         if ($filePermohonan && $filePermohonan->isValid() && !$filePermohonan->hasMoved()) {
             $permohonanName = $filePermohonan->getRandomName();
-            $filePermohonan->move(WRITEPATH . 'uploads/dokumen_institusi', $permohonanName);
+            $filePermohonan->move($uploadPath, $permohonanName);
         }
 
         $lainnyaName = null;
-        $fileLainnya = $this->request->getFile('file_lainnya');
         if ($fileLainnya && $fileLainnya->isValid() && !$fileLainnya->hasMoved()) {
             $lainnyaName = $fileLainnya->getRandomName();
-            $fileLainnya->move(WRITEPATH . 'uploads/dokumen_institusi', $lainnyaName);
+            $fileLainnya->move($uploadPath, $lainnyaName);
         }
 
         $db = \Config\Database::connect();
@@ -218,15 +279,15 @@ class Auth extends BaseController
             'nama_institusi'    => $this->request->getPost('nama_institusi'),
             'jenis_institusi'   => $this->request->getPost('jenis_institusi'),
             'alamat'            => $this->request->getPost('alamat_institusi'),
-            'no_telp'           => $this->request->getPost('telp_institusi'),
-            'nama_kontak'       => $this->request->getPost('nama_pj'),
+            'no_telp'           => $telpInstitusi,
+            'nama_kontak'       => $namaPj,
             'jabatan_pj'        => $this->request->getPost('jabatan_pj'),
-            'hp_pj'             => $this->request->getPost('hp_pj'),
-            'email_pj'          => $this->request->getPost('email_pj'),
+            'hp_pj'             => $hpPj,
+            'email_pj'          => $emailPj,
             'file_mou'          => $mouName,
             'file_permohonan'   => $permohonanName,
-            'tgl_mulai_mou'     => $this->request->getPost('tgl_mulai_mou') ?: null,
-            'tgl_selesai_mou'   => $this->request->getPost('tgl_selesai_mou') ?: null,
+            'tgl_mulai_mou'     => $tglMulaiMou,
+            'tgl_selesai_mou'   => $tglSelesaiMou,
             'file_lainnya'      => $lainnyaName,
             'status_verifikasi' => 'pending'
         ];
@@ -235,7 +296,7 @@ class Auth extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat pendaftaran. Silakan coba lagi.');
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat pendaftaran. Silakan coba lagi.');
         }
 
         return redirect()->to('/pendidikan/login')->with('success', 'Registrasi berhasil! Silakan login untuk melihat status verifikasi.');

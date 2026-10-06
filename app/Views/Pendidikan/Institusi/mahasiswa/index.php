@@ -82,7 +82,7 @@
                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 fw-semibold w-100" style="font-size: 0.7rem;">
                                                     <i class="fas fa-check-circle me-1 text-success"></i> Lunas
                                                 </span>
-                                                <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="viewPaymentModalMhs('<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', 'Lunas', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>')" title="Lihat Bukti">
+                                                <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="viewPaymentModalMhs('<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', 'Lunas', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>', <?= (int) $row['id'] ?>, <?= esc(json_encode($row['file_bukti_bayar'] ?? ''), 'attr') ?>)" title="Lihat Bukti">
                                                     <i class="fas fa-file-invoice-dollar me-1"></i> Bukti
                                                 </button>
                                             <?php elseif ($paymentStatus == 'Menunggu Verifikasi') : ?>
@@ -134,7 +134,7 @@
                                                 <i class="fas fa-plus-circle me-1"></i> Input Nilai
                                             </button>
                                         <?php else : ?>
-                                            <button class="btn btn-sm btn-outline-secondary fw-bold opacity-60 px-2" style="cursor: not-allowed;" onclick="alert('Pembayaran belum lunas! Silakan selesaikan biaya administrasi stase mahasiswa ini terlebih dahulu.')" title="Pembayaran Belum Lunas">
+                                            <button class="btn btn-sm btn-outline-secondary fw-bold opacity-60 px-2" style="cursor: not-allowed;" onclick="Swal.fire({icon: 'warning', title: 'Pembayaran belum lunas', text: 'Pembayaran belum lunas! Silakan selesaikan biaya administrasi stase mahasiswa ini terlebih dahulu.'})" title="Pembayaran Belum Lunas">
                                                 <i class="fas fa-lock me-1"></i> Input Nilai
                                             </button>
                                         <?php endif; ?>
@@ -166,7 +166,7 @@
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                             <?php else : ?>
-                                                <button type="button" class="btn btn-sm btn-secondary opacity-50" onclick="alert('Pembayaran belum lunas! Akses lembar penilaian dan sertifikat mahasiswa ini terkunci.'); return false;" title="Pembayaran Belum Lunas (Detail Nilai Terkunci)">
+                                                <button type="button" class="btn btn-sm btn-secondary opacity-50" onclick="Swal.fire({icon: 'warning', title: 'Akses terkunci', text: 'Pembayaran belum lunas! Akses lembar penilaian dan sertifikat mahasiswa ini terkunci.'}); return false;" title="Pembayaran Belum Lunas (Detail Nilai Terkunci)">
                                                     <i class="fas fa-lock"></i>
                                                 </button>
                                             <?php endif; ?>
@@ -205,7 +205,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Nilai Akhir (0-100)</label>
-                        <input type="number" step="0.1" class="form-control form-control-lg text-center fw-bold" placeholder="Contoh: 90.5" required min="0" max="100" id="finalScoreInput">
+                        <input type="text" inputmode="decimal" pattern="[0-9]+(,[0-9]+)?" class="form-control form-control-lg text-center fw-bold" placeholder="Contoh: 90 atau 90,5" required id="finalScoreInput">
                     </div>
                     <div class="alert alert-info small border-0 mb-0">
                         <i class="fas fa-info-circle me-1"></i> Setelah nilai diinput, mahasiswa akan otomatis dipindahkan ke daftar **Mahasiswa Lulus**.
@@ -411,11 +411,12 @@
                     </div>
                 </div>
 
-                <div class="border rounded p-4 mb-3 bg-light d-flex flex-column align-items-center justify-content-center" style="min-height: 200px;">
+                <p id="viewMhsProofUnavailable" class="text-muted small mb-0"></p>
+                <div id="viewMhsProofFile" class="border rounded p-4 mb-3 bg-light d-flex flex-column align-items-center justify-content-center d-none" style="min-height: 200px;">
                     <i class="fas fa-file-pdf text-danger fa-4x mb-3 animate__animated animate__pulse animate__infinite"></i>
-                    <h6 class="fw-bold mb-1 text-dark">bukti_pembayaran_mhs.pdf</h6>
+                    <h6 id="viewMhsProofFilename" class="fw-bold mb-1 text-dark"></h6>
                     <small class="text-muted mb-3">File ini diunggah oleh institusi Anda.</small>
-                    <a href="#" class="btn btn-sm btn-success fw-bold px-4 shadow-sm" onclick="alert('Mengunduh file bukti pembayaran... (Frontend Only)'); return false;">
+                    <a id="viewMhsProofDownload" class="btn btn-sm btn-success fw-bold px-4 shadow-sm">
                         <i class="fas fa-download me-1"></i> Unduh Bukti
                     </a>
                 </div>
@@ -579,7 +580,7 @@ function openPaymentModalMhs(id, name, nim, prodi, nominal, invoice_file, alasan
     } else {
         invoiceLink.href = '#';
         invoiceLink.innerHTML = '<i class="fas fa-file-pdf me-1"></i> Belum ada file';
-        invoiceLink.setAttribute('onclick', 'alert(\'Invoice belum tersedia\'); return false;');
+        invoiceLink.setAttribute('onclick', "Swal.fire({icon: 'info', title: 'Invoice', text: 'Invoice belum tersedia'}); return false;");
         invoiceLink.removeAttribute('target');
     }
 
@@ -601,10 +602,28 @@ function openPaymentModalMhs(id, name, nim, prodi, nominal, invoice_file, alasan
     myModal.show();
 }
 
-function viewPaymentModalMhs(name, nim, prodi, status, nominal, invoice_file) {
+function viewPaymentModalMhs(name, nim, prodi, status, nominal, invoice_file, mahasiswaId = null, buktiFile = '') {
     document.getElementById('viewMhsName').innerText = name;
     document.getElementById('viewMhsNIM').innerText = nim;
     document.getElementById('viewMhsStatus').innerText = status;
+
+    const proofFile = document.getElementById('viewMhsProofFile');
+    const proofFilename = document.getElementById('viewMhsProofFilename');
+    const proofDownload = document.getElementById('viewMhsProofDownload');
+    const proofUnavailable = document.getElementById('viewMhsProofUnavailable');
+    const canDownload = status === 'Lunas' && mahasiswaId && buktiFile;
+    proofFile.classList.toggle('d-none', !canDownload);
+    proofUnavailable.classList.toggle('d-none', !!canDownload);
+    proofFilename.innerText = canDownload ? buktiFile : '';
+    proofDownload.removeAttribute('href');
+    if (canDownload) {
+        proofDownload.href = '<?= base_url('pendidikan/institusi/mahasiswa/bukti-bayar/') ?>' + encodeURIComponent(mahasiswaId);
+        proofUnavailable.innerText = '';
+    } else {
+        proofUnavailable.innerText = status === 'Lunas'
+            ? 'File bukti pembayaran belum tersedia.'
+            : 'Bukti pembayaran dapat diunduh setelah pembayaran diverifikasi admin dan dinyatakan lunas.';
+    }
     
     const badge = document.getElementById('viewMhsBadge');
     if (status === 'Lunas') {
@@ -664,7 +683,7 @@ function submitPaymentMhs(event) {
 }
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Password berhasil disalin!');
+        Swal.fire({icon: 'success', title: 'Berhasil', text: 'Password berhasil disalin!'});
     });
 }
 
@@ -829,6 +848,32 @@ function showLogbook(id, name, nim) {
         });
 }
 
+(function initFinalScoreInput() {
+    const input = document.getElementById('finalScoreInput');
+    let lastValid = input.value;
+    const isAllowed = value => !/[^0-9,]/.test(value) && value.split(',').length <= 2;
+    const insertedValue = text => input.value.slice(0, input.selectionStart)
+        + text + input.value.slice(input.selectionEnd);
+
+    input.addEventListener('beforeinput', event => {
+        if (event.inputType.startsWith('insert') && event.data !== null && !isAllowed(insertedValue(event.data))) {
+            event.preventDefault();
+        }
+    });
+    input.addEventListener('paste', event => {
+        if (!isAllowed(insertedValue(event.clipboardData.getData('text')))) {
+            event.preventDefault();
+        }
+    });
+    input.addEventListener('input', () => {
+        if (isAllowed(input.value)) {
+            lastValid = input.value;
+        } else {
+            input.value = lastValid;
+        }
+    });
+})();
+
 function prepareNilai(id, name, nim) {
     document.getElementById('inputMhsId').value = id;
     document.getElementById('inputName').innerText = name;
@@ -840,6 +885,12 @@ function submitNilaiAkhir(event) {
     const id = document.getElementById('inputMhsId').value;
     const name = document.getElementById('inputName').innerText;
     const score = document.getElementById('finalScoreInput').value;
+
+    if (!/^[0-9]+(,[0-9]+)?$/.test(score) || Number(score.replace(',', '.')) > 100) {
+        Swal.fire('Periksa nilai', 'Nilai akhir harus berupa angka antara 0 hingga 100. Gunakan koma untuk desimal, misalnya 90,5.', 'warning');
+        document.getElementById('finalScoreInput').focus();
+        return false;
+    }
     
     const formData = new FormData();
     formData.append('id', id);
@@ -966,17 +1017,18 @@ function submitEditMhs(event) {
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             modalInstance.hide();
             
-            alert('Berhasil: ' + data.message);
-            window.location.reload();
+            Swal.fire({icon: 'success', title: 'Berhasil', text: 'Berhasil: ' + data.message}).then(() => {
+                window.location.reload();
+            });
         } else {
-            alert('Error: ' + (data.message || 'Terjadi kesalahan.'));
+            Swal.fire({icon: 'error', title: 'Error', text: 'Error: ' + (data.message || 'Terjadi kesalahan.')});
         }
     })
     .catch(error => {
         submitBtn.innerHTML = originalBtnHtml;
         submitBtn.disabled = false;
         console.error('Error:', error);
-        alert('Error: Terjadi kesalahan sistem.\n' + error);
+        Swal.fire({icon: 'error', title: 'Error', text: 'Error: Terjadi kesalahan sistem.\n' + error});
     });
 }
 </script>

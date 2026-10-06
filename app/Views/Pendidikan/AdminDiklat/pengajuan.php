@@ -23,8 +23,8 @@
                     <i class="fas fa-file-alt text-primary fa-lg"></i>
                 </div>
                 <div>
-                    <h6 class="fw-bold mb-0"><?= $detail['pengajuan']['nama_program'] ?? '-' ?></h6>
-                    <small class="text-muted"><?= $detail['pengajuan']['nama_institusi'] ?? '' ?></small>
+                    <h6 class="fw-bold mb-0"><?= esc($detail['pengajuan']['nama_program'] ?? '-') ?></h6>
+                    <small class="text-muted"><?= esc($detail['pengajuan']['nama_institusi'] ?? '') ?></small>
                 </div>
             </div>
             <hr>
@@ -32,13 +32,13 @@
                 <small class="text-muted">Status</small>
                 <?php $status = $detail['pengajuan']['status'] ?? 'Menunggu'; ?>
                 <?php if ($status === 'Disetujui' || $status === 'Selesai'): ?>
-                    <span class="badge badge-disetujui"><?= $status ?></span>
+                    <span class="badge badge-disetujui"><?= esc($status) ?></span>
                 <?php elseif ($status === 'Ditolak'): ?>
-                    <span class="badge badge-ditolak"><?= $status ?></span>
+                    <span class="badge badge-ditolak"><?= esc($status) ?></span>
                 <?php elseif ($status === 'Revisi'): ?>
-                    <span class="badge badge-revisi"><?= $status ?></span>
+                    <span class="badge badge-revisi"><?= esc($status) ?></span>
                 <?php else: ?>
-                    <span class="badge badge-menunggu"><?= $status ?></span>
+                    <span class="badge badge-menunggu"><?= esc($status) ?></span>
                 <?php endif; ?>
             </div>
             <div class="d-flex justify-content-between mb-2">
@@ -59,7 +59,7 @@
             <div>
                 <small class="text-muted d-block mb-1">Catatan Admin:</small>
                 <div class="bg-light rounded p-2">
-                    <small><?= $detail['pengajuan']['catatan_admin'] ?></small>
+                    <small><?= esc($detail['pengajuan']['catatan_admin']) ?></small>
                 </div>
             </div>
             <?php endif; ?>
@@ -98,7 +98,8 @@
                     'file_daftar_mhs' => 'Daftar Mahasiswa',
                     'file_kompetensi' => 'Kompetensi',
                     'file_sk_pembimbing' => 'SK Pembimbing',
-                    'file_bukti_bayar' => 'Bukti Bayar'
+                    'file_bukti_bayar' => 'Bukti Bayar',
+                    'file_dokumen_penilaian' => 'Dokumen Penilaian',
                 ];
                 $hasDocs = false;
                 foreach ($docFields as $field => $label) {
@@ -118,14 +119,14 @@
                             <div class="d-flex align-items-center gap-3 mb-2">
                                 <i class="fas fa-file-pdf fa-2x text-danger"></i>
                                 <div>
-                                    <small class="fw-semibold d-block"><?= $label ?></small>
+                                    <small class="fw-semibold d-block"><?= esc($label) ?></small>
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
-                                <a href="<?= base_url('uploads/dokumen_pengajuan/' . $filename) ?>" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <a href="<?= esc(base_url('uploads/dokumen_pengajuan/' . $filename), 'attr') ?>" target="_blank" class="btn btn-sm btn-outline-primary flex-grow-1">
                                     <i class="fas fa-eye me-1"></i> Lihat
                                 </a>
-                                <a href="<?= base_url('uploads/dokumen_pengajuan/' . $filename) ?>" download class="btn btn-sm btn-outline-secondary">
+                                <a href="<?= esc(base_url('uploads/dokumen_pengajuan/' . $filename), 'attr') ?>" download class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-download"></i>
                                 </a>
                             </div>
@@ -156,10 +157,10 @@
                         <?php if (!empty($mahasiswaData)): ?>
                             <?php foreach ($mahasiswaData as $m): ?>
                             <tr>
-                                <td class="fw-semibold"><?= $m['nama_lengkap'] ?? '-' ?></td>
-                                <td><?= $m['nim'] ?? '-' ?></td>
+                                <td class="fw-semibold"><?= esc($m['nama_lengkap'] ?? '-') ?></td>
+                                <td><?= esc($m['nim'] ?? '-') ?></td>
                                 <td><?= $m['jenis_kelamin'] ?? '-' ?></td>
-                                <td><?= $m['program_studi'] ?? '-' ?></td>
+                                <td><?= esc($m['program_studi'] ?? '-') ?></td>
                                 <td class="text-center">
                                     <?php $mStatus = $m['status'] ?? 'Menunggu'; ?>
                                     <?php if (in_array($mStatus, ['Disetujui', 'Aktif', '1'])): ?>
@@ -235,23 +236,23 @@
                                 <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
                                     <i class="fas fa-building text-primary"></i>
                                 </div>
-                                <span class="fw-semibold"><?= $p['nama_institusi'] ?? '-' ?></span>
+                                <span class="fw-semibold"><?= esc($p['nama_institusi'] ?? '-') ?></span>
                             </div>
                         </td>
-                        <td><span><?= $p['nama_program'] ?? '-' ?></span></td>
+                        <td><span><?= esc($p['nama_program'] ?? '-') ?></span></td>
                         <td><small class="text-muted"><?= date('d/m/Y', strtotime($p['tanggal_mulai'] ?? 'now')) ?></small></td>
                         <td><small class="text-muted"><?= date('d/m/Y', strtotime($p['tanggal_selesai'] ?? 'now')) ?></small></td>
                         <td class="text-center fw-semibold"><?= $p['jumlah_peserta'] ?? $p['jumlah_mahasiswa'] ?? 0 ?></td>
                         <td class="text-center">
                             <?php $status = $p['status'] ?? 'Menunggu'; ?>
                             <?php if ($status === 'Disetujui' || $status === 'Selesai'): ?>
-                                <span class="badge badge-disetujui"><?= $status ?></span>
+                                <span class="badge badge-disetujui"><?= esc($status) ?></span>
                             <?php elseif ($status === 'Ditolak'): ?>
-                                <span class="badge badge-ditolak"><?= $status ?></span>
+                                <span class="badge badge-ditolak"><?= esc($status) ?></span>
                             <?php elseif ($status === 'Revisi'): ?>
-                                <span class="badge badge-revisi"><?= $status ?></span>
+                                <span class="badge badge-revisi"><?= esc($status) ?></span>
                             <?php else: ?>
-                                <span class="badge badge-menunggu"><?= $status ?></span>
+                                <span class="badge badge-menunggu"><?= esc($status) ?></span>
                             <?php endif; ?>
                         </td>
                         <td class="text-center">
@@ -277,13 +278,19 @@
 
 <script>
 function approvePengajuan(id) {
-    if (!confirm('Setujui pengajuan ini?')) return;
-    $.post('<?= base_url('pendidikan/admin/diklat/api/pengajuan/approve') ?>/' + id, function(res) {
-        if (res.success) {
-            location.reload();
+    confirmAdminDiklat('Setujui pengajuan?', 'Pengajuan ini akan disetujui.').then(function(result) {
+    if (!result.isConfirmed) return;
+        $.post('<?= base_url('pendidikan/admin/diklat/api/pengajuan/approve') ?>/' + id, function(res) {
+            if (res.success) {
+            showAdminDiklatNotification('success', 'Berhasil', res.message || 'Pengajuan berhasil disetujui.').then(function() {
+                location.reload();
+            });
         } else {
-            alert(res.message || 'Gagal approve');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal approve');
         }
+        }).fail(function(xhr) {
+            showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
+        });
     });
 }
 
@@ -294,10 +301,12 @@ $('#revisionPengajuanForm').submit(function(e) {
     if (!id) return;
     $.post('<?= base_url('pendidikan/admin/diklat/api/pengajuan/revision') ?>/' + id, data, function(res) {
         if (res.success) {
-            location.reload();
+            reloadAdminDiklatAfterModal('#revisionPengajuanModal');
         } else {
-            alert(res.message || 'Gagal');
+            showAdminDiklatNotification('error', 'Gagal', res.message || 'Gagal');
         }
+    }).fail(function(xhr) {
+        showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
     });
 });
 </script>

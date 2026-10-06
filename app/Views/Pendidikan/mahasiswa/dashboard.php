@@ -59,7 +59,7 @@
                 </div>
                 <div>
                     <h6 class="fw-bold text-danger mb-1"><i class="fas fa-info-circle me-1"></i> Fitur Akademik Terbatas (Administrasi Belum Lunas)</h6>
-                    <p class="text-muted small mb-0">Halaman **Penilaian Stase** saat ini terkunci. Silakan hubungi Institusi asal Anda untuk menyelesaikan pembayaran biaya praktek agar Anda dapat melihat lembar penilaian dan mengunduh sertifikat.</p>
+                    <p class="text-muted small mb-0">Halaman <strong>Penilaian Stase</strong> saat ini terkunci. Silakan hubungi Institusi asal Anda untuk menyelesaikan pembayaran biaya praktek agar Anda dapat melihat lembar penilaian dan mengunduh sertifikat.</p>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@
                 </div>
                 <div>
                     <h6 class="fw-bold text-success mb-1"><i class="fas fa-check-circle me-1"></i> Pembayaran Terverifikasi (Akses Penuh)</h6>
-                    <p class="text-muted small mb-0">Terima kasih, administrasi stase Anda telah lunas. Semua fitur Portal Akademik seperti melihat **Penilaian Stase** dan mengunduh sertifikat telah diaktifkan.</p>
+                    <p class="text-muted small mb-0">Terima kasih, administrasi stase Anda telah lunas. Semua fitur Portal Akademik seperti melihat <strong>Penilaian Stase</strong> dan mengunduh sertifikat telah diaktifkan.</p>
                 </div>
             </div>
         </div>

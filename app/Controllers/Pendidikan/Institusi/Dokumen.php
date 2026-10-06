@@ -109,4 +109,38 @@ class Dokumen extends BaseController
             'data' => $dokumen
         ]);
     }
+
+    public function file($jenis)
+    {
+        $institusiId = session()->get('institusi_id');
+        if (!$institusiId) {
+            return redirect()->to('pendidikan/login')->with('error', 'Sesi institusi tidak valid.');
+        }
+
+        $fieldMap = [
+            'mou' => 'file_mou',
+            'permohonan' => 'file_permohonan',
+            'lainnya' => 'file_lainnya',
+        ];
+        if (!isset($fieldMap[$jenis])) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $institusi = $this->institusiModel->find($institusiId);
+        $namaFile = $institusi[$fieldMap[$jenis]] ?? null;
+        if (!$namaFile) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        foreach ([
+            WRITEPATH . 'uploads/dokumen_institusi/' . $namaFile,
+            FCPATH . 'uploads/institusi/' . $namaFile,
+        ] as $path) {
+            if (is_file($path)) {
+                return $this->response->download($path, null, true)->inline();
+            }
+        }
+
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
 }
