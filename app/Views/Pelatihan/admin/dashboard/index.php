@@ -9,28 +9,32 @@
             'value' => number_format($total_peserta ?? 0),
             'note' => number_format($peserta_bulan_ini ?? 0) . ' baru bulan ini',
             'url' => base_url('pelatihan/admin/akun_peserta'),
-            'accent' => '#ce2127'
+            'accent' => '#ce2127',
+            'soft' => '#fff1f2'
         ],
         [
             'label' => 'Pelatihan Aktif',
             'value' => number_format($total_pelatihan ?? 0),
             'note' => number_format($pelatihan_selesai_hari_ini ?? 0) . ' selesai hari ini',
             'url' => base_url('pelatihan/admin/pelatihan'),
-            'accent' => '#0f172a'
+            'accent' => '#0f172a',
+            'soft' => '#f1f5f9'
         ],
         [
             'label' => 'Sertifikat Masuk',
             'value' => number_format($sertifikat_masuk ?? 0),
             'note' => number_format($sertifikat_pengabdian_masuk ?? 0) . ' pengabdian pending',
             'url' => base_url('pelatihan/admin/sertifikat'),
-            'accent' => '#b45309'
+            'accent' => '#b45309',
+            'soft' => '#fffbeb'
         ],
         [
             'label' => 'Antrean Bayar',
             'value' => number_format($pembayaran_pending ?? 0),
             'note' => 'Butuh validasi admin',
             'url' => base_url('pelatihan/admin/verifikasi_pendaftaran'),
-            'accent' => '#2563eb'
+            'accent' => '#2563eb',
+            'soft' => '#eff6ff'
         ],
     ];
 ?>
@@ -39,7 +43,7 @@
     <div class="row g-3 mb-4">
         <?php foreach ($cards as $card): ?>
             <div class="col-sm-6 col-xl-3">
-                <a href="<?= $card['url'] ?>" class="metric-card text-decoration-none" style="--accent: <?= $card['accent'] ?>;">
+                <a href="<?= $card['url'] ?>" class="metric-card text-decoration-none" style="--accent: <?= $card['accent'] ?>; --accent-soft: <?= $card['soft'] ?>;">
                     <span class="metric-label"><?= esc($card['label']) ?></span>
                     <span class="metric-value"><?= esc($card['value']) ?></span>
                     <span class="metric-note"><?= esc($card['note']) ?></span>
@@ -225,7 +229,7 @@
         min-height: 150px;
         border-radius: 14px;
         padding: 22px;
-        border-left: 6px solid var(--accent);
+        background: linear-gradient(145deg, #ffffff 0%, var(--accent-soft) 170%);
         color: #0f172a;
         transition: transform .2s ease, box-shadow .2s ease;
     }
@@ -234,7 +238,7 @@
         box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
     }
     .metric-label, .metric-note { display: block; font-size: .78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
-    .metric-value { display: block; font-size: 2.3rem; line-height: 1.1; font-weight: 900; color: #0f172a; margin: 12px 0 8px; }
+    .metric-value { display: block; font-size: 2.3rem; line-height: 1.1; font-weight: 900; color: var(--accent); margin: 12px 0 8px; }
     .metric-note { text-transform: none; letter-spacing: 0; color: var(--accent); }
     .panel { border-radius: 14px; padding: 22px; overflow: hidden; }
     .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }

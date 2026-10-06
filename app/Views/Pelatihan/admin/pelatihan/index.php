@@ -52,7 +52,7 @@ function getComputedStatus($p) {
 
 <div class="row mb-4">
     <div class="col-md-12">
-        <div class="card border-0 shadow-sm rounded-custom bg-white overflow-hidden border-top border-danger border-4">
+        <div class="card border-0 shadow-sm rounded-custom bg-white overflow-hidden program-diklat-card">
             <div class="card-body p-0 pt-4">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 w-100" id="tableMasterPelatihan">
@@ -270,11 +270,17 @@ function getComputedStatus($p) {
         var table = $('#tableMasterPelatihan').DataTable({
             pageLength: 10,
             responsive: true,
-            dom: '<"d-flex flex-wrap justify-content-between align-items-center px-4 mb-3"l<"custom-action-btn">>rtip',
+            dom: '<"dataTables-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 px-4 pb-3"l<"custom-action-btn">>rt<"dataTables-footer d-flex flex-wrap justify-content-between align-items-center gap-3 px-4 py-3"ip>',
             language: {
                 emptyTable: "Belum ada data master pelatihan.",
                 info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                paginate: { previous: "‹", next: "›" }
+                infoEmpty: "Tidak ada data untuk ditampilkan",
+                infoFiltered: "(disaring dari _MAX_ data)",
+                lengthMenu: "Tampilkan _MENU_ data",
+                paginate: {
+                    previous: '<i class="fas fa-chevron-left" aria-hidden="true"></i><span class="visually-hidden">Sebelumnya</span>',
+                    next: '<i class="fas fa-chevron-right" aria-hidden="true"></i><span class="visually-hidden">Berikutnya</span>'
+                }
             },
             initComplete: function() {
                 $("div.custom-action-btn").html('<button class="btn btn-register-submit rounded-pill px-4 fw-bold border-0 d-inline-flex align-items-center gap-2" onclick="showModalTambah()"><i class="fas fa-plus-circle small"></i> TAMBAH PELATIHAN BARU</button>');
@@ -636,19 +642,130 @@ function getComputedStatus($p) {
         background-color: #f8fafc !important; 
     }
 
-    /* Override Paginasi DataTables (Merah & Hitam) */
-    .page-item.active .page-link {
-        background-color: #ce2127 !important;
+    /* Toolbar dan footer DataTables */
+    .program-diklat-card .dataTables_wrapper {
+        color: #64748b;
+    }
+    .program-diklat-card .dataTables-toolbar {
+        min-height: 42px;
+    }
+    .program-diklat-card .dataTables_length {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+    .program-diklat-card .dataTables_length label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 0;
+    }
+    .program-diklat-card .dataTables_length select {
+        min-width: 68px;
+        margin: 0 !important;
+        padding: 0.38rem 2rem 0.38rem 0.72rem !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.6rem !important;
+        color: #334155;
+        background-color: #fff;
+        font-size: 0.74rem;
+        font-weight: 700;
+        box-shadow: none !important;
+    }
+    .program-diklat-card .dataTables-footer {
+        min-height: 68px;
+        border-top: 1px solid #eef2f7;
+        background: #fcfdff;
+    }
+    .program-diklat-card .dataTables_info {
+        padding-top: 0 !important;
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .program-diklat-card .dataTables_paginate {
+        padding-top: 0 !important;
+    }
+    .program-diklat-card .dataTables_paginate .pagination {
+        align-items: center;
+        gap: 0.38rem;
+        margin: 0;
+    }
+    .program-diklat-card .dataTables_paginate .paginate_button {
+        margin-left: 0 !important;
+    }
+    .program-diklat-card .dataTables_paginate .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.62rem !important;
+        background: #fff;
+        color: #475569 !important;
+        font-size: 0.74rem;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    .program-diklat-card .dataTables_paginate .page-item:not(.active):not(.disabled) .page-link:hover {
         border-color: #ce2127 !important;
-        color: #fff !important;
-    }
-    .page-link { color: #212529 !important; }
-    .page-link:hover {
+        background: #fff5f5;
         color: #ce2127 !important;
-        background-color: #fff5f5 !important;
-        border-color: #dee2e6 !important;
+        transform: translateY(-1px);
     }
-    .page-link:focus { box-shadow: 0 0 0 0.25rem rgba(206, 33, 39, 0.15) !important; }
+    .program-diklat-card .dataTables_paginate .page-item.active .page-link {
+        border-color: #ce2127 !important;
+        background: #ce2127 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(206, 33, 39, 0.2);
+    }
+    .program-diklat-card .dataTables_paginate .page-item.disabled .page-link {
+        border-color: #edf1f5 !important;
+        background: #f8fafc;
+        color: #cbd5e1 !important;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .program-diklat-card .dataTables_paginate .page-item.previous .page-link,
+    .program-diklat-card .dataTables_paginate .page-item.next .page-link {
+        width: 34px;
+    }
+    .program-diklat-card .dataTables_paginate .page-link:focus {
+        box-shadow: 0 0 0 0.22rem rgba(206, 33, 39, 0.15) !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .program-diklat-card .dataTables-toolbar {
+            align-items: stretch !important;
+        }
+        .program-diklat-card .custom-action-btn,
+        .program-diklat-card .custom-action-btn .btn-register-submit {
+            width: 100%;
+        }
+        .program-diklat-card .custom-action-btn .btn-register-submit {
+            justify-content: center;
+        }
+        .program-diklat-card .dataTables-footer {
+            justify-content: center !important;
+        }
+        .program-diklat-card .dataTables_info,
+        .program-diklat-card .dataTables_paginate {
+            width: 100%;
+            text-align: center;
+        }
+        .program-diklat-card .dataTables_info {
+            white-space: normal;
+        }
+        .program-diklat-card .dataTables_paginate .pagination {
+            justify-content: center;
+        }
+    }
 
     /* Form Input Focus */
     .form-control, .form-select {

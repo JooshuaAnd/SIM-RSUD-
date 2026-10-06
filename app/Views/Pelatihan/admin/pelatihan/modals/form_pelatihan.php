@@ -12,8 +12,16 @@
                 <form id="formPelatihan" method="POST" action="<?= base_url('pelatihan/admin/pelatihan/simpan') ?>" class="needs-validation" enctype="multipart/form-data" novalidate>
                     <?= csrf_field() ?>
                     <input type="hidden" name="id" id="f_id">
-                    <div class="row g-4">
-                        <div class="col-md-12"><h6 class="fw-bold text-danger border-bottom pb-2 text-uppercase small" style="letter-spacing: 1px;">Informasi Dasar Program</h6></div>
+                    <div class="master-diklat-sections">
+                        <section class="master-diklat-section">
+                            <div class="master-diklat-section-heading">
+                                <span class="master-diklat-section-index">01</span>
+                                <div>
+                                    <h6 class="master-diklat-section-title">Informasi Dasar Program</h6>
+                                    <p class="master-diklat-section-description">Identitas, kategori, bobot, dan karakteristik utama diklat.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3 master-diklat-section-grid">
                         
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-dark">NAMA PELATIHAN (JUDUL)</label>
@@ -86,7 +94,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label small fw-bold text-dark">LEVEL</label>
                             <select name="level" id="f_level" class="form-select rounded-pill border shadow-sm px-4">
                                 <option value="Pemula">Pemula</option>
@@ -95,11 +103,11 @@
                             </select>
                         </div>
                         
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label small fw-bold text-dark">JPL</label>
                             <input type="number" name="jpl" id="f_jpl" class="form-control rounded-pill border shadow-sm px-4" placeholder="Contoh: 10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label small fw-bold text-dark">CAKUPAN</label>
                             <select name="cakupan" id="f_cakupan" class="form-select rounded-pill border shadow-sm px-4">
                                 <option value="Lokal">Lokal</option>
@@ -108,7 +116,18 @@
                             </select>
                         </div>
 
-                        <div class="col-md-12 mt-4"><h6 class="fw-bold text-danger border-bottom pb-2 text-uppercase small">Metode & Penyelenggaraan</h6></div>
+                            </div>
+                        </section>
+
+                        <section class="master-diklat-section">
+                            <div class="master-diklat-section-heading">
+                                <span class="master-diklat-section-index">02</span>
+                                <div>
+                                    <h6 class="master-diklat-section-title">Metode &amp; Penyelenggaraan</h6>
+                                    <p class="master-diklat-section-description">Atur mekanisme belajar, narasumber, penyelenggara, dan kontak yang dapat dihubungi.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3 master-diklat-section-grid">
                         
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-dark">MEKANISME</label>
@@ -147,7 +166,7 @@
                                 <option value="Blended / Hybrid">Blended / Hybrid</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label small fw-bold text-dark mb-0">PILIH NARASUMBER</label>
                                 <a href="javascript:void(0)" onclick="showModalTambahNarasumber()" class="text-primary text-decoration-none small" style="font-size: 0.7rem;"><i class="fas fa-plus-circle me-1"></i>Buat Data Baru</a>
@@ -161,7 +180,7 @@
                                 <i class="fas fa-hand-pointer text-primary ms-1 me-1"></i> Klik area kotak di atas untuk mencari dan menambah nama ke daftar.
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label small fw-bold text-dark mb-0">PILIH PENYELENGGARA</label>
                                 <a href="javascript:void(0)" onclick="showModalTambahPenyelenggara()" class="text-primary text-decoration-none small" style="font-size: 0.7rem;"><i class="fas fa-plus-circle me-1"></i>Buat Data Baru</a>
@@ -175,12 +194,23 @@
                                 <i class="fas fa-hand-pointer text-primary ms-1 me-1"></i> Klik area kotak di atas untuk mencari dan menambah nama ke daftar.
                             </div>
                         </div>
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <label class="form-label small fw-bold text-dark">KONTAK PENYEDIA</label>
                             <input type="text" name="kontak" id="f_kontak" class="form-control rounded-pill border shadow-sm px-4" placeholder="No Telp / WA" required>
                         </div>
                         
-                        <div class="col-md-12 mt-4"><h6 class="fw-bold text-danger border-bottom pb-2 text-uppercase small">Jadwal & Kuota</h6></div>
+                            </div>
+                        </section>
+
+                        <section class="master-diklat-section">
+                            <div class="master-diklat-section-heading">
+                                <span class="master-diklat-section-index">03</span>
+                                <div>
+                                    <h6 class="master-diklat-section-title">Jadwal &amp; Kuota</h6>
+                                    <p class="master-diklat-section-description">Tentukan periode pendaftaran, waktu pelaksanaan, kapasitas, dan target profesi.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3 master-diklat-section-grid">
                         
                         <div class="col-md-12">
                             <div class="p-3 bg-white border rounded-lg shadow-sm mb-3">
@@ -253,7 +283,18 @@
                             <div class="invalid-feedback d-block" id="profesi-error" style="display: none;">Harap pilih minimal satu target profesi.</div>
                         </div>
 
-                        <div class="col-md-12 mt-4"><h6 class="fw-bold text-danger border-bottom pb-2 text-uppercase small">Deskripsi & Konten</h6></div>
+                            </div>
+                        </section>
+
+                        <section class="master-diklat-section">
+                            <div class="master-diklat-section-heading">
+                                <span class="master-diklat-section-index">04</span>
+                                <div>
+                                    <h6 class="master-diklat-section-title">Deskripsi &amp; Konten</h6>
+                                    <p class="master-diklat-section-description">Lengkapi informasi yang akan menjadi acuan dan bahan pertimbangan peserta.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3 master-diklat-section-grid">
                         
                         <div class="col-md-12">
                             <label class="form-label small fw-bold text-dark">PENGUMUMAN (OPSIONAL)</label>
@@ -277,6 +318,8 @@
                             <small class="text-muted d-block mt-1 ms-3">Format yang didukung: JPG, JPEG, PNG, WEBP. Maksimal 8MB. Biarkan kosong jika tidak ingin mengubah gambar.</small>
                             <small id="gambar_pelatihan_info" class="text-danger fw-bold d-none mt-1 ms-3"></small>
                         </div>
+                            </div>
+                        </section>
                     </div>
                     <div class="mt-5 text-center">
                         <button type="button" class="btn btn-dark rounded-pill px-5 py-2 fw-bold me-2" data-bs-dismiss="modal">BATAL</button>
@@ -410,6 +453,134 @@
         </div>
     </div>
 </div>
+
+<style>
+    #modalPelatihan .master-diklat-sections {
+        display: grid;
+        gap: 1rem;
+    }
+
+    #modalPelatihan .master-diklat-section {
+        min-width: 0;
+        padding: 1.25rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
+    }
+
+    #modalPelatihan .master-diklat-section-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        min-width: 0;
+        margin-bottom: 1.15rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    #modalPelatihan .master-diklat-section-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 34px;
+        width: 34px;
+        height: 34px;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        background: #fff5f5;
+        color: #ce2127;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+    }
+
+    #modalPelatihan .master-diklat-section-title {
+        margin: 0;
+        color: #1e293b;
+        font-size: 0.86rem;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        line-height: 1.35;
+        text-transform: uppercase;
+    }
+
+    #modalPelatihan .master-diklat-section-description {
+        margin: 0.25rem 0 0;
+        color: #64748b;
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+
+    #modalPelatihan .master-diklat-section-grid > [class*="col-"] {
+        min-width: 0;
+    }
+
+    #modalPelatihan .master-diklat-section .form-label {
+        margin-bottom: 0.45rem;
+        line-height: 1.3;
+    }
+
+    #modalPelatihan .master-diklat-section .form-control,
+    #modalPelatihan .master-diklat-section .form-select {
+        min-height: 44px;
+    }
+
+    #modalPelatihan .master-diklat-section .select2-container {
+        width: 100% !important;
+    }
+
+    #modalPelatihan .master-diklat-section .bg-white.border.rounded-lg {
+        background: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    @media (max-width: 767.98px) {
+        #modalPelatihan .master-diklat-section {
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        #modalPelatihan .master-diklat-section-heading {
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        #modalPelatihan .master-diklat-section-index {
+            flex-basis: 30px;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            font-size: 0.68rem;
+        }
+
+        #modalPelatihan .master-diklat-section-title {
+            font-size: 0.78rem;
+            letter-spacing: 0.55px;
+        }
+
+        #modalPelatihan .master-diklat-section-description {
+            font-size: 0.68rem;
+        }
+    }
+
+    /* Placeholder dibuat lebih ringan agar berbeda jelas dari nilai yang sudah diisi. */
+    #modalPelatihan input::placeholder,
+    #modalPelatihan textarea::placeholder,
+    #modalQuickNarasumber input::placeholder,
+    #modalQuickNarasumber textarea::placeholder,
+    #modalQuickPenyelenggara input::placeholder,
+    #modalQuickPenyelenggara textarea::placeholder {
+        color: #a8b1bd !important;
+        opacity: 1 !important;
+    }
+
+    #modalPelatihan .select2-selection__placeholder,
+    #modalPelatihan .select2-search__field::placeholder {
+        color: #a8b1bd !important;
+        opacity: 1 !important;
+    }
+</style>
 
 <script>
 function showModalTambahNarasumber() {

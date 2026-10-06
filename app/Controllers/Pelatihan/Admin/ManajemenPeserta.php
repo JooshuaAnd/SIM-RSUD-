@@ -1518,11 +1518,43 @@ class ManajemenPeserta extends BaseController
         return $this->response->setJSON(['status' => 'success']);
     }
 
+    private function _getSesiTests(\CodeIgniter\Database\BaseConnection $db, string $pelatihanId): array
+    {
+        $scopedTests = $db->table('ujian_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->whereIn('tipe_evaluasi', ['Pre-Test', 'Post-Test'])
+            ->where('sesi_id IS NOT NULL', null, false)
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+        $legacy = empty($scopedTests);
+        $bySession = [];
+        foreach ($scopedTests as $test) {
+            $type = strtolower(str_replace('-', '_', $test['tipe_evaluasi'] ?? ''));
+            $bySession[(int) $test['sesi_id']][$type] ??= $test;
+        }
+
+        if ($legacy) {
+            $legacyTests = $db->table('ujian_pelatihan')
+                ->where('pelatihan_id', $pelatihanId)
+                ->whereIn('tipe_evaluasi', ['Pre-Test', 'Post-Test'])
+                ->get()->getResultArray();
+            foreach ($legacyTests as $test) {
+                $type = strtolower(str_replace('-', '_', $test['tipe_evaluasi'] ?? ''));
+                $bySession[0][$type] ??= $test;
+            }
+        }
+
+        return ['legacy' => $legacy, 'by_session' => $bySession];
+    }
+
     private function _findPresensiStepId(\CodeIgniter\Database\BaseConnection $db, string $pelatihanId, string $sesiId): ?int
     {
         $stepCounter = 1;
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) $stepCounter++;
+        $examConfiguration = $this->_getSesiTests($db, $pelatihanId);
+        $legacy = $examConfiguration['legacy'];
+        if ($legacy && !empty($examConfiguration['by_session'][0]['pre_test'])) {
+            $stepCounter++;
+        }
 
         $sesi = $db->table('sesi_interaktif_pelatihan')
             ->where('pelatihan_id', $pelatihanId)
@@ -1532,6 +1564,9 @@ class ManajemenPeserta extends BaseController
             ->get()->getResultArray();
 
         foreach ($sesi as $s) {
+            if (!$legacy && !empty($examConfiguration['by_session'][(int) $s['id']]['pre_test'])) {
+                $stepCounter++;
+            }
             if ((int)$s['id'] === (int)$sesiId) {
                 return $stepCounter;
             }
@@ -1540,6 +1575,9 @@ class ManajemenPeserta extends BaseController
             $groupedSegmen = [];
             foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
             $stepCounter += count($groupedSegmen);
+            if (!$legacy && !empty($examConfiguration['by_session'][(int) $s['id']]['post_test'])) {
+                $stepCounter++; // post_test
+            }
             $stepCounter++; // evaluasi_sesi
         }
         return null;
@@ -1548,21 +1586,36 @@ class ManajemenPeserta extends BaseController
     private function _countTotalSteps(\CodeIgniter\Database\BaseConnection $db, string $pelatihanId): int
     {
         $stepCounter = 1;
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) $stepCounter++;
+        $examConfiguration = $this->_getSesiTests($db, $pelatihanId);
+        $legacy = $examConfiguration['legacy'];
+        if ($legacy && !empty($examConfiguration['by_session'][0]['pre_test'])) {
+            $stepCounter++;
+        }
 
-        $sesi = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $pelatihanId)->get()->getResultArray();
+        $sesi = $db->table('sesi_interaktif_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->orderBy('tanggal', 'ASC')
+            ->orderBy('waktu', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
         foreach ($sesi as $s) {
+            if (!$legacy && !empty($examConfiguration['by_session'][(int) $s['id']]['pre_test'])) {
+                $stepCounter++;
+            }
             $stepCounter++; // presensi or sesi
             $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->get()->getResultArray();
             $groupedSegmen = [];
             foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
             $stepCounter += count($groupedSegmen);
+            if (!$legacy && !empty($examConfiguration['by_session'][(int) $s['id']]['post_test'])) {
+                $stepCounter++; // post_test
+            }
             $stepCounter++; // evaluasi_sesi
         }
 
-        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
-        if ($postTest) $stepCounter++;
+        if ($legacy && !empty($examConfiguration['by_session'][0]['post_test'])) {
+            $stepCounter++;
+        }
         $stepCounter++; // evaluasi
         $stepCounter++; // sertifikat
         return $stepCounter - 1;
@@ -1643,6 +1696,21 @@ class ManajemenPeserta extends BaseController
         
         if (empty($pelatihanId) || empty($userIds)) {
             return redirect()->back()->with('error', 'Silakan pilih pelatihan dan peserta.');
+        }
+
+        $db = \Config\Database::connect();
+        $pelatihan = $db->table('master_pelatihan')
+            ->select('id, cert_published')
+            ->where('id', $pelatihanId)
+            ->get()
+            ->getRowArray();
+
+        if (!$pelatihan) {
+            return redirect()->back()->with('error', 'Pelatihan tidak ditemukan.');
+        }
+
+        if ((int) ($pelatihan['cert_published'] ?? 0) === 1) {
+            return redirect()->back()->with('error', 'Peserta tidak dapat ditambahkan karena sertifikat pelatihan sudah diterbitkan. Batalkan penerbitan terlebih dahulu.');
         }
  
         $pesertaModel = new \App\Models\Pelatihan\PesertaPelatihanModel();

@@ -8,6 +8,7 @@ $pelatihan = $pelatihan ?? [];
 $pejabat = $pejabat ?? [];
 $sertifikat = $sertifikat ?? [];
 $templates = $templates ?? [];
+$publishReadiness = $publishReadiness ?? [];
 ?>
 
 <div class="row g-3 align-items-center mb-4">
@@ -75,6 +76,12 @@ $templates = $templates ?? [];
                         </thead>
                         <tbody>
                             <?php foreach ($pelatihan as $p) : ?>
+                            <?php $readiness = $publishReadiness[$p['id']] ?? [
+                                'ready' => true,
+                                'participant_count' => 0,
+                                'completed_participant_count' => 0,
+                                'pending_participant_count' => 0,
+                            ]; ?>
                             <tr>
                                 <td class="ps-4 py-3">
                                     <div class="fw-bold small text-dark"><?= esc($p['nama']) ?></div>
@@ -91,6 +98,11 @@ $templates = $templates ?? [];
                                     <span class="badge <?= ($p['cert_published'] ?? false) ? 'bg-success' : 'bg-secondary' ?> rounded-pill px-3 py-1.5 fw-bold text-white small">
                                         <?= ($p['cert_published'] ?? false) ? 'DITERBITKAN' : 'DRAFT' ?>
                                     </span>
+                                    <?php if (!($p['cert_published'] ?? false) && isset($publishReadiness[$p['id']])): ?>
+                                        <div class="text-muted mt-1" style="font-size: 0.6rem;">
+                                            <?= (int) $readiness['completed_participant_count'] ?> / <?= (int) $readiness['participant_count'] ?> peserta selesai ujian
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="pe-4 text-center">
                                     <div class="d-flex justify-content-center gap-2">
@@ -113,10 +125,15 @@ $templates = $templates ?? [];
                                                             $isValidTemplate = true;
                                                         }
                                                         break; 
-                                                    } 
+                                                    }
                                                 }
                                             ?>
-                                            <?php if ($hasTemplate && $isValidTemplate): ?>
+                                            <?php if (!$readiness['ready']): ?>
+                                            <button class="btn btn-secondary btn-sm rounded-pill px-3 fw-bold shadow-sm text-nowrap" disabled
+                                                    title="<?= (int) $readiness['pending_participant_count'] ?> peserta belum menyelesaikan seluruh ujian.">
+                                                <i class="fas fa-hourglass-half me-1"></i> MENUNGGU UJIAN
+                                            </button>
+                                            <?php elseif ($hasTemplate && $isValidTemplate): ?>
                                             <a href="javascript:void(0)" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm border-0 text-nowrap" style="background-color: #ce2127;" onclick="confirmPublish(<?= $p['id'] ?>, '<?= esc($p['nama'], 'js') ?>')"
                                                title="Terbitkan sertifikat">
                                                 <i class="fas fa-paper-plane me-1"></i> TERBITKAN
@@ -932,7 +949,7 @@ $templates = $templates ?? [];
     function confirmPublish(id, nama) {
         Swal.fire({
             title: '<span class="fw-bold fs-5 d-block mt-2">Terbitkan Sertifikat?</span>',
-            html: `<p class="text-muted fw-bold px-2">Semua e-Sertifikat untuk pelatihan <b>${nama}</b> akan diterbitkan dan JPL peserta yang lulus akan diperbarui.</p>`,
+            html: `<p class="text-muted fw-bold px-2">Semua peserta terdaftar pada pelatihan <b>${nama}</b> telah menyelesaikan seluruh ujian. e-Sertifikat peserta yang lulus akan diterbitkan dan JPL akan diperbarui.</p>`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#ce2127',

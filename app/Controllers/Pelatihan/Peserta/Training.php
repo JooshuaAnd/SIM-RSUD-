@@ -8,13 +8,21 @@ class Training extends BaseController
     {
         $userId = $this->session->get('user_id'); // NIK
         if (!$userId) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $db = \Config\Database::connect();
         
-        $item = $db->table('master_pelatihan')->where('id', $id)->get()->getRowArray();
-        if (!$item) return redirect()->to('/pelatihan/peserta/pembelajaran');
+        $item = $db->table('master_pelatihan')
+            ->where('id', $id)
+            ->where('status !=', 'Batal')
+            ->get()->getRowArray();
+        if (!$item) return redirect()->to('/pelatihan/peserta/pembelajaran')->with('error', 'Pelatihan sudah dibatalkan atau tidak tersedia.');
+
+        if ((int) ($item['cert_published'] ?? 0) === 1) {
+            return redirect()->to('/pelatihan/peserta/detail_pelatihan/' . $id)
+                ->with('error', 'Pendaftaran pelatihan sudah ditutup karena sertifikat telah diterbitkan.');
+        }
 
         $now = date('Y-m-d H:i:s');
         $regBuka = $item['reg_buka_tgl'] . ' ' . ($item['reg_buka_jam'] ?: '00:00:00');
@@ -119,9 +127,16 @@ class Training extends BaseController
             return redirect()->back()->with('error', 'Keamanan: File Bukti Pembayaran tidak valid atau mengandung ekstensi berbahaya.');
         }
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
+        $pelatihan = $db->table('master_pelatihan')
+            ->where('id', $id)
+            ->where('status !=', 'Batal')
+            ->get()->getRowArray();
+        if (!$pelatihan) {
+            return redirect()->to('/pelatihan/peserta/pembelajaran')->with('error', 'Pelatihan sudah dibatalkan atau tidak tersedia.');
+        }
         
         $file = $this->request->getFile('bukti_bayar');
         if ($file && $file->isValid() && !$file->hasMoved()) {
@@ -130,7 +145,6 @@ class Training extends BaseController
             }
             
             $user = $db->table('users_pelatihan')->where('nik', $userId)->get()->getRowArray();
-            $pelatihan = $db->table('master_pelatihan')->where('id', $id)->get()->getRowArray();
             $namaPelatihan = preg_replace('/[^A-Za-z0-9]/', '_', $pelatihan['nama'] ?? 'Pelatihan');
             $namaUser = preg_replace('/[^A-Za-z0-9]/', '_', $user['nama_lengkap'] ?? 'User');
             
@@ -166,12 +180,15 @@ class Training extends BaseController
         helper('pelatihan');
         $userId = $this->session->get('user_id');
         if (!$userId) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $db = \Config\Database::connect();
-        $item = $db->table('master_pelatihan')->where('id', $id)->get()->getRowArray();
-        if (!$item) return redirect()->to('/pelatihan/peserta/pembelajaran');
+        $item = $db->table('master_pelatihan')
+            ->where('id', $id)
+            ->where('status !=', 'Batal')
+            ->get()->getRowArray();
+        if (!$item) return redirect()->to('/pelatihan/peserta/pembelajaran')->with('error', 'Pelatihan sudah dibatalkan atau tidak tersedia.');
 
         $now = date('Y-m-d H:i:s');
         $nowTs = strtotime($now);
@@ -211,59 +228,24 @@ class Training extends BaseController
         $completed_steps = $pesertaRecord ? (json_decode($pesertaRecord['completed_steps'] ?? '[]', true) ?? []) : [];
         $pg = $pesertaRecord ? ['progress' => $pesertaRecord['progress'] ?? 0, 'completed_steps' => $completed_steps] : null;
         
-        $preTestAttempted = false;
-        $postTestAttempts = 0;
-        $preTestScore = 0;
-        $preTestBenar = 0;
-        $preTestSalah = 0;
-        $preTestTotal = 0;
-        $postTestScore = 0;
-        $postTestStatus = 'Tidak Lulus';
-        $postTestBenar = 0;
-        $postTestSalah = 0;
-        $postTestTotal = 0;
-
-        if ($pesertaRecord) {
-            $ptAttempt = $db->table('peserta_ujian_pelatihan')->where('peserta_pelat_id', $pesertaRecord['id'])->where('tipe_ujian', 'pre_test')->get()->getRowArray();
-            if ($ptAttempt) {
-                $preTestAttempted = true;
-                $preTestScore = $ptAttempt['score'];
-                
-                $ptAnswers = $db->table('peserta_jawaban_ujian_pelatihan')->where('peserta_ujian_id', $ptAttempt['id'])->get()->getResultArray();
-                $preTestTotal = count($ptAnswers);
-                foreach ($ptAnswers as $ans) {
-                    if ($ans['is_correct'] == 1) $preTestBenar++;
-                }
-                $preTestSalah = $preTestTotal - $preTestBenar;
-            }
-            $postTestAttempts = $db->table('peserta_ujian_pelatihan')->where('peserta_pelat_id', $pesertaRecord['id'])->where('tipe_ujian', 'post_test')->countAllResults();
-            
-            $ptLastAttempt = $db->table('peserta_ujian_pelatihan')
-                ->where('peserta_pelat_id', $pesertaRecord['id'])
-                ->where('tipe_ujian', 'post_test')
-                ->orderBy('created_at', 'DESC')
-                ->get()->getRowArray();
-            if ($ptLastAttempt) {
-                $postTestScore = $ptLastAttempt['score'];
-                $postTestStatus = $ptLastAttempt['status_lulus'];
-                
-                $ptPostAnswers = $db->table('peserta_jawaban_ujian_pelatihan')->where('peserta_ujian_id', $ptLastAttempt['id'])->get()->getResultArray();
-                $postTestTotal = count($ptPostAnswers);
-                foreach ($ptPostAnswers as $ans) {
-                    if ($ans['is_correct'] == 1) $postTestBenar++;
-                }
-                $postTestSalah = $postTestTotal - $postTestBenar;
-            }
-        }
-
         $konten = [];
         $stepCounter = 1;
-        
         $preTestQuestions = [];
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) {
-            $preTestQuestions = $db->table('ujian_soal_pelatihan')->where('ujian_id', $preTest['id'])->get()->getResultArray();
-            $konten[] = ['id' => $stepCounter++, 'tipe' => 'pre_test', 'judul' => 'Pre-Test', 'soal' => count($preTestQuestions), 'ujian_id' => $preTest['id']];
+        $postTestQuestions = [];
+        $examConfiguration = $this->getExamConfiguration($db, (int) $id);
+        $examDefinitions = $examConfiguration['tests'];
+        $testsBySession = $examConfiguration['by_session'];
+        $usesLegacyExamFlow = $examConfiguration['legacy'];
+        $examStates = [];
+        if ($pesertaRecord) {
+            foreach ($examDefinitions as $examDefinition) {
+                $examStates[(int) $examDefinition['id']] = $this->getExamAttemptState(
+                    $db,
+                    (int) $pesertaRecord['id'],
+                    $examDefinition,
+                    $usesLegacyExamFlow
+                );
+            }
         }
 
         $sesi = $db->table('sesi_interaktif_pelatihan')
@@ -273,6 +255,18 @@ class Training extends BaseController
             ->orderBy('id', 'ASC')
             ->get()
             ->getResultArray();
+
+        $legacyPreTest = $usesLegacyExamFlow ? ($examConfiguration['by_type']['pre_test'][0] ?? null) : null;
+        $legacyPostTest = $usesLegacyExamFlow ? ($examConfiguration['by_type']['post_test'][0] ?? null) : null;
+        if ($legacyPreTest) {
+            $konten[] = [
+                'id' => $stepCounter++,
+                'tipe' => 'pre_test',
+                'judul' => 'Pre-Test',
+                'sesi_id' => null,
+                'ujian_id' => $legacyPreTest['id'],
+            ];
+        }
             
         $presensiList = [];
         $presensiStatusList = [];
@@ -300,6 +294,19 @@ class Training extends BaseController
         }
 
         foreach ($sesi as $s) {
+            $preTestSesi = !$usesLegacyExamFlow
+                ? ($testsBySession[(int) $s['id']]['pre_test'] ?? null)
+                : null;
+            if ($preTestSesi) {
+                $konten[] = [
+                    'id' => $stepCounter++,
+                    'tipe' => 'pre_test',
+                    'judul' => 'Pre-Test: ' . $s['nama_sesi'],
+                    'sesi_id' => $s['id'],
+                    'ujian_id' => $preTestSesi['id'],
+                ];
+            }
+
             $sessionOpenAt = !empty($s['tanggal']) && !empty($s['waktu']) ? strtotime($s['tanggal'] . ' ' . $s['waktu']) : null;
             $sessionCloseAt = !empty($s['tanggal']) && !empty($s['jam_tutup']) ? strtotime($s['tanggal'] . ' ' . $s['jam_tutup']) : (!empty($s['tanggal']) ? strtotime($s['tanggal'] . ' 23:59:59') : $sessionOpenAt);
             $sessionAvailable = $sessionOpenAt === null || ($nowTs >= $sessionOpenAt && ($sessionCloseAt === null || $nowTs <= $sessionCloseAt));
@@ -379,6 +386,19 @@ class Training extends BaseController
                 ];
             }
 
+            $postTestSesi = !$usesLegacyExamFlow
+                ? ($testsBySession[(int) $s['id']]['post_test'] ?? null)
+                : null;
+            if ($postTestSesi) {
+                $konten[] = [
+                    'id' => $stepCounter++,
+                    'tipe' => 'post_test',
+                    'judul' => 'Post-Test: ' . $s['nama_sesi'],
+                    'sesi_id' => $s['id'],
+                    'ujian_id' => $postTestSesi['id'],
+                ];
+            }
+
             $konten[] = [
                 'id'      => $stepCounter++,
                 'tipe'    => 'evaluasi_sesi',
@@ -388,7 +408,7 @@ class Training extends BaseController
         }
         $postTestQuestions = [];
         $postTestStepId = null;
-        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
+        $postTest = $legacyPostTest;
         if ($postTest) {
             $allPostSoal = $db->table('ujian_soal_pelatihan')
                 ->select('ujian_soal_pelatihan.*, materi_pelatihan.sesi_id as soal_sesi_id')
@@ -424,24 +444,146 @@ class Training extends BaseController
         $this->session->set('cert_step_'.$id, $certIndex);
 
         $completed_steps = $pg ? ($pg['completed_steps'] ?? []) : [];
-        
-        if ($preTestAttempted && $pesertaRecord) {
-            $preTestStepId = null;
-            foreach ($konten as $k) {
-                if ($k['tipe'] == 'pre_test') { $preTestStepId = $k['id']; break; }
+        $active_step_id = (int) ($this->request->getGet('step') ?? 1);
+        $filtered_active = array_filter($konten, fn($k) => (int) $k['id'] === $active_step_id);
+        $activeTestStep = !empty($filtered_active) ? reset($filtered_active) : null;
+        $activeExam = !empty($activeTestStep['ujian_id'])
+            ? ($examConfiguration['by_id'][(int) $activeTestStep['ujian_id']] ?? null)
+            : null;
+
+        $emptyExamState = [
+            'attempted' => false,
+            'attempts' => 0,
+            'score' => 0,
+            'status' => 'Belum Dikerjakan',
+            'benar' => 0,
+            'salah' => 0,
+            'total' => 0,
+        ];
+        $lastPreExam = null;
+        $lastPostExam = null;
+        foreach ($examDefinitions as $examDefinition) {
+            if ($this->examTypeToAttempt($examDefinition['tipe_evaluasi'] ?? '') === 'pre_test') {
+                $lastPreExam = $examDefinition;
             }
-            if ($preTestStepId && !in_array((int)$preTestStepId, $completed_steps)) {
-                $completed_steps[] = (int)$preTestStepId;
-                $progressPct = (count($completed_steps) / ($stepCounter - 1)) * 100;
+            if ($this->examTypeToAttempt($examDefinition['tipe_evaluasi'] ?? '') === 'post_test') {
+                $lastPostExam = $examDefinition;
+            }
+        }
+
+        $activeSesiId = $activeTestStep['sesi_id'] ?? null;
+        $preTestExam = $activeSesiId !== null
+            ? ($testsBySession[(int) $activeSesiId]['pre_test'] ?? null)
+            : $lastPreExam;
+        $postTestExam = $activeSesiId !== null
+            ? ($testsBySession[(int) $activeSesiId]['post_test'] ?? null)
+            : $lastPostExam;
+        if ($activeExam && $this->examTypeToAttempt($activeExam['tipe_evaluasi'] ?? '') === 'pre_test') {
+            $preTestExam = $activeExam;
+        }
+        if ($activeExam && $this->examTypeToAttempt($activeExam['tipe_evaluasi'] ?? '') === 'post_test') {
+            $postTestExam = $activeExam;
+        }
+
+        $preTestState = $preTestExam ? ($examStates[(int) $preTestExam['id']] ?? $emptyExamState) : $emptyExamState;
+        $postTestState = $postTestExam ? ($examStates[(int) $postTestExam['id']] ?? $emptyExamState) : $emptyExamState;
+        $preTestAttempted = $preTestState['attempted'];
+        $preTestScore = $preTestState['score'];
+        $preTestBenar = $preTestState['benar'];
+        $preTestSalah = $preTestState['salah'];
+        $preTestTotal = $preTestState['total'];
+        $postTestAttempts = $postTestState['attempts'];
+        $postTestScore = $postTestState['score'];
+        $postTestStatus = $postTestState['status'];
+        $postTestBenar = $postTestState['benar'];
+        $postTestSalah = $postTestState['salah'];
+        $postTestTotal = $postTestState['total'];
+
+        $postTestStepIds = [];
+        $firstIncompletePostTestStep = null;
+        $postTestsCompleted = true;
+        $postTestsPassed = true;
+        foreach ($konten as $k) {
+            if (($k['tipe'] ?? '') === 'pre_test' && !empty($k['ujian_id'])) {
+                $state = $examStates[(int) $k['ujian_id']] ?? $emptyExamState;
+                if ($state['attempted'] && !in_array((int) $k['id'], $completed_steps)) {
+                    $completed_steps[] = (int) $k['id'];
+                }
+            }
+
+            if (($k['tipe'] ?? '') === 'post_test' && !empty($k['ujian_id'])) {
+                $postTestStepIds[] = (int) $k['id'];
+                $state = $examStates[(int) $k['ujian_id']] ?? $emptyExamState;
+                if (!$state['attempted']) {
+                    $postTestsCompleted = false;
+                    $postTestsPassed = false;
+                    $firstIncompletePostTestStep ??= (int) $k['id'];
+                } elseif (strtolower((string) $state['status']) !== 'lulus') {
+                    $postTestsPassed = false;
+                }
+            }
+        }
+        if (empty($postTestStepIds)) {
+            $postTestsCompleted = true;
+            $postTestsPassed = true;
+        }
+        $postTestStepId = $postTestStepIds[0] ?? null;
+
+        // Session evaluation follows its post-test. Redirect direct links to
+        // the required post-test as well, not only sidebar navigation.
+        if (!$usesLegacyExamFlow
+            && ($activeTestStep['tipe'] ?? '') === 'evaluasi_sesi'
+            && !empty($activeTestStep['sesi_id'])) {
+            $sessionPostTest = $testsBySession[(int) $activeTestStep['sesi_id']]['post_test'] ?? null;
+            $sessionPostState = $sessionPostTest
+                ? ($examStates[(int) $sessionPostTest['id']] ?? $emptyExamState)
+                : null;
+
+            if ($sessionPostTest && !$sessionPostState['attempted']) {
+                foreach ($konten as $step) {
+                    if (($step['tipe'] ?? '') === 'post_test'
+                        && (int) ($step['ujian_id'] ?? 0) === (int) $sessionPostTest['id']) {
+                        return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step['id'])
+                            ->with('error', 'Selesaikan Post-Test sesi ini sebelum mengisi evaluasi sesi.');
+                    }
+                }
+            }
+        }
+
+        if ($pesertaRecord) {
+            $progressPct = (count($completed_steps) / max(1, $stepCounter - 1)) * 100;
+            $storedSteps = json_decode($pesertaRecord['completed_steps'] ?? '[]', true) ?? [];
+            sort($storedSteps);
+            $updatedSteps = $completed_steps;
+            sort($updatedSteps);
+            if ($storedSteps !== $updatedSteps) {
                 $db->table('peserta_pelatihan')->where('id', $pesertaRecord['id'])->update([
                     'completed_steps' => json_encode($completed_steps),
-                    'progress' => $progressPct
+                    'progress' => $progressPct,
+                    'updated_at' => date('Y-m-d H:i:s'),
                 ]);
             }
         }
-        $active_step_id = $this->request->getGet('step') ?? 1;
-        
-        $filtered_active = array_filter($konten, fn($k) => $k['id'] == $active_step_id);
+
+        if ($activeExam) {
+            if ($this->examTypeToAttempt($activeExam['tipe_evaluasi'] ?? '') === 'pre_test') {
+                $preTestQuestions = $db->table('ujian_soal_pelatihan')
+                    ->where('ujian_id', $activeExam['id'])
+                    ->get()->getResultArray();
+            } else {
+                $allPostSoal = $db->table('ujian_soal_pelatihan')
+                    ->select('ujian_soal_pelatihan.*, materi_pelatihan.sesi_id as soal_sesi_id')
+                    ->join('materi_pelatihan', 'materi_pelatihan.id = ujian_soal_pelatihan.materi_id', 'left')
+                    ->where('ujian_soal_pelatihan.ujian_id', $activeExam['id'])
+                    ->get()->getResultArray();
+                foreach ($allPostSoal as $soal) {
+                    $soalSesiId = $soal['soal_sesi_id'] ?? null;
+                    if (!$usesLegacyExamFlow || $soalSesiId === null || ($presensiStatusList[$soalSesiId] ?? null) !== 'Alfa') {
+                        $postTestQuestions[] = $soal;
+                    }
+                }
+            }
+        }
         
         // Check for closed sessions without presensi & insert Alfa first so status is up-to-date
         if (!empty($filtered_active)) {
@@ -467,7 +609,7 @@ class Training extends BaseController
 
             // Auto-skip: jika step aktif adalah materi_segmen atau evaluasi_sesi
             // dari sesi yang Alfa atau sudah tutup tanpa presensi → redirect ke step setelah sesi itu
-            $skipTypes = ['materi_segmen', 'evaluasi_sesi'];
+            $skipTypes = ['materi_segmen', 'evaluasi_sesi', 'pre_test', 'post_test'];
             if (in_array($activeK['tipe'], $skipTypes) && isset($activeK['sesi_id'])) {
                 $sesiIdCheck = $activeK['sesi_id'];
                 $statusCheck = $presensiStatusList[$sesiIdCheck] ?? null;
@@ -582,6 +724,10 @@ class Training extends BaseController
             $nextSessionStepId = $active_step_id + 1;
         }
 
+        if (!$activeExam) {
+            $postTestStatus = $postTestsPassed ? 'Lulus' : 'Tidak Lulus';
+        }
+
         $data = [
             'title' => 'Ruang Belajar',
             'p' => $item,
@@ -595,6 +741,9 @@ class Training extends BaseController
             'evalIndex' => $evalIndex,
             'certIndex' => $certIndex,
             'postTestIndex' => $postTestStepId,
+            'firstIncompletePostTestStep' => $firstIncompletePostTestStep,
+            'post_tests_completed' => $postTestsCompleted,
+            'post_tests_passed' => $postTestsPassed,
             'preTestQuestions' => $preTestQuestions,
             'postTestQuestions' => $postTestQuestions,
             'evalQuestions' => $evalQuestions,
@@ -621,58 +770,148 @@ class Training extends BaseController
             'ratingAlreadySubmitted' => $ratingAlreadySubmitted,
             'submittedSesiEvaluations' => $submittedSesiEvaluations,
             'presensiStatusList' => $presensiStatusList,
-            'post_test_kkm' => $postTest ? ($postTest['kkm'] ?? 70) : 70,
+            'post_test_kkm' => $postTestExam ? ($postTestExam['kkm'] ?? 70) : 70,
         ];
         return view('Pelatihan/peserta/pelatihan/belajar', $data);
     }
 
-    private function _countKontenSteps($db, $pelatihanId): int
+    private function examTypeToAttempt(?string $type): string
     {
-        $stepCounter = 1;
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) $stepCounter++;
+        $normalized = strtolower(str_replace(['-', ' '], '_', trim((string) $type)));
+        $normalized = preg_replace('/_+/', '_', $normalized) ?: '';
 
-        $sesi = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $pelatihanId)->get()->getResultArray();
-        foreach ($sesi as $s) {
-            $stepCounter++; // presensi or sesi
-            $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->get()->getResultArray();
-            $groupedSegmen = [];
-            foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
-            $stepCounter += count($groupedSegmen); // materi_segmen
-            $stepCounter++; // evaluasi_sesi
+        return match ($normalized) {
+            'pretest' => 'pre_test',
+            'posttest' => 'post_test',
+            default => $normalized,
+        };
+    }
+
+    /**
+     * Uses session-level exams whenever at least one has been configured.
+     * Older trainings with only a global test remain readable until an admin
+     * maps their tests to individual sessions.
+     */
+    private function getExamConfiguration($db, int $pelatihanId): array
+    {
+        $scopedTests = $db->table('ujian_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->whereIn('tipe_evaluasi', ['Pre-Test', 'Post-Test'])
+            ->where('sesi_id IS NOT NULL', null, false)
+            ->orderBy('sesi_id', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+
+        $legacy = empty($scopedTests);
+        $tests = $scopedTests;
+        if ($legacy) {
+            $tests = $db->table('ujian_pelatihan')
+                ->where('pelatihan_id', $pelatihanId)
+                ->whereIn('tipe_evaluasi', ['Pre-Test', 'Post-Test'])
+                ->orderBy('id', 'ASC')
+                ->get()->getResultArray();
         }
 
-        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
-        if ($postTest) $stepCounter++; // post_test
-        $stepCounter++; // evaluasi
-        $stepCounter++; // sertifikat
-        return $stepCounter - 1;
+        $bySession = [];
+        $byType = [];
+        $byId = [];
+        foreach ($tests as $test) {
+            $type = $this->examTypeToAttempt($test['tipe_evaluasi'] ?? '');
+            if (!in_array($type, ['pre_test', 'post_test'], true)) {
+                continue;
+            }
+
+            $test['tipe_ujian'] = $type;
+            $byId[(int) $test['id']] = $test;
+            $byType[$type][] = $test;
+            if (!$legacy && !empty($test['sesi_id'])) {
+                // One test of each type is allowed for every session. Keep the
+                // earliest record if historical duplicate rows are present.
+                $bySession[(int) $test['sesi_id']][$type] ??= $test;
+            }
+        }
+
+        return [
+            'tests' => array_values($byId),
+            'by_session' => $bySession,
+            'by_type' => $byType,
+            'by_id' => $byId,
+            'legacy' => $legacy,
+        ];
+    }
+
+    private function getExamAttemptState($db, int $pesertaPelatId, array $exam, bool $legacy): array
+    {
+        $builder = $db->table('peserta_ujian_pelatihan')
+            ->where('peserta_pelat_id', $pesertaPelatId);
+
+        if ($legacy) {
+            $builder->where('tipe_ujian', $this->examTypeToAttempt($exam['tipe_evaluasi'] ?? ''));
+        } else {
+            $builder->where('ujian_id', (int) $exam['id']);
+        }
+
+        $attempts = $builder
+            ->orderBy('created_at', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get()->getResultArray();
+        $lastAttempt = !empty($attempts) ? $attempts[count($attempts) - 1] : null;
+        $benar = 0;
+        $total = 0;
+        if ($lastAttempt) {
+            $answers = $db->table('peserta_jawaban_ujian_pelatihan')
+                ->where('peserta_ujian_id', $lastAttempt['id'])
+                ->get()->getResultArray();
+            $total = count($answers);
+            foreach ($answers as $answer) {
+                if ((int) ($answer['is_correct'] ?? 0) === 1) {
+                    $benar++;
+                }
+            }
+        }
+
+        return [
+            'attempted' => $lastAttempt !== null,
+            'attempts' => count($attempts),
+            'score' => (float) ($lastAttempt['score'] ?? 0),
+            'status' => $lastAttempt['status_lulus'] ?? 'Belum Dikerjakan',
+            'benar' => $benar,
+            'salah' => $total - $benar,
+            'total' => $total,
+        ];
+    }
+
+    private function hasPassedAllPostTests($db, int $pesertaPelatId, int $pelatihanId): bool
+    {
+        $examConfiguration = $this->getExamConfiguration($db, $pelatihanId);
+        $postTests = $examConfiguration['by_type']['post_test'] ?? [];
+        if (empty($postTests)) {
+            return true;
+        }
+
+        foreach ($postTests as $postTest) {
+            $state = $this->getExamAttemptState($db, $pesertaPelatId, $postTest, $examConfiguration['legacy']);
+            if (strtolower((string) $state['status']) !== 'lulus') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function _countKontenSteps($db, $pelatihanId): int
+    {
+        return count($this->_getKontenSteps($db, $pelatihanId));
     }
 
     private function _findPresensiStepId($db, $pelatihanId, $sesiId): ?int
     {
-        $stepCounter = 1;
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) $stepCounter++;
-
-        $sesi = $db->table('sesi_interaktif_pelatihan')
-            ->where('pelatihan_id', $pelatihanId)
-            ->orderBy('tanggal', 'ASC')
-            ->orderBy('waktu', 'ASC')
-            ->orderBy('id', 'ASC')
-            ->get()->getResultArray();
-
-        foreach ($sesi as $s) {
-            if ((int)$s['id'] === (int)$sesiId) {
-                return $stepCounter;
+        foreach ($this->_getKontenSteps($db, $pelatihanId) as $step) {
+            if (in_array($step['tipe'], ['presensi', 'sesi'], true) && (int) ($step['sesi_id'] ?? 0) === (int) $sesiId) {
+                return (int) $step['id'];
             }
-            $stepCounter++; // presensi or sesi
-            $materi = $db->table('materi_pelatihan')->where('sesi_id', $s['id'])->get()->getResultArray();
-            $groupedSegmen = [];
-            foreach ($materi as $m) { $groupedSegmen[$m['segmen'] ?: 1][] = $m; }
-            $stepCounter += count($groupedSegmen);
-            $stepCounter++; // evaluasi_sesi
         }
+
         return null;
     }
 
@@ -680,9 +919,13 @@ class Training extends BaseController
     {
         $konten = [];
         $stepCounter = 1;
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
-        if ($preTest) {
-            $konten[] = ['id' => $stepCounter++, 'tipe' => 'pre_test'];
+        $examConfiguration = $this->getExamConfiguration($db, (int) $pelatihanId);
+        $testsBySession = $examConfiguration['by_session'];
+        $legacy = $examConfiguration['legacy'];
+        $legacyPreTest = $legacy ? ($examConfiguration['by_type']['pre_test'][0] ?? null) : null;
+        $legacyPostTest = $legacy ? ($examConfiguration['by_type']['post_test'][0] ?? null) : null;
+        if ($legacyPreTest) {
+            $konten[] = ['id' => $stepCounter++, 'tipe' => 'pre_test', 'ujian_id' => $legacyPreTest['id']];
         }
 
         $sesi = $db->table('sesi_interaktif_pelatihan')
@@ -693,6 +936,11 @@ class Training extends BaseController
             ->get()->getResultArray();
 
         foreach ($sesi as $s) {
+            $preTest = !$legacy ? ($testsBySession[(int) $s['id']]['pre_test'] ?? null) : null;
+            if ($preTest) {
+                $konten[] = ['id' => $stepCounter++, 'tipe' => 'pre_test', 'sesi_id' => $s['id'], 'ujian_id' => $preTest['id']];
+            }
+
             $tipeSesi = strtolower($s['tipe_sesi'] ?? '') == 'offline' ? 'presensi' : 'sesi';
             $konten[] = ['id' => $stepCounter++, 'tipe' => $tipeSesi, 'sesi_id' => $s['id']];
 
@@ -702,12 +950,15 @@ class Training extends BaseController
             foreach ($groupedSegmen as $seg => $mList) {
                 $konten[] = ['id' => $stepCounter++, 'tipe' => 'materi_segmen', 'sesi_id' => $s['id'], 'segmen' => $seg];
             }
+            $postTest = !$legacy ? ($testsBySession[(int) $s['id']]['post_test'] ?? null) : null;
+            if ($postTest) {
+                $konten[] = ['id' => $stepCounter++, 'tipe' => 'post_test', 'sesi_id' => $s['id'], 'ujian_id' => $postTest['id']];
+            }
             $konten[] = ['id' => $stepCounter++, 'tipe' => 'evaluasi_sesi', 'sesi_id' => $s['id']];
         }
 
-        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $pelatihanId)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
-        if ($postTest) {
-            $konten[] = ['id' => $stepCounter++, 'tipe' => 'post_test'];
+        if ($legacyPostTest) {
+            $konten[] = ['id' => $stepCounter++, 'tipe' => 'post_test', 'ujian_id' => $legacyPostTest['id']];
         }
         $konten[] = ['id' => $stepCounter++, 'tipe' => 'evaluasi'];
         $konten[] = ['id' => $stepCounter++, 'tipe' => 'sertifikat'];
@@ -751,14 +1002,24 @@ class Training extends BaseController
 
         // Logika evaluasi Post-Test
         if ($is_post_test == '1' && $score !== null) {
-            $ujian = $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
-            $kkm = $ujian ? ($ujian['kkm'] ?? 70) : 70;
+            $ujianId = (int) $this->request->getGet('ujian_id');
+            $ujian = $db->table('ujian_pelatihan')
+                ->where('id', $ujianId)
+                ->where('pelatihan_id', $id)
+                ->where('tipe_evaluasi', 'Post-Test')
+                ->get()->getRowArray();
+            if (!$ujian) {
+                return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)
+                    ->with('error', 'Post-Test tidak valid.');
+            }
+
+            $kkm = $ujian['kkm'] ?? 70;
             
             $attempts = 0;
             if ($pesertaRecord) {
                 $attempts = $db->table('peserta_ujian_pelatihan')
                     ->where('peserta_pelat_id', $pesertaRecord['id'])
-                    ->where('tipe_ujian', 'post_test')
+                    ->where('ujian_id', $ujianId)
                     ->countAllResults();
             }
             
@@ -770,7 +1031,7 @@ class Training extends BaseController
                            ->update(['status_peserta' => 'Tidak Lulus', 'updated_at' => date('Y-m-d H:i:s')]);
                     }
                 }
-                return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id.'&error=score_low&last_score='.$score.'&attempts='.$attempts);
+                return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id.'&error=score_low&last_score='.$score.'&attempts='.$attempts.'&ujian_id='.$ujianId);
             }
         }
 
@@ -778,7 +1039,7 @@ class Training extends BaseController
         if (!in_array((int)$step_id, $completed_steps)) {
             $completed_steps[] = (int)$step_id;
         }
-        $progressPct = (count($completed_steps) / $totalSteps) * 100;
+        $progressPct = (count($completed_steps) / max(1, $totalSteps)) * 100;
 
         if ($pesertaRecord) {
             $db->table('peserta_pelatihan')
@@ -850,8 +1111,9 @@ class Training extends BaseController
     public function submit_kuis($id)
     {
         $userId = $this->session->get('user_id');
-        $step_id = $this->request->getPost('step_id');
+        $step_id = (int) $this->request->getPost('step_id');
         $tipe_ujian = $this->request->getPost('tipe_ujian'); // 'pre_test' or 'post_test'
+        $ujianId = (int) $this->request->getPost('ujian_id');
         $answersJson = $this->request->getPost('answers');
         
         $answers = json_decode($answersJson, true) ?? [];
@@ -888,9 +1150,42 @@ class Training extends BaseController
             return redirect()->to('/pelatihan/peserta/belajar/'.$id)->with('error', 'Data peserta tidak ditemukan.');
         }
 
+        if (!in_array($tipe_ujian, ['pre_test', 'post_test'], true) || $ujianId <= 0) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)
+                ->with('error', 'Data tes tidak valid.');
+        }
+
+        $dbTipeEvaluasi = $tipe_ujian === 'pre_test' ? 'Pre-Test' : 'Post-Test';
+        $ujian = $db->table('ujian_pelatihan')
+            ->where('id', $ujianId)
+            ->where('pelatihan_id', $id)
+            ->where('tipe_evaluasi', $dbTipeEvaluasi)
+            ->get()->getRowArray();
+        if (!$ujian) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)
+                ->with('error', 'Tes tidak ditemukan atau tidak sesuai dengan pelatihan ini.');
+        }
+
+        // The posted exam must be the exact test assigned to the current
+        // learning step. This prevents a test from one session being used to
+        // complete another session's step.
+        $step = null;
+        foreach ($this->_getKontenSteps($db, $id) as $candidate) {
+            if ((int) ($candidate['id'] ?? 0) === $step_id) {
+                $step = $candidate;
+                break;
+            }
+        }
+        if (!$step
+            || ($step['tipe'] ?? '') !== $tipe_ujian
+            || (int) ($step['ujian_id'] ?? 0) !== $ujianId) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)
+                ->with('error', 'Tes tidak sesuai dengan sesi pembelajaran saat ini.');
+        }
+
         $attempts = $db->table('peserta_ujian_pelatihan')
             ->where('peserta_pelat_id', $pesertaRecord['id'])
-            ->where('tipe_ujian', $tipe_ujian)
+            ->where('ujian_id', $ujianId)
             ->countAllResults();
 
         if ($tipe_ujian == 'pre_test' && $attempts >= 1) {
@@ -901,31 +1196,32 @@ class Training extends BaseController
             return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)->with('error', 'Post-Test hanya dapat dikerjakan 3 kali.');
         }
 
-        // Ambil soal untuk mencocokkan jawaban
+        // Ambil soal dari tes yang dipilih untuk mencocokkan jawaban.
         $soalList = [];
-        $db_tipe_evaluasi = ($tipe_ujian == 'pre_test') ? 'Pre-test' : 'Post-test';
-        $ujian = $db->table('ujian_pelatihan')
-            ->where('pelatihan_id', $id)
-            ->where('tipe_evaluasi', $db_tipe_evaluasi)
-            ->get()->getRowArray();
-            
-        if ($ujian) {
-            $soals = $db->table('ujian_soal_pelatihan')->where('ujian_id', $ujian['id'])->get()->getResultArray();
-            foreach ($soals as $s) {
-                $soalList[$s['id']] = strtolower(trim($s['jawaban_benar']));
-            }
+        $soals = $db->table('ujian_soal_pelatihan')->where('ujian_id', $ujian['id'])->get()->getResultArray();
+        foreach ($soals as $s) {
+            $soalList[$s['id']] = strtolower(trim($s['jawaban_benar']));
         }
 
-        // Untuk post-test: denominator = total semua soal (termasuk yang di-skip Alfa)
-        // Soal yang tidak dijawab (di-skip) dihitung salah
-        $totalAllQuestions = ($tipe_ujian == 'post_test') ? count($soalList) : $totalQuestions;
+        if (empty($soalList)) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step_id)
+                ->with('error', 'Soal untuk tes ini belum tersedia.');
+        }
+
+        $totalAllQuestions = count($soalList);
 
         $logJawaban = [];
+        $answeredIds = [];
         foreach ($answers as $ans) {
-            $sId = $ans['soal_id'];
+            $sId = (int) ($ans['soal_id'] ?? 0);
+            if (!isset($soalList[$sId]) || isset($answeredIds[$sId])) {
+                continue;
+            }
+
             $j = strtolower(trim($ans['jawaban'] ?? ''));
-            $isCorrect = (isset($soalList[$sId]) && $soalList[$sId] === $j) ? 1 : 0;
+            $isCorrect = $soalList[$sId] === $j ? 1 : 0;
             if ($isCorrect) $correctCount++;
+            $answeredIds[$sId] = true;
             
             $logJawaban[] = [
                 'soal_id' => $sId,
@@ -936,9 +1232,8 @@ class Training extends BaseController
 
         // Soal yang di-skip (tidak ada di answers) → log sebagai tidak dijawab
         if ($tipe_ujian == 'post_test') {
-            $answeredIds = array_column($answers, 'soal_id');
             foreach ($soalList as $soalId => $jawaban) {
-                if (!in_array($soalId, $answeredIds)) {
+                if (!isset($answeredIds[$soalId])) {
                     $logJawaban[] = [
                         'soal_id' => $soalId,
                         'jawaban_peserta' => '-',
@@ -958,6 +1253,7 @@ class Training extends BaseController
 
         $db->table('peserta_ujian_pelatihan')->insert([
             'peserta_pelat_id' => $pesertaRecord['id'],
+            'ujian_id' => $ujianId,
             'tipe_ujian' => $tipe_ujian,
             'score' => $score,
             'status_lulus' => $statusLulus,
@@ -975,15 +1271,15 @@ class Training extends BaseController
 
         // Lanjut ke tandai_selesai (menggunakan querystring untuk update status progres dll)
         $isPostTestNum = ($tipe_ujian == 'post_test') ? 1 : 0;
-        return redirect()->to('/pelatihan/peserta/tandai_selesai/'.$id.'/'.$step_id.'?score='.$score.'&is_post_test='.$isPostTestNum.'&is_ujian=1');
+        return redirect()->to('/pelatihan/peserta/tandai_selesai/'.$id.'/'.$step_id.'?score='.$score.'&is_post_test='.$isPostTestNum.'&is_ujian=1&ujian_id='.$ujianId);
     }
 
 
     public function submit_evaluasi_sesi($id)
     {
         $userId  = $this->session->get('user_id');
-        $stepId  = $this->request->getPost('step_id');
-        $sesiId  = $this->request->getPost('sesi_id');
+        $stepId  = (int) $this->request->getPost('step_id');
+        $sesiId  = (int) $this->request->getPost('sesi_id');
 
         if (!$sesiId) {
             return redirect()->to('/pelatihan/peserta/belajar/'.$id)->with('error', 'Sesi tidak valid.');
@@ -1018,6 +1314,32 @@ class Training extends BaseController
         }
 
         $pesertaPelatId = $pesertaRecord['id'];
+
+        $sesi = $db->table('sesi_interaktif_pelatihan')
+            ->where('id', $sesiId)
+            ->where('pelatihan_id', $id)
+            ->get()->getRowArray();
+        if (!$sesi) {
+            return redirect()->to('/pelatihan/peserta/belajar/'.$id)->with('error', 'Sesi tidak sesuai dengan pelatihan ini.');
+        }
+
+        $examConfiguration = $this->getExamConfiguration($db, (int) $id);
+        if (!$examConfiguration['legacy']) {
+            $postTest = $examConfiguration['by_session'][$sesiId]['post_test'] ?? null;
+            if ($postTest) {
+                $postTestState = $this->getExamAttemptState($db, (int) $pesertaPelatId, $postTest, false);
+                if (!$postTestState['attempted']) {
+                    foreach ($this->_getKontenSteps($db, $id) as $step) {
+                        if (($step['tipe'] ?? '') === 'post_test'
+                            && (int) ($step['ujian_id'] ?? 0) === (int) $postTest['id']) {
+                            return redirect()->to('/pelatihan/peserta/belajar/'.$id.'?step='.$step['id'])
+                                ->with('error', 'Selesaikan Post-Test sesi ini sebelum mengisi evaluasi sesi.');
+                        }
+                    }
+                }
+            }
+        }
+
         $batchData = [];
 
         $materiRows = $db->table('materi_pelatihan')->where('sesi_id', $sesiId)->select('id')->get()->getResultArray();
@@ -1168,13 +1490,7 @@ class Training extends BaseController
                 'waktu_submit'     => date('Y-m-d H:i:s')
             ]);
 
-            $ujianPost = $db->table('peserta_ujian_pelatihan')
-                ->where('peserta_pelat_id', $pesertaPelatId)
-                ->where('tipe_ujian', 'post_test')
-                ->orderBy('created_at', 'DESC')
-                ->get()->getRowArray();
-
-            if ($ujianPost && $ujianPost['status_lulus'] == 'Lulus') {
+            if ($this->hasPassedAllPostTests($db, (int) $pesertaPelatId, (int) $id)) {
                 $db->table('peserta_pelatihan')
                    ->where('id', $pesertaPelatId)
                    ->update([
@@ -1193,7 +1509,7 @@ class Training extends BaseController
     public function approve_and_start($id)
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
         $db->table('peserta_pelatihan')

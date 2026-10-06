@@ -46,7 +46,12 @@ class Home extends BaseController
             'total_jpl' => $userDb['capaian_jpl'] ?? 0
         ];
 
-        $myProgress = $db->table('peserta_pelatihan')->where('user_id', $userId)->get()->getResultArray();
+        $myProgress = $db->table('peserta_pelatihan')
+            ->select('peserta_pelatihan.*')
+            ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
+            ->where('peserta_pelatihan.user_id', $userId)
+            ->where('master_pelatihan.status !=', 'Batal')
+            ->get()->getResultArray();
         
         $jadwal = [];
         $activePelatihan = $db->table('master_pelatihan')->whereIn('status', ['Publish', 'Aktif'])->get()->getResultArray();
@@ -105,6 +110,7 @@ class Home extends BaseController
             FROM peserta_pelatihan p
             JOIN master_pelatihan m ON p.pelatihan_id = m.id
             WHERE p.user_id = ? AND p.status_pembayaran = 'Verified' AND p.status_peserta = 'Aktif'
+              AND m.status IN ('Publish', 'Aktif')
         ", [$userId])->getResultArray();
 
         // Kategori Unik
@@ -157,8 +163,11 @@ class Home extends BaseController
 
         $today = date('Y-m-d');
         $registeredTrainings = $db->table('peserta_pelatihan')
+            ->select('peserta_pelatihan.*')
+            ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->where('user_id', $userId)
             ->whereIn('status_pembayaran', ['Verified', 'Gratis'])
+            ->where('master_pelatihan.status !=', 'Batal')
             ->get()->getResultArray();
 
         $registeredPelatihanIds = array_column($registeredTrainings, 'pelatihan_id');
@@ -221,7 +230,7 @@ class Home extends BaseController
     public function notifikasi()
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
         

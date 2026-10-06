@@ -67,6 +67,215 @@ class Certificate extends BaseController
         ]);
     }
 
+    /**
+     * Normalize the exam type used by the master exam table and the attempt
+     * table. The master table uses labels such as "Pre-Test", while attempts
+     * currently store values such as "pre_test".
+     */
+    private function normalizeExamType(?string $type): string
+    {
+        $normalized = strtolower(trim((string) $type));
+        $normalized = str_replace(['-', ' '], '_', $normalized);
+        $normalized = preg_replace('/_+/', '_', $normalized) ?: '';
+
+        return match ($normalized) {
+            'pretest' => 'pre_test',
+            'posttest' => 'post_test',
+            'quiz' => 'kuis',
+            default => $normalized,
+        };
+    }
+
+    private function examTypeLabel(string $type): string
+    {
+        return match ($type) {
+            'pre_test' => 'Pre-Test',
+            'post_test' => 'Post-Test',
+            'kuis' => 'Kuis',
+            default => ucwords(str_replace('_', ' ', $type)),
+        };
+    }
+
+    /**
+     * A participant has completed an exam when an attempt has been recorded.
+     * Post-Test is allowed up to three attempts; an unsuccessful participant
+     * is therefore considered finished only after the final attempt, while a
+     * passing attempt finishes the requirement immediately.
+     */
+    private function isExamCompleted(string $examType, array $attempts): bool
+    {
+        if (empty($attempts)) {
+            return false;
+        }
+
+        if ($examType !== 'post_test') {
+            return true;
+        }
+
+        foreach ($attempts as $attempt) {
+            if (strtolower(trim((string) ($attempt['status_lulus'] ?? ''))) === 'lulus') {
+                return true;
+            }
+        }
+
+        return count($attempts) >= 3;
+    }
+
+    /**
+     * Returns null when a training has no post-test, otherwise whether the
+     * participant has passed every configured post-test. Session-level tests
+     * are evaluated independently; legacy global tests retain their old flow.
+     */
+    private function participantPassedAllPostTests(\CodeIgniter\Database\BaseConnection $db, int $pesertaPelatId, int $pelatihanId): ?bool
+    {
+        $scopedTests = $db->table('ujian_pelatihan')
+            ->where('pelatihan_id', $pelatihanId)
+            ->where('tipe_evaluasi', 'Post-Test')
+            ->where('sesi_id IS NOT NULL', null, false)
+            ->get()->getResultArray();
+        $legacy = empty($scopedTests);
+        $postTests = $scopedTests;
+        if ($legacy) {
+            $postTests = $db->table('ujian_pelatihan')
+                ->where('pelatihan_id', $pelatihanId)
+                ->where('tipe_evaluasi', 'Post-Test')
+                ->get()->getResultArray();
+        }
+
+        if (empty($postTests)) {
+            return null;
+        }
+
+        foreach ($postTests as $postTest) {
+            $attempts = $db->table('peserta_ujian_pelatihan')
+                ->where('peserta_pelat_id', $pesertaPelatId);
+            if ($legacy) {
+                $attempts->where('tipe_ujian', 'post_test');
+            } else {
+                $attempts->where('ujian_id', $postTest['id']);
+            }
+
+            if (!$attempts->where('status_lulus', 'Lulus')->countAllResults()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Return the server-side readiness state used both by the page and by the
+     * publish action. Rejected/cancelled registrations are not active
+     * participants and must not make a class impossible to publish forever.
+     */
+    private function getCertificatePublishReadiness(int $pelatihanId): array
+    {
+        $db = \Config\Database::connect();
+
+        $tests = $db->table('ujian_pelatihan')
+            ->select('ujian_pelatihan.id, ujian_pelatihan.tipe_evaluasi, ujian_pelatihan.sesi_id, sesi_interaktif_pelatihan.nama_sesi')
+            ->join('sesi_interaktif_pelatihan', 'sesi_interaktif_pelatihan.id = ujian_pelatihan.sesi_id', 'left')
+            ->where('pelatihan_id', $pelatihanId)
+            ->orderBy('ujian_pelatihan.id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $hasSessionScopedTests = !empty(array_filter($tests, static fn (array $test): bool => !empty($test['sesi_id'])));
+        $testDefinitions = [];
+        $knownTypes = [];
+        foreach ($tests as $test) {
+            if ($hasSessionScopedTests && empty($test['sesi_id'])) {
+                continue;
+            }
+
+            $type = $this->normalizeExamType($test['tipe_evaluasi'] ?? null);
+            $testKey = $hasSessionScopedTests ? 'ujian_' . (int) $test['id'] : $type;
+            if ($type === '' || isset($knownTypes[$testKey])) {
+                continue;
+            }
+
+            $knownTypes[$testKey] = true;
+            $label = $this->examTypeLabel($type);
+            if ($hasSessionScopedTests) {
+                $label .= ': ' . ($test['nama_sesi'] ?: 'Sesi #' . $test['sesi_id']);
+            }
+            $testDefinitions[] = [
+                'key' => $testKey,
+                'type' => $type,
+                'label' => $label,
+            ];
+        }
+
+        $participantRows = $db->table('peserta_pelatihan pp')
+            ->select('pp.*, u.nama_lengkap')
+            ->join('users_pelatihan u', 'u.nik = pp.user_id', 'left')
+            ->where('pp.pelatihan_id', $pelatihanId)
+            ->get()
+            ->getResultArray();
+
+        // A rejected registration or a participant who cancelled is no longer
+        // part of the active class and cannot complete its exams.
+        $participants = array_values(array_filter($participantRows, static function (array $participant): bool {
+            return ($participant['status_peserta'] ?? null) !== 'Gagal'
+                && ($participant['status_pembayaran'] ?? null) !== 'Rejected'
+                && ($participant['status_akses'] ?? null) !== 'Rejected';
+        }));
+
+        $attemptRows = $db->table('peserta_ujian_pelatihan pue')
+            ->select('pue.peserta_pelat_id, pue.ujian_id, pue.tipe_ujian, pue.status_lulus')
+            ->join('peserta_pelatihan pp', 'pp.id = pue.peserta_pelat_id')
+            ->where('pp.pelatihan_id', $pelatihanId)
+            ->get()
+            ->getResultArray();
+
+        $attemptsByParticipant = [];
+        foreach ($attemptRows as $attempt) {
+            $participantId = (int) $attempt['peserta_pelat_id'];
+            $type = $this->normalizeExamType($attempt['tipe_ujian'] ?? null);
+            $testKey = $hasSessionScopedTests && !empty($attempt['ujian_id'])
+                ? 'ujian_' . (int) $attempt['ujian_id']
+                : $type;
+            $attemptsByParticipant[$participantId][$testKey][] = $attempt;
+        }
+
+        $missingParticipants = [];
+        $completedParticipantCount = 0;
+
+        foreach ($participants as $participant) {
+            $missingTests = [];
+            $participantAttempts = $attemptsByParticipant[(int) $participant['id']] ?? [];
+
+            foreach ($testDefinitions as $test) {
+                $attempts = $participantAttempts[$test['key']] ?? [];
+                if (!$this->isExamCompleted($test['type'], $attempts)) {
+                    $missingTests[] = $test['label'];
+                }
+            }
+
+            if (empty($missingTests)) {
+                $completedParticipantCount++;
+                continue;
+            }
+
+            $missingParticipants[] = [
+                'id' => (int) $participant['id'],
+                'user_id' => $participant['user_id'],
+                'nama' => $participant['nama_lengkap'] ?: $participant['user_id'],
+                'missing_tests' => $missingTests,
+            ];
+        }
+
+        return [
+            'ready' => empty($missingParticipants),
+            'participant_count' => count($participants),
+            'completed_participant_count' => $completedParticipantCount,
+            'pending_participant_count' => count($missingParticipants),
+            'test_count' => count($testDefinitions),
+            'tests' => $testDefinitions,
+            'missing_participants' => $missingParticipants,
+        ];
+    }
+
     public function index()
     {
         $pelatihan = $this->masterPelatihanModel->orderBy('nama', 'ASC')->findAll();
@@ -104,6 +313,11 @@ class Certificate extends BaseController
 
         $sertifikat = $this->certModel->orderBy('created_at', 'DESC')->findAll();
         $pejabat = $this->pejabatModel->findAll();
+
+        $publishReadiness = [];
+        foreach ($pelatihan as $p) {
+            $publishReadiness[$p['id']] = $this->getCertificatePublishReadiness((int) $p['id']);
+        }
         
         // Join templates with training names
         $db = \Config\Database::connect();
@@ -119,7 +333,8 @@ class Certificate extends BaseController
             'sertifikat' => $sertifikat,
             'pelatihan' => $pelatihan,
             'pejabat' => $pejabat,
-            'templates' => $templates
+            'templates' => $templates,
+            'publishReadiness' => $publishReadiness,
         ];
         return view('Pelatihan/admin/sertifikat/index', $data);
     }
@@ -244,6 +459,13 @@ class Certificate extends BaseController
         $template = $this->templateModel->where('pelatihan_id', $id)->first();
         if (!$template) {
             return redirect()->to(site_url('pelatihan/admin/sertifikat'))->with('error', 'Template sertifikat belum dikonfigurasi untuk pelatihan ini. Silakan buat template terlebih dahulu di tab "Template Sertifikat".');
+        }
+
+        $readiness = $this->getCertificatePublishReadiness((int) $id);
+        if (!$readiness['ready']) {
+            $pendingMessage = $readiness['pending_participant_count'] . ' peserta belum menyelesaikan seluruh ujian. Silakan cek daftar peserta terlebih dahulu.';
+
+            return redirect()->to(site_url('pelatihan/admin/sertifikat'))->with('error', $pendingMessage . ' Publish sertifikat belum dapat dilakukan.');
         }
 
         // Mark training published
@@ -581,24 +803,12 @@ class Certificate extends BaseController
             
         foreach ($list as &$p) {
             if (empty($p['status_peserta']) || $p['status_peserta'] !== 'Lulus') {
-                $postTest = $db->table('peserta_ujian_pelatihan')
-                    ->where('peserta_pelat_id', $p['id'])
-                    ->where('tipe_ujian', 'post_test')
-                    ->orderBy('id', 'DESC')
-                    ->get()->getRowArray();
-                    
-                if ($postTest) {
-                    $p['status_peserta'] = $postTest['status_lulus'];
-                    
-                    if ($postTest['status_lulus'] === 'Lulus') {
-                        $db->table('peserta_pelatihan')
-                           ->where('id', $p['id'])
-                           ->update(['status_peserta' => 'Lulus']);
-                    } else if ($postTest['status_lulus'] === 'Tidak Lulus') {
-                        $db->table('peserta_pelatihan')
-                           ->where('id', $p['id'])
-                           ->update(['status_peserta' => 'Tidak Lulus']);
-                    }
+                $passedAllPostTests = $this->participantPassedAllPostTests($db, (int) $p['id'], (int) $pelatihanId);
+                if ($passedAllPostTests !== null) {
+                    $p['status_peserta'] = $passedAllPostTests ? 'Lulus' : 'Tidak Lulus';
+                    $db->table('peserta_pelatihan')
+                        ->where('id', $p['id'])
+                        ->update(['status_peserta' => $p['status_peserta']]);
                 }
             }
         }

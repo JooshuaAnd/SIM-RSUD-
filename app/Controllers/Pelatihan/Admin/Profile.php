@@ -7,7 +7,7 @@ class Profile extends BaseController
     public function index()
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
         
@@ -19,7 +19,7 @@ class Profile extends BaseController
                    ->get()->getRowArray();
         
         if (!$user) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $unit_kerja = $db->table('unit_kerja_pelatihan')->get()->getResultArray();
@@ -36,7 +36,7 @@ class Profile extends BaseController
     public function update()
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
         $data = $this->request->getPost();

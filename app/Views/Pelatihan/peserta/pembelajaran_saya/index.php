@@ -76,19 +76,115 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
     }
+
+    .diklat-saya-page,
+    .diklat-saya-page * {
+        box-sizing: border-box;
+    }
+
+    .diklat-saya-page .diklat-saya-intro-note {
+        display: inline-block;
+        max-width: 100%;
+        white-space: normal;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    .diklat-saya-page .diklat-saya-tabs {
+        display: flex !important;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+        width: fit-content;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.45) transparent;
+    }
+
+    .diklat-saya-page .diklat-saya-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .diklat-saya-page .diklat-saya-tabs .nav-link {
+        margin-right: 0;
+        white-space: nowrap;
+    }
+
+    .diklat-saya-page .status-grid > [class*="col-"] {
+        min-width: 0;
+    }
+
+    .diklat-saya-page .status-card,
+    .diklat-saya-page .status-card > div {
+        min-width: 0;
+    }
+
+    .diklat-saya-page .status-card h5,
+    .diklat-saya-page .status-card p {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .diklat-saya-page .status-card h5 {
+        font-size: clamp(0.95rem, 2vw, 1.15rem);
+        line-height: 1.35;
+    }
+
+    .diklat-saya-page .status-card-actions {
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 767.98px) {
+        .diklat-saya-page .highlight-bounce {
+            display: block !important;
+        }
+
+        .diklat-saya-page .diklat-saya-intro-note {
+            display: block;
+            width: 100%;
+        }
+
+        .diklat-saya-page .status-card-actions {
+            flex-direction: column;
+        }
+
+        .diklat-saya-page .status-card-actions > * {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .diklat-saya-page .diklat-saya-tabs {
+            width: 100%;
+            margin-bottom: 2rem !important;
+            padding: 0.5rem !important;
+            border-radius: 16px !important;
+        }
+
+        .diklat-saya-page .diklat-saya-tabs .nav-link {
+            padding: 0.65rem 0.85rem;
+            font-size: 0.7rem;
+        }
+
+        .diklat-saya-page .status-card .p-4 {
+            padding: 1rem !important;
+        }
+    }
 </style>
 
-<div class="pt-1 mb-5 glass-wrapper-global">
+<div class="pt-1 mb-5 glass-wrapper-global diklat-saya-page">
     <!-- Header Section -->
     <div class="mb-4 animate__animated animate__fadeIn">
         <h3 class="fw-bold mb-3 text-white">Pembelajaran Saya</h3>
         <div class="highlight-bounce mt-2 d-inline-block">
-            <span class="badge bg-warning text-dark px-3 py-2 fw-bold shadow-sm" style="font-size: 0.9rem;">
+            <span class="badge bg-warning text-dark px-3 py-2 fw-bold shadow-sm diklat-saya-intro-note" style="font-size: 0.9rem;">
                 Berikut daftar program pembelajaran yang Anda ambil beserta status pelaksanaannya.
             </span>
         </div>
     </div>
-    <ul class="nav nav-pills mb-5 p-2 rounded-lg d-inline-flex border border-light" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1) !important;" id="ps-tab" role="tablist">
+    <ul class="nav nav-pills mb-5 p-2 rounded-lg d-inline-flex border border-light diklat-saya-tabs" style="background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1) !important;" id="ps-tab" role="tablist">
         <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#minta-akses" type="button" role="tab">MINTA AKSES</button></li>
         <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#belum-dimulai" type="button" role="tab">BELUM DIMULAI</button></li>
         <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#sedang-berjalan" type="button" role="tab">SEDANG BERJALAN</button></li>
@@ -98,15 +194,15 @@
     <div class="tab-content">
         <!-- Minta Akses -->
         <div class="tab-pane fade show active" id="minta-akses" role="tabpanel">
-            <div class="row g-4">
+            <div class="row g-4 status-grid">
                 <?php foreach ($minta_akses as $p): ?>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="glass-card-global h-100 status-card" style="border-top: 3px solid rgba(255,255,255,0.7);">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
                             <p class="small opacity-75 text-white fw-bold mb-3"><i class="fas fa-hospital me-1 text-warning"></i> <?= strtoupper($p['penyelenggara']) ?></p>
                             <span class="badge bg-warning text-dark badge-status fw-bold shadow-sm mb-4">MENUNGGU VERIFIKASI</span>
-                            <div class="d-flex gap-2 mt-auto">
+                            <div class="d-flex gap-2 mt-auto status-card-actions">
                                 <a href="<?= base_url('pelatihan/peserta/detail_pelatihan/'.$p['id']) ?>" class="btn btn-light flex-grow-1 rounded-pill fw-bold shadow-sm">DETAIL</a>
                                 <a href="javascript:void(0)" class="btn btn-outline-light flex-grow-1 rounded-pill fw-bold shadow-sm" onclick="confirmBatalkan('<?= base_url('pelatihan/peserta/batalkan_pelatihan/'.$p['pelatihan_id']) ?>', '<?= esc($p['nama'], 'js') ?>')">BATALKAN</a>
                             </div>
@@ -118,9 +214,9 @@
         </div>
         <!-- Belum Dimulai -->
         <div class="tab-pane fade" id="belum-dimulai" role="tabpanel">
-            <div class="row g-4">
+            <div class="row g-4 status-grid">
                 <?php foreach ($belum_dimulai as $p): ?>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="glass-card-global h-100 status-card" style="border-top: 3px solid rgba(255,255,255,0.7);">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
@@ -149,9 +245,9 @@
         </div>
         <!-- Sedang Berjalan -->
         <div class="tab-pane fade" id="sedang-berjalan" role="tabpanel">
-            <div class="row g-4">
+            <div class="row g-4 status-grid">
                 <?php foreach ($berjalan as $p): ?>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="glass-card-global h-100 status-card" style="border-top: 3px solid rgba(255,255,255,0.7);">
                         <div class="p-4 d-flex flex-column h-100">
                             <h5 class="fw-bold text-white text-uppercase"><?= $p['nama'] ?></h5>
@@ -179,9 +275,9 @@
         </div>
         <!-- Selesai -->
         <div class="tab-pane fade" id="selesai" role="tabpanel">
-            <div class="row g-4">
+            <div class="row g-4 status-grid">
                 <?php foreach ($selesai as $p): ?>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="glass-card-global h-100 status-card" style="border-top: 3px solid rgba(255,255,255,0.7);">
                         <div class="p-4 text-center">
                             <div class="p-3 rounded-circle d-inline-block mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.15);">
@@ -199,9 +295,9 @@
         </div>
         <!-- Dibatalkan -->
         <div class="tab-pane fade" id="dibatalkan" role="tabpanel">
-            <div class="row g-4">
+            <div class="row g-4 status-grid">
                 <?php foreach ($dibatalkan as $p): ?>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="glass-card-global h-100 status-card" style="border-top: 3px dashed rgba(255,255,255,0.7);">
                         <div class="p-4 text-center opacity-75">
                             <i class="fas fa-times-circle text-danger fs-1 mb-3 opacity-75"></i>

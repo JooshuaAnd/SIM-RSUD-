@@ -822,7 +822,7 @@ class Pengajuan extends BaseController
     {
         $sessionData = session()->get();
         if (!isset($sessionData['institusi_id'])) {
-            return redirect()->to('pendidikan/auth')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->to('/pendidikan/login')->with('error', 'Silakan login terlebih dahulu.');
         }
         $institusi_id = $sessionData['institusi_id'];
 

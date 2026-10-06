@@ -22,7 +22,7 @@ class Certificate extends BaseController
     {
         $userId = $this->session->get('user_id'); // NIK
         if (!$userId) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $user = $this->userModel->find($userId);
@@ -140,7 +140,7 @@ class Certificate extends BaseController
     public function edit($id)
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $cert = $this->certModel->where('id', $id)->where('user_id', $userId)->first();
         if (!$cert) return redirect()->to('pelatihan/peserta/sertifikat')->with('error', 'Sertifikat tidak ditemukan.');
@@ -223,7 +223,7 @@ class Certificate extends BaseController
     public function download($id)
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         // Verify the certificate belongs to the user and is published by RSUD
         $cert = $this->certModel->where('id', $id)->where('user_id', $userId)->first();

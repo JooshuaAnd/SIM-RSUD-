@@ -28,9 +28,10 @@ $routes->setAutoRoute(false);
 $routes->get('run-migrate', 'MigrateController::index');
 
 $routes->get('/', 'Home::index');
-$routes->get('/login', 'Auth::login');
-$routes->post('/auth/check', 'Auth::check');
-$routes->get('/logout', 'Auth::logout');
+// Keep the legacy generic endpoints module-neutral. Each module has its own
+// login/logout route; sending /login directly to Pelatihan causes cross-module redirects.
+$routes->addRedirect('login', '/');
+$routes->addRedirect('logout', '/');
 
 // --- RESTORED: Riset Module ---
 // Riset Module - Admin

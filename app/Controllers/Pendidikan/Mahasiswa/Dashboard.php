@@ -207,7 +207,7 @@ class Dashboard extends BaseController
     {
         $mhs = $this->getMahasiswaData();
         if (!$mhs) {
-            return redirect()->to('/pendidikan/auth/login');
+            return redirect()->to('/pendidikan/login');
         }
 
         $penempatan_id = $this->request->getPost('penempatan_id');
@@ -275,7 +275,7 @@ class Dashboard extends BaseController
     {
         $mhs = $this->getMahasiswaData();
         if (!$mhs) {
-            return redirect()->to('/pendidikan/auth/login');
+            return redirect()->to('/pendidikan/login');
         }
 
         $tugas_id = $this->request->getPost('tugas_id');
@@ -393,7 +393,7 @@ class Dashboard extends BaseController
     {
         $mhs = $this->getMahasiswaData();
         if (!$mhs) {
-            return redirect()->to('/pendidikan/auth/login');
+            return redirect()->to('/pendidikan/login');
         }
 
         $db = \Config\Database::connect();

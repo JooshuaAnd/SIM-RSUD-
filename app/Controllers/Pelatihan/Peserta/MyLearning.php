@@ -8,12 +8,12 @@ class MyLearning extends BaseController
     {
         $userId = $this->session->get('user_id'); // NIK
         if (!$userId) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $db = \Config\Database::connect();
         $registrations = $db->table('peserta_pelatihan')
-            ->select('peserta_pelatihan.*, master_pelatihan.id as id, master_pelatihan.nama as nama, master_pelatihan.metode, master_pelatihan.biaya, master_pelatihan.mekanisme, master_pelatihan.jpl, master_pelatihan.jadwal_mulai, master_pelatihan.jam_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.jam_selesai')
+            ->select('peserta_pelatihan.*, master_pelatihan.id as id, master_pelatihan.nama as nama, master_pelatihan.status as pelatihan_status, master_pelatihan.metode, master_pelatihan.biaya, master_pelatihan.mekanisme, master_pelatihan.jpl, master_pelatihan.jadwal_mulai, master_pelatihan.jam_mulai, master_pelatihan.jadwal_selesai, master_pelatihan.jam_selesai')
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->where('peserta_pelatihan.user_id', $userId)
             ->get()->getResultArray();
@@ -38,7 +38,9 @@ class MyLearning extends BaseController
             $item = $reg;
             
             // Map status
-            if ($reg['status_peserta'] == 'Gagal') {
+            if ($reg['pelatihan_status'] == 'Batal') {
+                $item['reg_status'] = 'dibatalkan';
+            } elseif ($reg['status_peserta'] == 'Gagal') {
                 $item['reg_status'] = 'ditolak';
             } elseif ($reg['status_pembayaran'] == 'Pending' || $reg['status_akses'] == 'Pending') {
                 $item['reg_status'] = 'pending';
@@ -48,7 +50,7 @@ class MyLearning extends BaseController
 
             // Progress from DB
             $progressVal = (float)($reg['progress'] ?? 0);
-            $isSelesai = in_array($reg['status_peserta'], ['Lulus', 'Gagal']);
+            $isSelesai = $reg['pelatihan_status'] != 'Batal' && in_array($reg['status_peserta'], ['Lulus', 'Gagal']);
 
             if ($isSelesai) {
                 $progressVal = 100;
@@ -69,7 +71,7 @@ class MyLearning extends BaseController
             'belum_dimulai' => array_filter($list, fn($l) => $l['reg_status'] == 'disetujui' && $l['progress'] == 0),
             'berjalan' => array_filter($list, fn($l) => $l['reg_status'] == 'disetujui' && $l['progress'] > 0 && !$l['is_selesai']),
             'selesai' => array_filter($list, fn($l) => $l['is_selesai']),
-            'dibatalkan' => array_filter($list, fn($l) => $l['reg_status'] == 'ditolak'),
+            'dibatalkan' => array_filter($list, fn($l) => in_array($l['reg_status'], ['ditolak', 'dibatalkan'], true)),
         ];
         
         return view('Pelatihan/peserta/pembelajaran_saya/index', $data);
@@ -78,7 +80,7 @@ class MyLearning extends BaseController
     public function batalkan_pelatihan($id)
     {
         $userId = $this->session->get('user_id');
-        if (!$userId) return redirect()->to('/login');
+        if (!$userId) return redirect()->to('/pelatihan/login');
 
         $db = \Config\Database::connect();
         $db->table('peserta_pelatihan')

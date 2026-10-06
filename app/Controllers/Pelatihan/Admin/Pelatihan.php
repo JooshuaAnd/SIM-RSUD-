@@ -482,6 +482,16 @@ class Pelatihan extends BaseController
         $masterPenyelenggaraAll = $this->getPenyelenggaraForPelatihan($id);
 
         $sesiList = $this->sesiModel->where('pelatihan_id', $id)->orderBy('tanggal', 'ASC')->orderBy('waktu', 'ASC')->findAll();
+        $evaluasiSesi = $this->evaluasiModel
+            ->where('pelatihan_id', $id)
+            ->where('sesi_id IS NOT NULL', null, false)
+            ->findAll();
+        $evaluasiBySesi = [];
+        foreach ($evaluasiSesi as $evaluasi) {
+            $tipe = strtolower(str_replace('-', '_', $evaluasi['tipe_evaluasi'] ?? ''));
+            $evaluasiBySesi[(int) $evaluasi['sesi_id']][$tipe] = $evaluasi;
+        }
+
         foreach ($sesiList as &$s) {
             $ns = $this->getNarasumberForSesi($s['id']);
             $s['narasumber'] = implode(', ', array_map(fn($n) => $this->formatNamaLengkap($n), $ns));
@@ -492,7 +502,10 @@ class Pelatihan extends BaseController
             $s['penyelenggara'] = implode(', ', array_column($py, 'nama'));
             $s['penyelenggara_arr'] = array_column($py, 'nama');
             $s['penyelenggara_ids'] = array_column($py, 'id');
+            $s['pre_test'] = $evaluasiBySesi[(int) $s['id']]['pre_test'] ?? null;
+            $s['post_test'] = $evaluasiBySesi[(int) $s['id']]['post_test'] ?? null;
         }
+        unset($s);
 
         $data = [
             'title' => 'Manajemen Konten',
@@ -501,6 +514,7 @@ class Pelatihan extends BaseController
             'sesi_online' => $this->sesiModel->where('pelatihan_id', $id)->where('tipe_sesi', 'online')->findAll(),
             'sesi_offline' => $this->sesiModel->where('pelatihan_id', $id)->where('tipe_sesi', 'offline')->findAll(),
             'sesiList' => $sesiList,
+            'evaluasi_sesi' => $evaluasiSesi,
             'master_narasumber' => $masterNarasumberAll,
             'master_penyelenggara' => $masterPenyelenggaraAll,
             'kuis' => [], 
@@ -832,6 +846,12 @@ class Pelatihan extends BaseController
     {
         $sesi = $this->sesiModel->find($id);
         if ($sesi) {
+            $ujianSesi = $this->evaluasiModel->where('sesi_id', $id)->findAll();
+            $ujianIds = array_column($ujianSesi, 'id');
+            if (!empty($ujianIds)) {
+                $this->evaluasiSoalModel->whereIn('ujian_id', $ujianIds)->delete();
+                $this->evaluasiModel->whereIn('id', $ujianIds)->delete();
+            }
             $this->narasumberPelModel->where('sesi_id', $id)->delete();
             $this->penyelenggaraPelModel->where('sesi_id', $id)->delete();
             $this->sesiModel->delete($id);
@@ -842,22 +862,52 @@ class Pelatihan extends BaseController
 
     public function get_evaluasi_soal(string $pelatihan_id, string $tipe)
     {
-        $evaluasi = $this->evaluasiModel->where('pelatihan_id', $pelatihan_id)->where('tipe_evaluasi', $tipe)->first();
+        $allowedTypes = ['Pre-Test', 'Post-Test'];
+        if (!in_array($tipe, $allowedTypes, true)) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'status' => 'error',
+                'message' => 'Tipe evaluasi tidak valid.'
+            ]);
+        }
+
+        $sesiId = (int) $this->request->getGet('sesi_id');
+        $sesi = $this->sesiModel
+            ->where('id', $sesiId)
+            ->where('pelatihan_id', $pelatihan_id)
+            ->first();
+        if (!$sesi) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'status' => 'error',
+                'message' => 'Sesi pelatihan tidak valid.'
+            ]);
+        }
+
+        $evaluasi = $this->evaluasiModel
+            ->where('pelatihan_id', $pelatihan_id)
+            ->where('sesi_id', $sesiId)
+            ->where('tipe_evaluasi', $tipe)
+            ->first();
         if (!$evaluasi) {
-            // Auto create evaluasi entry if not exists
+            // The first access from the session-selection modal creates its test.
             $this->evaluasiModel->insert([
                 'pelatihan_id' => $pelatihan_id,
+                'sesi_id' => $sesiId,
                 'tipe_evaluasi' => $tipe,
                 'kkm' => 70,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
-            $evaluasi = $this->evaluasiModel->where('pelatihan_id', $pelatihan_id)->where('tipe_evaluasi', $tipe)->first();
+            $evaluasi = $this->evaluasiModel
+                ->where('pelatihan_id', $pelatihan_id)
+                ->where('sesi_id', $sesiId)
+                ->where('tipe_evaluasi', $tipe)
+                ->first();
         }
 
         $soal = $this->evaluasiSoalModel->where('ujian_id', $evaluasi['id'])->findAll();
 
         return $this->response->setJSON([
             'evaluasi' => $evaluasi,
+            'sesi' => $sesi,
             'soal' => $soal
         ]);
     }

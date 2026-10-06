@@ -71,7 +71,7 @@ if (!empty($list)) {
     </div>
 </div>
 
-<div class="card border-0 shadow-sm rounded-custom overflow-hidden bg-white mb-5">
+<div class="card border-0 shadow-sm rounded-custom overflow-hidden bg-white mb-5 monitoring-progress-card">
     <div class="card-header bg-white p-0 border-bottom">
         <ul class="nav nav-tabs nav-fill border-0 m-0" id="pelatihanTab" role="tablist">
             <li class="nav-item">
@@ -292,17 +292,121 @@ function renderTableRow(array $l, string $badgeColor, string $statusLabel, bool 
     .gap-1-5 { gap: 0.35rem !important; }
     .me-1-5 { margin-right: 0.35rem !important; }
 
-    /* Override Paginasi DataTables (Merah-Hitam Minimalis) */
-    .page-item.active .page-link {
-        background-color: #ce2127 !important;
-        border-color: #ce2127 !important;
-        color: #fff !important;
+    /* Toolbar dan footer pagination monitoring */
+    .monitoring-progress-card .dataTables_wrapper {
+        color: #64748b;
     }
-    .page-link { color: #212529 !important; font-size: 0.75rem; padding: 0.35rem 0.65rem; }
-    .page-link:hover {
+    .monitoring-progress-card .monitoring-table-toolbar {
+        min-height: 52px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fcfdff;
+    }
+    .monitoring-progress-card .dataTables_length {
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+    .monitoring-progress-card .dataTables_length label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 0;
+    }
+    .monitoring-progress-card .dataTables_length select {
+        min-width: 68px;
+        margin: 0 !important;
+        padding: 0.38rem 2rem 0.38rem 0.72rem !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.6rem !important;
+        color: #334155;
+        background-color: #fff;
+        font-size: 0.74rem;
+        font-weight: 700;
+        box-shadow: none !important;
+    }
+    .monitoring-progress-card .monitoring-table-footer {
+        min-height: 68px;
+        border-top: 1px solid #eef2f7;
+        background: #fcfdff;
+    }
+    .monitoring-progress-card .dataTables_info {
+        padding-top: 0 !important;
+        color: #64748b;
+        font-size: 0.74rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .monitoring-progress-card .dataTables_paginate {
+        padding-top: 0 !important;
+    }
+    .monitoring-progress-card .dataTables_paginate .pagination {
+        align-items: center;
+        gap: 0.38rem;
+        margin: 0;
+    }
+    .monitoring-progress-card .dataTables_paginate .paginate_button {
+        margin-left: 0 !important;
+    }
+    .monitoring-progress-card .dataTables_paginate .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.62rem !important;
+        background: #fff;
+        color: #475569 !important;
+        font-size: 0.74rem;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    .monitoring-progress-card .dataTables_paginate .page-item:not(.active):not(.disabled) .page-link:hover {
+        border-color: #ce2127 !important;
+        background: #fff5f5;
         color: #ce2127 !important;
-        background-color: #fff5f5 !important;
-        border-color: #dee2e6 !important;
+        transform: translateY(-1px);
+    }
+    .monitoring-progress-card .dataTables_paginate .page-item.active .page-link {
+        border-color: #ce2127 !important;
+        background: #ce2127 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(206, 33, 39, 0.2);
+    }
+    .monitoring-progress-card .dataTables_paginate .page-item.disabled .page-link {
+        border-color: #edf1f5 !important;
+        background: #f8fafc;
+        color: #cbd5e1 !important;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+    .monitoring-progress-card .dataTables_paginate .page-item.previous .page-link,
+    .monitoring-progress-card .dataTables_paginate .page-item.next .page-link {
+        width: 34px;
+    }
+    .monitoring-progress-card .dataTables_paginate .page-link:focus {
+        box-shadow: 0 0 0 0.22rem rgba(206, 33, 39, 0.15) !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .monitoring-progress-card .dataTables_info,
+        .monitoring-progress-card .dataTables_paginate {
+            width: 100%;
+            text-align: center;
+        }
+        .monitoring-progress-card .dataTables_info {
+            white-space: normal;
+        }
+        .monitoring-progress-card .monitoring-table-footer {
+            justify-content: center !important;
+        }
+        .monitoring-progress-card .dataTables_paginate .pagination {
+            justify-content: center;
+        }
     }
 </style>
 
@@ -319,11 +423,18 @@ function renderTableRow(array $l, string $badgeColor, string $statusLabel, bool 
         var dtConfig = {
             pageLength: 10,
             responsive: true,
-            dom: 'lrtip',
+            pagingType: 'simple_numbers',
+            dom: '<"monitoring-table-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 px-3 py-3"l>rt<"monitoring-table-footer d-flex flex-wrap justify-content-between align-items-center gap-3 px-3 py-3"ip>',
             language: { 
                 emptyTable: "Tidak ada data diklat pada kategori ini.", 
                 info: "Menampilkan _START_ s/d _END_ dari _TOTAL_ diklat", 
-                paginate: { previous: "‹", next: "›" } 
+                infoEmpty: "Tidak ada diklat untuk ditampilkan",
+                infoFiltered: "(disaring dari _MAX_ diklat)",
+                lengthMenu: "Tampilkan _MENU_ diklat",
+                paginate: {
+                    previous: '<i class="fas fa-chevron-left" aria-hidden="true"></i><span class="visually-hidden">Sebelumnya</span>',
+                    next: '<i class="fas fa-chevron-right" aria-hidden="true"></i><span class="visually-hidden">Berikutnya</span>'
+                }
             }
         };
 

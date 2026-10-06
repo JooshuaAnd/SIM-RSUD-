@@ -78,10 +78,10 @@ class Catalog extends BaseController
 
         // Fetch filter options dynamically
         $filter_options = [
-            'program' => $db->query("SELECT DISTINCT program FROM master_pelatihan WHERE program IS NOT NULL")->getResultArray(),
-            'kategori' => $db->query("SELECT DISTINCT kategori FROM master_pelatihan WHERE kategori IS NOT NULL")->getResultArray(),
-            'cakupan' => $db->query("SELECT DISTINCT cakupan FROM master_pelatihan WHERE cakupan IS NOT NULL")->getResultArray(),
-            'mekanisme' => $db->query("SELECT DISTINCT mekanisme FROM master_pelatihan WHERE mekanisme IS NOT NULL")->getResultArray(),
+            'program' => $db->query("SELECT DISTINCT program FROM master_pelatihan WHERE status IN ('Publish', 'Aktif') AND program IS NOT NULL")->getResultArray(),
+            'kategori' => $db->query("SELECT DISTINCT kategori FROM master_pelatihan WHERE status IN ('Publish', 'Aktif') AND kategori IS NOT NULL")->getResultArray(),
+            'cakupan' => $db->query("SELECT DISTINCT cakupan FROM master_pelatihan WHERE status IN ('Publish', 'Aktif') AND cakupan IS NOT NULL")->getResultArray(),
+            'mekanisme' => $db->query("SELECT DISTINCT mekanisme FROM master_pelatihan WHERE status IN ('Publish', 'Aktif') AND mekanisme IS NOT NULL")->getResultArray(),
             'profesi' => $db->table('profesi_pelatihan')->select('id_profesi as id, nama_profesi')->orderBy('nama_profesi', 'ASC')->get()->getResultArray()
         ];
 
@@ -98,13 +98,16 @@ class Catalog extends BaseController
     {
         $userId = $this->session->get('user_id'); // NIK
         if (!$userId) {
-            return redirect()->to('/login');
+            return redirect()->to('/pelatihan/login');
         }
 
         $db = \Config\Database::connect();
-        $item = $db->table('master_pelatihan')->where('id', $id)->get()->getRowArray();
+        $item = $db->table('master_pelatihan')
+            ->where('id', $id)
+            ->where('status !=', 'Batal')
+            ->get()->getRowArray();
         if (!$item) {
-            return redirect()->to('/pelatihan/peserta/pembelajaran');
+            return redirect()->to('/pelatihan/peserta/pembelajaran')->with('error', 'Pelatihan sudah dibatalkan atau tidak tersedia.');
         }
 
         // Count registered participants
@@ -168,8 +171,23 @@ class Catalog extends BaseController
         $isLearningFinished = ($now > $jadwalSelesai);
 
         $konten = [];
-        
-        $preTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Pre-test')->get()->getRowArray();
+        $sessionTests = $db->table('ujian_pelatihan')
+            ->where('pelatihan_id', $id)
+            ->whereIn('tipe_evaluasi', ['Pre-Test', 'Post-Test'])
+            ->where('sesi_id IS NOT NULL', null, false)
+            ->get()->getResultArray();
+        $usesLegacyExamFlow = empty($sessionTests);
+        $testsBySession = [];
+        if (!$usesLegacyExamFlow) {
+            foreach ($sessionTests as $test) {
+                $type = strtolower(str_replace('-', '_', $test['tipe_evaluasi'] ?? ''));
+                $testsBySession[(int) $test['sesi_id']][$type] ??= $test;
+            }
+        }
+
+        $preTest = $usesLegacyExamFlow
+            ? $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Pre-Test')->get()->getRowArray()
+            : null;
         if ($preTest) {
             $konten[] = ['tipe' => 'pre_test', 'judul' => 'Pre Test', 'durasi' => 'Menyesuaikan'];
         }
@@ -182,6 +200,10 @@ class Catalog extends BaseController
             ->get()
             ->getResultArray();
         foreach ($sesi as $s) {
+            if (!$usesLegacyExamFlow && !empty($testsBySession[(int) $s['id']]['pre_test'])) {
+                $konten[] = ['tipe' => 'pre_test', 'judul' => 'Pre Test: ' . $s['nama_sesi'], 'durasi' => 'Menyesuaikan'];
+            }
+
             if (strtolower($s['tipe_sesi'] ?? '') == 'offline') {
                 $konten[] = [
                     'tipe' => 'presensi', 
@@ -199,9 +221,15 @@ class Catalog extends BaseController
             foreach ($materi as $m) {
                 $konten[] = ['tipe' => 'materi', 'judul' => 'Materi: ' . $m['judul'], 'deskripsi' => $m['deskripsi']];
             }
+
+            if (!$usesLegacyExamFlow && !empty($testsBySession[(int) $s['id']]['post_test'])) {
+                $konten[] = ['tipe' => 'post_test', 'judul' => 'Post Test: ' . $s['nama_sesi'], 'durasi' => 'Menyesuaikan'];
+            }
         }
         
-        $postTest = $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Post-test')->get()->getRowArray();
+        $postTest = $usesLegacyExamFlow
+            ? $db->table('ujian_pelatihan')->where('pelatihan_id', $id)->where('tipe_evaluasi', 'Post-Test')->get()->getRowArray()
+            : null;
         if ($postTest) {
             $konten[] = ['tipe' => 'post_test', 'judul' => 'Post Test', 'durasi' => 'Menyesuaikan'];
         }

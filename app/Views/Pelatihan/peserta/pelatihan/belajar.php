@@ -1150,7 +1150,7 @@ $nowTs = time();
 
                         <div class="d-flex gap-3 flex-wrap justify-content-center">
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white animate__animated animate__pulse animate__infinite" style="background: #ce2127;">
-                                SELESAI & LANJUT KE EVALUASI
+                                SELESAI & LANJUT KE LANGKAH BERIKUTNYA
                             </a>
                             <?php $sisa = 3 - ($post_test_attempts ?? 0); if ($sisa > 0): ?>
                                 <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$active_id.'&retake=1') ?>" class="btn btn-outline-success px-4 py-3 rounded-pill fw-bold border-2">
@@ -1213,7 +1213,7 @@ $nowTs = time();
                         </div>
 
                         <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white animate__animated animate__pulse animate__infinite" style="background: #ce2127;">
-                            LANJUT KE EVALUASI
+                            LANJUT KE LANGKAH BERIKUTNYA
                         </a>
                     </div>
                 <?php elseif (isset($_GET['error']) && $_GET['error'] == 'score_low') :
@@ -1249,13 +1249,13 @@ $nowTs = time();
                                     <i class="fas fa-redo-alt me-2"></i> KERJAKAN ULANG SEKARANG
                                 </a>
                                 <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn btn-outline-danger px-5 py-3 rounded-pill fw-bold hover-scale fs-5" style="border-width: 2px;">
-                                    LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
+                                    LANJUT KE LANGKAH BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
                             </div>
                         <?php else: ?>
                             <p class="mb-4 text-danger fw-bold fs-5"><i class="fas fa-lock me-2"></i> Kesempatan pengerjaan ulang Anda telah habis.</p>
                             <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.($active_id + 1)) ?>" class="btn px-5 py-3 rounded-pill fw-bold shadow-lg hover-scale fs-5 border-0 text-white" style="background: #ce2127;">
-                                LANJUT KE EVALUASI <i class="fas fa-arrow-right ms-2"></i>
+                                LANJUT KE LANGKAH BERIKUTNYA <i class="fas fa-arrow-right ms-2"></i>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -1328,7 +1328,7 @@ $nowTs = time();
                         }
                     ?>
                     const quizData = <?= $quizDataJson ?>;
-                    const quizStorageKey = 'quiz_<?= $p['id'] ?>_<?= $active_step['tipe'] ?? '' ?>';
+                    const quizStorageKey = 'quiz_<?= $p['id'] ?>_<?= $active_step['tipe'] ?? '' ?>_<?= $active_step['ujian_id'] ?? '' ?>';
 
                     let currentQ = 0;
                     let savedIdx = sessionStorage.getItem(quizStorageKey + '_idx');
@@ -1517,6 +1517,12 @@ $nowTs = time();
                             tipeInput.name = 'tipe_ujian';
                             tipeInput.value = '<?= $active_step['tipe'] ?>';
                             form.appendChild(tipeInput);
+
+                            const ujianInput = document.createElement('input');
+                            ujianInput.type = 'hidden';
+                            ujianInput.name = 'ujian_id';
+                            ujianInput.value = '<?= (int) ($active_step['ujian_id'] ?? 0) ?>';
+                            form.appendChild(ujianInput);
                             
                             const letters = ['A', 'B', 'C', 'D'];
                             const answerData = answers.map((ansIdx, i) => {
@@ -1548,12 +1554,22 @@ $nowTs = time();
                         }
                     }
 
-                    renderQuestion();
+                    if (quizData.length === 0) {
+                        document.getElementById('quizContainer').innerHTML = `
+                            <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4 text-center">
+                                <i class="fas fa-clipboard-list fa-2x mb-3"></i>
+                                <h5 class="fw-bold">Soal belum tersedia</h5>
+                                <p class="mb-0">Admin belum menambahkan soal untuk tes sesi ini. Silakan hubungi admin pelatihan.</p>
+                            </div>`;
+                    } else {
+                        renderQuestion();
+                    }
                 </script>
                 <?php endif; ?>
             <?php elseif ($active_step['tipe'] == 'evaluasi') : ?>
                 <?php 
-                    $post_test_completed = $postTestIndex ? (in_array($postTestIndex, $completed_steps) || (isset($post_test_attempts) && $post_test_attempts > 0)) : true;
+                    $post_test_completed = $post_tests_completed ?? true;
+                    $post_test_target = $firstIncompletePostTestStep ?? null;
                 ?>
 
                 <div class="evaluasi-area py-2">
@@ -1561,8 +1577,10 @@ $nowTs = time();
                         <div class="text-center py-5">
                             <i class="fas fa-lock fa-4x text-muted mb-3"></i>
                             <h5 class="fw-bold">Evaluasi Belum Terbuka</h5>
-                            <p class="text-muted">Anda harus menyelesaikan <strong>Post-Test</strong> terlebih dahulu untuk dapat mengisi evaluasi ini.</p>
-                            <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$postTestIndex) ?>" class="btn btn-selanjutnya mt-3">Pergi ke Post-Test</a>
+                            <p class="text-muted">Anda harus menyelesaikan seluruh <strong>Post-Test per sesi</strong> terlebih dahulu untuk dapat mengisi evaluasi ini.</p>
+                            <?php if ($post_test_target) : ?>
+                                <a href="<?= base_url('pelatihan/peserta/belajar/'.$p['id'].'?step='.$post_test_target) ?>" class="btn btn-selanjutnya mt-3">Pergi ke Post-Test</a>
+                            <?php endif; ?>
                         </div>
                     <?php elseif ($ratingAlreadySubmitted) : ?>
                         <div class="alert rounded-4 p-5 text-center shadow-lg mx-auto animate__animated animate__fadeInUp" style="max-width: 800px; background: #ffffff; border: 2px solid #e2e8f0 !important;">

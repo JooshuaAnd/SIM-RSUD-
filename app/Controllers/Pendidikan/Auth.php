@@ -37,7 +37,7 @@ class Auth extends BaseController
                     $sessionData['name'] = 'Admin Diklat';
                     session()->set($sessionData);
                     log_message('error', 'Login Success Diklat. Session ID: ' . session_id() . ' | Data set: ' . print_r($sessionData, true));
-                    return redirect()->to('/pendidikan/admin/diklat');
+                    return redirect()->to(base_url('pendidikan/admin/diklat/dashboard'));
                 case 2:
                     $institusiModel = new \App\Models\InstitusiPendidikanModel();
                     $institusi = $institusiModel->where('user_id', $user['id'])->first();
@@ -89,18 +89,6 @@ class Auth extends BaseController
                 default:
                     return redirect()->back()->with('error', 'Role tidak dikenali!');
             }
-        }
-
-        // Pengabdian dummy fallback if needed
-        if ($email === 'pengabdian' && $password === 'pengabdian') {
-            session()->set([
-                'isLoggedIn' => true,
-                'role' => 'pengabdian',
-                'name' => 'Admin Pengabdian Dummy',
-                'user_id' => 999,
-                'logged_in' => true
-            ]);
-            return redirect()->to('/pelatihan/admin/sertifikat');
         }
 
         return redirect()->back()->with('error', 'Username atau Password salah!');

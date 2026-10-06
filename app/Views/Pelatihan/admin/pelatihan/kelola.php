@@ -129,6 +129,7 @@ $kuesioner = $kuesioner ?? [];
 <!-- Modal Tambah Materi -->
 <?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_tambah_materi') ?>
 <?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_edit_materi') ?>
+<?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_pilih_sesi_evaluasi') ?>
 <?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_kelola_quiz') ?>
 <?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_kelola_feedback') ?>
 <?= $this->include('Pelatihan/admin/pelatihan/modals/kelola/modal_preview_kuesioner') ?>
@@ -154,6 +155,8 @@ $kuesioner = $kuesioner ?? [];
                 tab.show();
             }
         }
+
+        document.getElementById('sesiEvaluasiDipilih')?.addEventListener('change', updateStatusSesiEvaluasi);
     });
 
     function editMateri(materi) {
@@ -200,19 +203,82 @@ $kuesioner = $kuesioner ?? [];
         }, 3000);
     }
 
-    function setupQuiz(type) {
+    function bukaModalPilihEvaluasi(type) {
+        document.getElementById('jenisEvaluasiDipilih').value = type;
+        document.getElementById('sesiEvaluasiDipilih').value = '';
+        document.getElementById('pilihSesiEvaluasiTitle').innerHTML = '<i class="fas fa-link me-2"></i> Tambah ' + type + ' per Sesi';
+        document.getElementById('pilihSesiEvaluasiDescription').textContent = 'Pilih sesi yang akan dihubungkan dengan ' + type + '. Tes baru akan dibuat bila sesi tersebut belum memilikinya.';
+        updateStatusSesiEvaluasi();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPilihSesiEvaluasi')).show();
+    }
+
+    function updateStatusSesiEvaluasi() {
+        const type = document.getElementById('jenisEvaluasiDipilih').value;
+        const select = document.getElementById('sesiEvaluasiDipilih');
+        const option = select.options[select.selectedIndex];
+        const status = document.getElementById('statusSesiEvaluasi');
+
+        if (!option || !option.value) {
+            status.textContent = 'Pilih sesi untuk membuat dan mengatur tes.';
+            status.className = 'text-muted d-block mt-2';
+            return;
+        }
+
+        const exists = type === 'Pre-Test'
+            ? option.dataset.preExists === '1'
+            : option.dataset.postExists === '1';
+        status.textContent = exists
+            ? type + ' untuk sesi ini sudah ada dan akan dibuka untuk dikelola.'
+            : type + ' baru akan dibuat untuk sesi ini.';
+        status.className = (exists ? 'text-success' : 'text-primary') + ' d-block mt-2';
+    }
+
+    function lanjutkanPengaturanEvaluasi(event) {
+        event.preventDefault();
+        const type = document.getElementById('jenisEvaluasiDipilih').value;
+        const sesiId = document.getElementById('sesiEvaluasiDipilih').value;
+        if (!sesiId) {
+            document.getElementById('sesiEvaluasiDipilih').focus();
+            return;
+        }
+
+        const pilihModalElement = document.getElementById('modalPilihSesiEvaluasi');
+        const pilihModal = bootstrap.Modal.getInstance(pilihModalElement);
+        pilihModalElement.addEventListener('hidden.bs.modal', function bukaPengaturanSoal() {
+            setupQuiz(type, sesiId);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalKelolaQuiz')).show();
+        }, { once: true });
+        pilihModal.hide();
+    }
+
+    function setupQuiz(type, sesiId = null) {
+        const currentSesiId = sesiId || document.getElementById('current_sesi_evaluasi').value;
+        if (!currentSesiId) {
+            bukaModalPilihEvaluasi(type);
+            return;
+        }
+
         document.getElementById('quizModalTitle').innerHTML = '<i class="fas fa-tasks me-2"></i> Pengaturan ' + type;
         document.getElementById('current_tipe_evaluasi').value = type;
+        document.getElementById('current_sesi_evaluasi').value = currentSesiId;
         document.getElementById('soalContainer').innerHTML = '<div class="text-center text-muted small py-4"><i class="fas fa-spinner fa-spin me-2"></i> Memuat soal...</div>';
-        
-        let pelatihan_id = <?= $p['id'] ?>;
-        fetch(`<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal') ?>/${pelatihan_id}/${type}`)
-            .then(res => res.json())
+
+        const pelatihanId = <?= $p['id'] ?>;
+        const endpoint = `<?= base_url('pelatihan/admin/pelatihan/evaluasi_soal') ?>/${pelatihanId}/${encodeURIComponent(type)}?sesi_id=${encodeURIComponent(currentSesiId)}`;
+        fetch(endpoint)
+            .then(res => {
+                if (!res.ok) throw new Error('Gagal memuat pengaturan tes.');
+                return res.json();
+            })
             .then(data => {
                 document.getElementById('current_evaluasi_id').value = data.evaluasi.id;
                 document.getElementById('evaluasi_kkm').value = data.evaluasi.kkm;
-                
+                const sesiNama = data.sesi && data.sesi.nama_sesi ? ' — ' + data.sesi.nama_sesi : '';
+                document.getElementById('quizModalTitle').innerHTML = '<i class="fas fa-tasks me-2"></i> Pengaturan ' + type + sesiNama;
                 renderSoal(data.soal);
+            })
+            .catch(error => {
+                document.getElementById('soalContainer').innerHTML = '<div class="text-center text-danger small py-4">' + error.message + '</div>';
             });
     }
 

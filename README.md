@@ -34,7 +34,7 @@ Run the CodeIgniter development server on port `8081`, then open
 `http://localhost:8081/`:
 
 ```bash
-php spark serve --host localhost --port 8081
+php spark serve --host 0.0.0.0 --port 8081
 ```
 
 Port `8080` is not used by this project because it may be occupied by another

@@ -11,6 +11,7 @@
             <div class="modal-body p-0">
                 <input type="hidden" id="current_tipe_evaluasi" value="">
                 <input type="hidden" id="current_evaluasi_id" value="">
+                <input type="hidden" id="current_sesi_evaluasi" value="">
                 
                 <div class="p-4 bg-white border-bottom">
                     <form id="formKkm" onsubmit="event.preventDefault(); saveKkm();">
