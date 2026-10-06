@@ -61,6 +61,7 @@ class SuperAdmin extends BaseController
                     'no_wa' => '-', 
                     'password' => password_hash($password, PASSWORD_DEFAULT),
                     'role' => $roleToInsert,
+                    'admin_akses_peserta' => ($roleToInsert === 'admin' && $this->request->getPost('admin_akses_peserta') === '1') ? 1 : 0,
                     'status' => 'aktif',
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s'),
@@ -88,6 +89,38 @@ class SuperAdmin extends BaseController
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal membuat admin: ' . $e->getMessage());
         }
+    }
+
+    public function toggle_admin_akses_peserta()
+    {
+        $nik = trim((string) $this->request->getPost('nik'));
+        $enabled = (string) $this->request->getPost('enabled');
+
+        if ($nik === '' || !in_array($enabled, ['0', '1'], true)) {
+            return redirect()->back()->with('error', 'Data akses peserta tidak valid.');
+        }
+
+        $db = \Config\Database::connect();
+        $user = $db->table('users_pelatihan')
+            ->where('nik', $nik)
+            ->where('role', 'admin')
+            ->get()
+            ->getRowArray();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Admin Pelatihan tidak ditemukan. Akses Admin Pengabdian tidak dapat diubah di sini.');
+        }
+
+        $db->table('users_pelatihan')
+            ->where('nik', $nik)
+            ->where('role', 'admin')
+            ->update([
+                'admin_akses_peserta' => (int) $enabled,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        $status = $enabled === '1' ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->back()->with('success', 'Akses peserta untuk admin berhasil ' . $status . '.');
     }
 
 

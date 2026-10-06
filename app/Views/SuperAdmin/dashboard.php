@@ -38,6 +38,7 @@
                 <div class="card p-4">
                     <h5 class="fw-bold mb-4">Buat Akun Admin Baru</h5>
                     <form action="<?= base_url('superadmin/create_admin') ?>" method="POST">
+                        <?= csrf_field() ?>
                         <div class="mb-3">
                             <label class="form-label">Tipe Admin</label>
                             <select name="tipe_admin" id="tipe_admin" class="form-select" required>
@@ -47,6 +48,13 @@
                                 <option value="admin_pengabdian">Admin Pengabdian (Pelatihan)</option>
                                 <option value="pendidikan">Admin Pendidikan (Diklat)</option>
                             </select>
+                        </div>
+                        <div class="mb-3" id="admin_akses_peserta_container" style="display: none;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="admin_akses_peserta" id="admin_akses_peserta" value="1">
+                                <label class="form-check-label fw-semibold" for="admin_akses_peserta">Izinkan login sebagai peserta</label>
+                            </div>
+                            <small class="text-muted">Khusus Admin Pelatihan. Admin Pengabdian tidak mendapat akses peserta.</small>
                         </div>
                         <div class="mb-3" id="nik_container" style="display: none;">
                             <label class="form-label">NIK / Identitas</label>
@@ -130,6 +138,7 @@
                                             <th>Nama</th>
                                             <th>NIK</th>
                                             <th>Email</th>
+                                            <th>Akses Peserta</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -148,6 +157,24 @@
                                                 <td><?= $admin['nik'] ?></td>
                                                 <td><?= $admin['email'] ?></td>
                                                 <td>
+                                                    <?php if ($admin['role'] === 'admin'): ?>
+                                                        <?php $aksesPesertaAktif = (int) ($admin['admin_akses_peserta'] ?? 0) === 1; ?>
+                                                        <span class="badge <?= $aksesPesertaAktif ? 'bg-success' : 'bg-secondary' ?> mb-2">
+                                                            <?= $aksesPesertaAktif ? 'Aktif' : 'Nonaktif' ?>
+                                                        </span>
+                                                        <form action="<?= base_url('superadmin/toggle_admin_akses_peserta') ?>" method="POST">
+                                                            <?= csrf_field() ?>
+                                                            <input type="hidden" name="nik" value="<?= esc($admin['nik'], 'attr') ?>">
+                                                            <input type="hidden" name="enabled" value="<?= $aksesPesertaAktif ? '0' : '1' ?>">
+                                                            <button type="submit" class="btn btn-sm <?= $aksesPesertaAktif ? 'btn-outline-danger' : 'btn-outline-success' ?>">
+                                                                <?= $aksesPesertaAktif ? 'Nonaktifkan' : 'Aktifkan' ?>
+                                                            </button>
+                                                        </form>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">Tidak tersedia</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
                                                     <button class="btn btn-sm btn-outline-info ms-1" onclick="kirimResetEmail('<?= $admin['nik'] ?>', 'pelatihan', '<?= $admin['nama_lengkap'] ?>')">
                                                         <i class="fas fa-envelope"></i> Kirim Reset Email
                                                     </button>
@@ -155,7 +182,7 @@
                                             </tr>
                                             <?php endforeach; ?>
                                         <?php else: ?>
-                                            <tr><td colspan="4" class="text-center">Belum ada admin Pelatihan</td></tr>
+                                            <tr><td colspan="5" class="text-center">Belum ada admin Pelatihan</td></tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
@@ -206,9 +233,16 @@
         const nikInput = document.getElementById('nik');
         const namaContainer = document.getElementById('nama_container');
         const namaInput = document.getElementById('nama_lengkap');
+        const adminAksesPesertaContainer = document.getElementById('admin_akses_peserta_container');
+        const adminAksesPesertaInput = document.getElementById('admin_akses_peserta');
 
         tipeAdminSelect.addEventListener('change', function() {
             const val = this.value;
+            adminAksesPesertaContainer.style.display = val === 'pelatihan' ? 'block' : 'none';
+            if (val !== 'pelatihan') {
+                adminAksesPesertaInput.checked = false;
+            }
+
             if (val === 'pelatihan' || val === 'admin_pengabdian') {
                 nikContainer.style.display = 'block';
                 nikInput.setAttribute('required', 'required');

@@ -1,4 +1,7 @@
-<?php helper('pelatihan'); ?>
+<?php
+helper('pelatihan');
+$roleSelectionRequired = $roleSelectionRequired ?? false;
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -99,6 +102,18 @@
             display: flex;
             align-items: center;
             gap: 1.2rem;
+        }
+
+        .role-choice-button {
+            width: 100%;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+        }
+
+        .role-choice-button:focus-visible {
+            outline: 3px solid rgba(198, 40, 40, 0.45);
+            outline-offset: 3px;
         }
 
         .role-card:hover {
@@ -324,6 +339,15 @@
                 animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 
@@ -371,36 +395,62 @@
             <?php endif; ?>
 
             <div id="loginHeader" class="mb-5">
-                <h3 class="fw-bold text-dark">Login Portal Pelatihan</h3>
-                <p class="text-muted small" id="loginSub">Silakan masukkan NIK dan Kata Sandi terdaftar Anda untuk mengakses sistem diklat.</p>
+                <?php if ($roleSelectionRequired): ?>
+                    <h3 class="fw-bold text-dark">Pilih Akses</h3>
+                    <p class="text-muted small" id="loginSub">Halo <?= esc($pendingUserName ?? 'Admin') ?>, pilih area yang ingin Anda buka.</p>
+                <?php else: ?>
+                    <h3 class="fw-bold text-dark">Login Portal Pelatihan</h3>
+                    <p class="text-muted small" id="loginSub">Silakan masukkan NIK dan Kata Sandi terdaftar Anda untuk mengakses sistem diklat.</p>
+                <?php endif; ?>
             </div>
 
-            <form action="<?= base_url('pelatihan/auth/login') ?>" method="POST" id="loginForm">
-                <div id="credentialsForm">
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
-                        <input type="text" name="nik" class="form-control" placeholder="Masukkan 16 digit NIK" required pattern="[0-9]{16}" maxlength="16" inputmode="numeric" title="NIK harus berupa 16 digit angka murni." value="<?= old('nik') ?>">
-                    </div>
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label small fw-bold mb-0">KATA SANDI</label>
-                            <a href="<?= base_url('pelatihan/lupa-password') ?>" class="small text-decoration-none" style="color: var(--primary-red); font-weight: 600;">Lupa Password?</a>
-                        </div>
-                        <div class="position-relative">
-                            <input type="password" name="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right:46px;">
-                            <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0 bg-transparent text-muted" onclick="togglePassword(this)" tabindex="-1"><i class="fas fa-eye"></i></button>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-login-submit w-100 mt-2">
-                        Masuk <i class="fas fa-sign-in-alt ms-2"></i>
+            <?php if ($roleSelectionRequired): ?>
+                <form action="<?= base_url('pelatihan/auth/select-role') ?>" method="POST" id="roleSelectionForm">
+                    <?= csrf_field() ?>
+                    <button type="submit" name="role" value="admin" class="role-card role-choice-button">
+                        <span class="role-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
+                        <span>
+                            <span class="role-name d-block">Masuk sebagai Admin</span>
+                            <span class="role-desc d-block">Kelola pelatihan dan data administrasi.</span>
+                        </span>
                     </button>
-                </div>
+                    <button type="submit" name="role" value="peserta" class="role-card role-choice-button">
+                        <span class="role-icon"><i class="fas fa-user-graduate" aria-hidden="true"></i></span>
+                        <span>
+                            <span class="role-name d-block">Masuk sebagai Peserta</span>
+                            <span class="role-desc d-block">Ikuti pelatihan dan akses pembelajaran Anda.</span>
+                        </span>
+                    </button>
+                    <a href="<?= base_url('pelatihan/login') ?>" class="btn btn-back-role w-100 mt-2 text-decoration-none">Batal dan kembali ke login</a>
+                </form>
+            <?php else: ?>
+                <form action="<?= base_url('pelatihan/auth/login') ?>" method="POST" id="loginForm">
+                    <div id="credentialsForm">
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
+                            <input type="text" name="nik" class="form-control" placeholder="Masukkan 16 digit NIK" required pattern="[0-9]{16}" maxlength="16" inputmode="numeric" title="NIK harus berupa 16 digit angka murni." value="<?= old('nik') ?>">
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-bold mb-0">KATA SANDI</label>
+                                <a href="<?= base_url('pelatihan/lupa-password') ?>" class="small text-decoration-none" style="color: var(--primary-red); font-weight: 600;">Lupa Password?</a>
+                            </div>
+                            <div class="position-relative">
+                                <input type="password" name="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right:46px;">
+                                <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-2 p-0 border-0 bg-transparent text-muted" onclick="togglePassword(this)" tabindex="-1"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
 
-                <div class="text-center mt-5">
-                    <p class="text-muted small">Belum memiliki akun? <a href="<?= base_url('pelatihan/register') ?>" class="btn-register">Registrasi Baru</a></p>
-                </div>
-            </form>
+                        <button type="submit" class="btn btn-login-submit w-100 mt-2">
+                            Masuk <i class="fas fa-sign-in-alt ms-2"></i>
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <p class="text-muted small">Belum memiliki akun? <a href="<?= base_url('pelatihan/register') ?>" class="btn-register">Registrasi Baru</a></p>
+                    </div>
+                </form>
+            <?php endif; ?>
         </div>
     </div>
 

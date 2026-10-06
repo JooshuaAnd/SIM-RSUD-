@@ -9,7 +9,7 @@ class UserPelatihanModel extends Model
     protected $table            = 'users_pelatihan';
     protected $primaryKey       = 'nik'; // Sesuai database
     protected $useAutoIncrement = false; // NIK is a manual VARCHAR primary key
-    protected $allowedFields    = ['nik', 'nama_lengkap', 'email', 'no_wa', 'jenis_peserta', 'role', 'id_unit_kerja', 'id_profesi', 'capaian_jpl', 'password', 'status', 'created_at', 'updated_at'];
+    protected $allowedFields    = ['nik', 'nama_lengkap', 'email', 'no_wa', 'jenis_peserta', 'role', 'admin_akses_peserta', 'id_unit_kerja', 'id_profesi', 'capaian_jpl', 'password', 'status', 'created_at', 'updated_at'];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
     protected $updatedField     = 'updated_at';

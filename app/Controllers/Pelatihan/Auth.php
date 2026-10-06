@@ -11,7 +11,7 @@ class Auth extends BaseController
 {
     public function index()
     {
-        session()->remove(['logged_in', 'role', 'user_id', 'nik', 'email']);
+        session()->remove(['logged_in', 'role', 'account_role', 'user_id', 'nik', 'email', 'pending_login_nik', 'pending_login_created_at']);
         session()->destroy();
         return view('Pelatihan/auth/login');
     }
@@ -52,28 +52,104 @@ class Auth extends BaseController
             return redirect()->back()->withInput()->with('error', 'Akun Anda dinonaktifkan. Silakan hubungi administrator.');
         }
 
-        // Get role directly from database
-        $dbRole = strtolower($user['role']);
+        $dbRole = strtolower($user['role'] ?? '');
 
-        // Set session data
+        // Only ordinary admins explicitly granted this flag may select a participant session.
+        if ($dbRole === 'admin' && (int) ($user['admin_akses_peserta'] ?? 0) === 1) {
+            $this->session->remove([
+                'logged_in', 'role', 'account_role', 'user_id', 'nik', 'email', 'nama',
+                'jenis_peserta', 'force_password_reset', 'pending_login_nik', 'pending_login_created_at',
+            ]);
+            $this->session->regenerate(true);
+            $this->session->set([
+                'pending_login_nik' => $user['nik'],
+                'pending_login_created_at' => time(),
+            ]);
+
+            return view('Pelatihan/auth/login', [
+                'roleSelectionRequired' => true,
+                'pendingUserName' => $user['nama_lengkap'],
+            ]);
+        }
+
+        return $this->completeLogin($user, $dbRole);
+    }
+
+    public function selectRole()
+    {
+        $pendingNik = $this->session->get('pending_login_nik');
+        $pendingAt = (int) $this->session->get('pending_login_created_at');
+        $selectedRole = $this->request->getPost('role');
+
+        if (empty($pendingNik) || $pendingAt <= 0 || (time() - $pendingAt) > 300) {
+            $this->clearPendingLogin();
+            return redirect()->to('/pelatihan/login')->with('error', 'Sesi pemilihan akses sudah berakhir. Silakan login kembali.');
+        }
+
+        if (!in_array($selectedRole, ['admin', 'peserta'], true)) {
+            return redirect()->to('/pelatihan/login')->with('error', 'Pilihan akses tidak valid. Silakan login kembali.');
+        }
+
+        $user = (new UserPelatihanModel())->where('nik', $pendingNik)->first();
+        if (
+            !$user ||
+            strtolower($user['role'] ?? '') !== 'admin' ||
+            (int) ($user['admin_akses_peserta'] ?? 0) !== 1 ||
+            ($user['status'] ?? 'aktif') !== 'aktif'
+        ) {
+            $this->clearPendingLogin();
+            return redirect()->to('/pelatihan/login')->with('error', 'Akses akun berubah atau tidak tersedia. Silakan login kembali.');
+        }
+
+        return $this->completeLogin($user, $selectedRole);
+    }
+
+    private function completeLogin(array $user, string $activeRole)
+    {
+        $accountRole = strtolower($user['role'] ?? '');
+        if ($accountRole === 'admin') {
+            if (!in_array($activeRole, ['admin', 'peserta'], true)) {
+                $activeRole = 'admin';
+            }
+            if ($activeRole === 'peserta' && (int) ($user['admin_akses_peserta'] ?? 0) !== 1) {
+                $this->clearPendingLogin();
+                return redirect()->to('/pelatihan/login')->with('error', 'Akun ini tidak memiliki akses sebagai peserta.');
+            }
+        } else {
+            // admin_pengabdian and participant accounts keep their original, restricted role.
+            $activeRole = $accountRole;
+        }
+
+        $this->session->remove([
+            'logged_in', 'role', 'account_role', 'user_id', 'nik', 'email', 'nama',
+            'jenis_peserta', 'force_password_reset', 'pending_login_nik', 'pending_login_created_at',
+        ]);
+        $this->session->regenerate(true);
         $this->session->set([
             'user_id'       => $user['nik'],
+            'nik'           => $user['nik'],
             'nama'          => $user['nama_lengkap'],
             'email'         => $user['email'],
-            'role'          => $dbRole,
-            'jenis_peserta' => $user['jenis_peserta'],
+            'role'          => $activeRole,
+            'account_role'  => $accountRole,
+            'jenis_peserta' => $user['jenis_peserta'] ?? null,
             'logged_in'     => true,
-            'force_password_reset' => password_verify('RSUDKotaYogyakarta2026', $user['password'])
+            'force_password_reset' => password_verify('RSUDKotaYogyakarta2026', $user['password']),
         ]);
 
-        // Redirect to respective dashboard based on database role
-        if ($dbRole === 'admin') {
+        if ($activeRole === 'admin') {
             return redirect()->to('/pelatihan/admin/dashboard')->with('success', 'Selamat datang, ' . $user['nama_lengkap']);
-        } elseif ($dbRole === 'admin_pengabdian') {
-            return redirect()->to('/pelatihan/admin_pengabdian/sertifikat')->with('success', 'Selamat datang, ' . $user['nama_lengkap']);
-        } else {
-            return redirect()->to('/pelatihan/peserta/beranda')->with('success', 'Selamat datang, ' . $user['nama_lengkap']);
         }
+        if ($activeRole === 'admin_pengabdian') {
+            return redirect()->to('/pelatihan/admin_pengabdian/sertifikat')->with('success', 'Selamat datang, ' . $user['nama_lengkap']);
+        }
+
+        return redirect()->to('/pelatihan/peserta/beranda')->with('success', 'Selamat datang, ' . $user['nama_lengkap']);
+    }
+
+    private function clearPendingLogin(): void
+    {
+        $this->session->remove(['pending_login_nik', 'pending_login_created_at']);
     }
 
     public function register()
@@ -196,7 +272,7 @@ class Auth extends BaseController
 
     public function logout()
     {
-        $this->session->remove(['logged_in', 'role', 'user_id', 'nik', 'email']);
+        $this->session->remove(['logged_in', 'role', 'account_role', 'user_id', 'nik', 'email', 'pending_login_nik', 'pending_login_created_at']);
         $this->session->destroy();
         return redirect()->to('/pelatihan/login');
     }

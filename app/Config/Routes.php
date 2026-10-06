@@ -261,6 +261,7 @@ $routes->group('pendidikan', function ($routes) {
 $routes->group('superadmin', ['namespace' => 'App\Controllers', 'filter' => 'pendidikan_auth:superadmin'], function ($routes) {
     $routes->get('dashboard', 'SuperAdmin::dashboard');
     $routes->post('create_admin', 'SuperAdmin::create_admin');
+    $routes->post('toggle_admin_akses_peserta', 'SuperAdmin::toggle_admin_akses_peserta');
     $routes->post('reset_password_email', 'SuperAdmin::reset_password_email');
 });
 
@@ -268,6 +269,7 @@ $routes->group('superadmin', ['namespace' => 'App\Controllers', 'filter' => 'pen
 $routes->group('pelatihan', function ($routes) {
     $routes->get('login', 'Pelatihan\\Auth::index');
     $routes->post('auth/login', 'Pelatihan\\Auth::login');
+    $routes->post('auth/select-role', 'Pelatihan\\Auth::selectRole');
     $routes->get('register', 'Pelatihan\\Auth::register');
     $routes->post('auth/register', 'Pelatihan\\Auth::processRegister');
     $routes->get('logout', 'Pelatihan\\Auth::logout');
