@@ -175,7 +175,7 @@ class Certificate extends BaseController
         $tests = $db->table('ujian_pelatihan')
             ->select('ujian_pelatihan.id, ujian_pelatihan.tipe_evaluasi, ujian_pelatihan.sesi_id, sesi_interaktif_pelatihan.nama_sesi')
             ->join('sesi_interaktif_pelatihan', 'sesi_interaktif_pelatihan.id = ujian_pelatihan.sesi_id', 'left')
-            ->where('pelatihan_id', $pelatihanId)
+            ->where('ujian_pelatihan.pelatihan_id', $pelatihanId)
             ->orderBy('ujian_pelatihan.id', 'ASC')
             ->get()
             ->getResultArray();
