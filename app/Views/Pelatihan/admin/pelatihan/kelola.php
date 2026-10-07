@@ -137,6 +137,8 @@ $kuesioner = $kuesioner ?? [];
 
 <?= $this->section('scripts') ?>
 <script>
+    let materiEvaluasiAktif = [];
+
     document.addEventListener("DOMContentLoaded", function() {
         // Tab persistence logic
         const triggerTabList = document.querySelectorAll('#manageTabs button');
@@ -203,6 +205,29 @@ $kuesioner = $kuesioner ?? [];
         }, 3000);
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, character => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[character]);
+    }
+
+    function buildMateriOptionsHtml(selectedMateriId = null) {
+        const selectedId = selectedMateriId == null ? '' : String(selectedMateriId);
+        let options = '<option value="">-- Umum / Tidak Terkait Materi --</option>';
+
+        materiEvaluasiAktif.forEach(materi => {
+            const materiId = String(materi.id);
+            const selected = selectedId === materiId ? ' selected' : '';
+            options += `<option value="${escapeHtml(materiId)}"${selected}>ID: ${escapeHtml(materiId)} - ${escapeHtml(materi.judul)}</option>`;
+        });
+
+        return options;
+    }
+
     function bukaModalPilihEvaluasi(type) {
         document.getElementById('jenisEvaluasiDipilih').value = type;
         document.getElementById('sesiEvaluasiDipilih').value = '';
@@ -261,6 +286,7 @@ $kuesioner = $kuesioner ?? [];
         document.getElementById('quizModalTitle').innerHTML = '<i class="fas fa-tasks me-2"></i> Pengaturan ' + type;
         document.getElementById('current_tipe_evaluasi').value = type;
         document.getElementById('current_sesi_evaluasi').value = currentSesiId;
+        materiEvaluasiAktif = [];
         document.getElementById('soalContainer').innerHTML = '<div class="text-center text-muted small py-4"><i class="fas fa-spinner fa-spin me-2"></i> Memuat soal...</div>';
 
         const pelatihanId = <?= $p['id'] ?>;
@@ -275,14 +301,15 @@ $kuesioner = $kuesioner ?? [];
                 document.getElementById('evaluasi_kkm').value = data.evaluasi.kkm;
                 const sesiNama = data.sesi && data.sesi.nama_sesi ? ' — ' + data.sesi.nama_sesi : '';
                 document.getElementById('quizModalTitle').innerHTML = '<i class="fas fa-tasks me-2"></i> Pengaturan ' + type + sesiNama;
-                renderSoal(data.soal);
+                renderSoal(data.soal, data.materi);
             })
             .catch(error => {
                 document.getElementById('soalContainer').innerHTML = '<div class="text-center text-danger small py-4">' + error.message + '</div>';
             });
     }
 
-    function renderSoal(soalList) {
+    function renderSoal(soalList, materiList = []) {
+        materiEvaluasiAktif = Array.isArray(materiList) ? materiList : [];
         const container = document.getElementById('soalContainer');
         container.innerHTML = '';
         if (soalList.length === 0) {
@@ -301,19 +328,7 @@ $kuesioner = $kuesioner ?? [];
             let checkedC = soal.jawaban_benar === 'C' ? 'checked' : '';
             let checkedD = soal.jawaban_benar === 'D' ? 'checked' : '';
 
-            let materiOptions = '<option value="">-- Umum / Tidak Terkait Materi --</option>';
-            <?php foreach($materi as $m): ?>
-                <?php 
-                $sesiText = "Umum";
-                foreach($sesiList as $s) {
-                    if ($s['id'] == $m['sesi_id']) {
-                        $sesiText = $s['nama_sesi'];
-                        break;
-                    }
-                }
-                ?>
-                materiOptions += `<option value="<?= $m['id'] ?>" ${soal.materi_id == <?= $m['id'] ?> ? 'selected' : ''}>ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (${"<?= addslashes(htmlspecialchars($sesiText)) ?>"})</option>`;
-            <?php endforeach; ?>
+            const materiOptions = buildMateriOptionsHtml(soal.materi_id);
 
             const html = `
                 <div class="card border-0 shadow-sm bg-light rounded-lg mb-3 p-4">
@@ -794,19 +809,7 @@ $kuesioner = $kuesioner ?? [];
                     <div class="mb-3">
                         <label class="small text-muted mb-1">Terkait Materi (Opsional)</label>
                         <select name="materi_id" class="form-select form-select-sm mb-2">
-                            <option value="">-- Umum / Tidak Terkait Materi --</option>
-                            <?php foreach($materi as $m): ?>
-                                <?php 
-                                $sesiText = "Umum";
-                                foreach($sesiList as $s) {
-                                    if ($s['id'] == $m['sesi_id']) {
-                                        $sesiText = $s['nama_sesi'];
-                                        break;
-                                    }
-                                }
-                                ?>
-                                <option value="<?= $m['id'] ?>">ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (<?= addslashes(htmlspecialchars($sesiText)) ?>)</option>
-                            <?php endforeach; ?>
+                            ${buildMateriOptionsHtml()}
                         </select>
                     </div>
 
@@ -858,19 +861,7 @@ $kuesioner = $kuesioner ?? [];
                     <div class="mb-3">
                         <label class="small text-muted mb-1">Terkait Materi (Opsional)</label>
                         <select name="materi_id" class="form-select form-select-sm mb-2">
-                            <option value="">-- Umum / Tidak Terkait Materi --</option>
-                            <?php foreach($materi as $m): ?>
-                                <?php 
-                                $sesiText = "Umum";
-                                foreach($sesiList as $s) {
-                                    if ($s['id'] == $m['sesi_id']) {
-                                        $sesiText = $s['nama_sesi'];
-                                        break;
-                                    }
-                                }
-                                ?>
-                                <option value="<?= $m['id'] ?>">ID: <?= $m['id'] ?> - <?= addslashes(htmlspecialchars($m['judul'])) ?> (<?= addslashes(htmlspecialchars($sesiText)) ?>)</option>
-                            <?php endforeach; ?>
+                            ${buildMateriOptionsHtml()}
                         </select>
                     </div>
 

@@ -904,11 +904,18 @@ class Pelatihan extends BaseController
         }
 
         $soal = $this->evaluasiSoalModel->where('ujian_id', $evaluasi['id'])->findAll();
+        $materi = $this->materiPelatihanModel
+            ->select('id, judul')
+            ->where('pelatihan_id', $pelatihan_id)
+            ->where('sesi_id', $sesiId)
+            ->orderBy('urutan', 'ASC')
+            ->findAll();
 
         return $this->response->setJSON([
             'evaluasi' => $evaluasi,
             'sesi' => $sesi,
-            'soal' => $soal
+            'soal' => $soal,
+            'materi' => $materi
         ]);
     }
 
