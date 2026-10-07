@@ -83,6 +83,16 @@
 </div>
 
 <script>
+function escapeLogValue(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
 function openLogModal(pesertaId, nama) {
     document.getElementById('logPesertaName').innerText = nama;
     const modal = new bootstrap.Modal(document.getElementById('modalLogJawaban'));
@@ -100,15 +110,22 @@ function openLogModal(pesertaId, nama) {
         .then(data => {
             let html = '';
             
-            if (Object.keys(data).length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 html = '<div class="alert alert-warning text-center">Belum ada riwayat pengerjaan kuis.</div>';
             } else {
-                for (const [tipeRaw, ujianData] of Object.entries(data)) {
-                    const tipe = tipeRaw.toLowerCase();
+                const attemptByExam = {};
+                data.forEach(ujianData => {
+                    const tipeRaw = (ujianData.tipe_evaluasi || ujianData.tipe_ujian || '').toLowerCase();
+                    const tipe = tipeRaw.replaceAll('_', '-');
                     const label = (tipe.includes('pre')) ? 'PRE-TEST' : 'POST-TEST';
+                    const examKey = String(ujianData.ujian_id || `${ujianData.sesi_id || 'umum'}-${tipe}`);
+                    attemptByExam[examKey] = (attemptByExam[examKey] || 0) + 1;
+                    const attemptLabel = label === 'POST-TEST' ? ` | Percobaan ${attemptByExam[examKey]}` : '';
+                    const sesiNama = ujianData.sesi_nama || 'Tes umum / tanpa sesi';
+                    const waktuUjian = ujianData.created_at ? ` | ${ujianData.created_at}` : '';
                     html += `
                         <div class="mb-4">
-                            <h6 class="fw-bold bg-dark text-white p-2 rounded">${label} - Nilai: ${ujianData.score}</h6>
+                            <h6 class="fw-bold bg-dark text-white p-2 rounded">${label} - ${escapeLogValue(sesiNama)}${attemptLabel} - Nilai: ${escapeLogValue(ujianData.score)}${escapeLogValue(waktuUjian)}</h6>
                             
                             <!-- Summary by Materi -->
                             <div class="mb-3">
@@ -134,7 +151,7 @@ function openLogModal(pesertaId, nama) {
                     });
                     
                     for (const [materi, stats] of Object.entries(summary)) {
-                        html += `<tr><td class="text-start fw-bold">${materi}</td><td class="text-center text-success fw-bold">${stats.benar}</td><td class="text-center text-danger fw-bold">${stats.salah}</td></tr>`;
+                        html += `<tr><td class="text-start fw-bold">${escapeLogValue(materi)}</td><td class="text-center text-success fw-bold">${stats.benar}</td><td class="text-center text-danger fw-bold">${stats.salah}</td></tr>`;
                     }
                     
                     html += `
@@ -163,16 +180,16 @@ function openLogModal(pesertaId, nama) {
                         const materiTeks = j.materi_judul ? j.materi_judul : '-';
                         html += `
                             <tr>
-                                <td>${j.pertanyaan}</td>
-                                <td class="text-center" style="font-size:0.7rem;">${materiTeks}</td>
-                                <td class="text-center fw-bold text-success">${(j.jawaban_benar || '-').toUpperCase()}</td>
-                                <td class="text-center fw-bold">${j.jawaban_peserta || '-'}</td>
+                                <td>${escapeLogValue(j.pertanyaan)}</td>
+                                <td class="text-center" style="font-size:0.7rem;">${escapeLogValue(materiTeks)}</td>
+                                <td class="text-center fw-bold text-success">${escapeLogValue((j.jawaban_benar || '-').toUpperCase())}</td>
+                                <td class="text-center fw-bold">${escapeLogValue(j.jawaban_peserta || '-')}</td>
                                 <td class="text-center">${status}</td>
                             </tr>
                         `;
                     });
                     html += `</tbody></table></div></div>`;
-                }
+                });
             }
             document.getElementById('logContent').innerHTML = html;
         })

@@ -85,21 +85,35 @@ class Grading extends BaseController
     public function log_jawaban($peserta_pelat_id)
     {
         $db = \Config\Database::connect();
-        $ujian = $db->table('peserta_ujian_pelatihan')
-            ->where('peserta_pelat_id', $peserta_pelat_id)
-            ->orderBy('created_at', 'ASC')
+        $ujianList = $db->table('peserta_ujian_pelatihan pu')
+            ->select('pu.id as attempt_id, pu.ujian_id, pu.tipe_ujian, pu.score, pu.status_lulus, pu.created_at, up.tipe_evaluasi, up.sesi_id, sesi.nama_sesi')
+            ->join('ujian_pelatihan up', 'up.id = pu.ujian_id', 'left')
+            ->join('sesi_interaktif_pelatihan sesi', 'sesi.id = up.sesi_id', 'left')
+            ->where('pu.peserta_pelat_id', $peserta_pelat_id)
+            ->orderBy('pu.created_at', 'ASC')
+            ->orderBy('pu.id', 'ASC')
             ->get()->getResultArray();
             
         $data = [];
-        foreach ($ujian as $u) {
+        foreach ($ujianList as $u) {
             $jawaban = $db->table('peserta_jawaban_ujian_pelatihan')
                 ->select('peserta_jawaban_ujian_pelatihan.*, ujian_soal_pelatihan.pertanyaan, ujian_soal_pelatihan.jawaban_benar, ujian_soal_pelatihan.materi_id, materi_pelatihan.judul as materi_judul')
                 ->join('ujian_soal_pelatihan', 'ujian_soal_pelatihan.id = peserta_jawaban_ujian_pelatihan.soal_id')
                 ->join('materi_pelatihan', 'materi_pelatihan.id = ujian_soal_pelatihan.materi_id', 'left')
-                ->where('peserta_ujian_id', $u['id'])
+                ->where('peserta_ujian_id', $u['attempt_id'])
+                ->orderBy('peserta_jawaban_ujian_pelatihan.id', 'ASC')
                 ->get()->getResultArray();
-            $data[$u['tipe_ujian']] = [
+
+            $data[] = [
+                'attempt_id' => $u['attempt_id'],
+                'ujian_id' => $u['ujian_id'],
+                'tipe_ujian' => $u['tipe_ujian'],
+                'tipe_evaluasi' => $u['tipe_evaluasi'],
+                'sesi_id' => $u['sesi_id'],
+                'sesi_nama' => $u['nama_sesi'],
                 'score' => $u['score'],
+                'status_lulus' => $u['status_lulus'],
+                'created_at' => $u['created_at'],
                 'jawaban' => $jawaban
             ];
         }
