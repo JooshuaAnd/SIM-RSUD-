@@ -42,7 +42,7 @@
 <div class="dashboard-shell">
     <div class="row g-3 mb-4">
         <?php foreach ($cards as $card): ?>
-            <div class="col-sm-6 col-xl-3">
+            <div class="col-6 col-xl-3">
                 <a href="<?= $card['url'] ?>" class="metric-card text-decoration-none" style="--accent: <?= $card['accent'] ?>; --accent-soft: <?= $card['soft'] ?>;">
                     <span class="metric-label"><?= esc($card['label']) ?></span>
                     <span class="metric-value"><?= esc($card['value']) ?></span>
@@ -52,173 +52,202 @@
         <?php endforeach; ?>
     </div>
 
-    <div class="row g-4">
-        <div class="col-xl-8">
-            <div class="panel mb-4">
-                <div class="panel-head">
-                    <div>
-                        <h5>Pelatihan Aktif</h5>
-                        <p>Progress pendaftaran, jadwal mulai, dan kelulusan peserta.</p>
-                    </div>
-                    <a href="<?= base_url('pelatihan/admin/pelatihan') ?>" class="btn btn-dark btn-sm rounded-pill px-3">Kelola</a>
+    <div class="dashboard-sections">
+        <div class="panel dashboard-distribution">
+            <div class="panel-head">
+                <div>
+                    <h5>Distribusi Unit Kerja</h5>
+                    <p>Komposisi peserta terdaftar.</p>
                 </div>
+            </div>
+            <?php if (empty($distribusi_unit_kerja)): ?>
+                <div class="empty-state">Belum ada data distribusi.</div>
+            <?php else: foreach ($distribusi_unit_kerja as $i): ?>
+                <div class="progress-label mt-3">
+                    <span><?= esc($i['nama'] ?? 'Lainnya') ?></span>
+                    <strong><?= (int)$i['total'] ?> peserta (<?= (int)$i['persen'] ?>%)</strong>
+                </div>
+                <div class="progress thin"><div class="progress-bar bg-danger" style="width: <?= (int)$i['persen'] ?>%"></div></div>
+            <?php endforeach; endif; ?>
+        </div>
 
-                <?php if (empty($pelatihan)): ?>
-                    <div class="empty-state">Belum ada pelatihan aktif.</div>
-                <?php else: ?>
-                    <div class="training-grid">
-                        <?php foreach ($pelatihan as $p): ?>
-                            <?php
-                                $hariMulai = $p['hari_mulai'];
-                                $hariReg = $p['hari_reg_tutup'];
-                                $statusJadwal = 'Berjalan';
-                                if ($hariMulai === 0) {
-                                    $statusJadwal = 'Dimulai hari ini';
-                                } elseif ($hariMulai !== null && $hariMulai > 0) {
-                                    $statusJadwal = $hariMulai . ' hari lagi mulai';
-                                }
-                                $regText = $hariReg === null ? 'Registrasi belum dijadwalkan' : ($hariReg < 0 ? 'Registrasi selesai' : ($hariReg === 0 ? 'Registrasi tutup hari ini' : $hariReg . ' hari lagi registrasi berakhir'));
-                            ?>
-                            <a href="<?= base_url('pelatihan/admin/pelatihan/kelola/' . $p['id']) ?>" class="training-card text-decoration-none">
-                                <div class="d-flex justify-content-between gap-3 align-items-start mb-3">
+        <div class="panel dashboard-notifications">
+            <div class="panel-head">
+                <div>
+                    <h5>Notifikasi</h5>
+                    <p>Registrasi, verifikasi, sertifikat, dan jadwal dekat.</p>
+                </div>
+            </div>
+            <div class="notice-list">
+                <?php if (empty($notifications)): ?>
+                    <div class="empty-state">Tidak ada notifikasi penting saat ini.</div>
+                <?php else: foreach ($notifications as $n): ?>
+                    <a href="<?= $n['url'] ?>" class="notice-item text-decoration-none border-<?= esc($n['type']) ?>">
+                        <strong><?= esc($n['title']) ?></strong>
+                        <span><?= esc($n['message']) ?></span>
+                    </a>
+                <?php endforeach; endif; ?>
+            </div>
+        </div>
+
+        <div class="panel dashboard-registrations">
+            <div class="panel-head">
+                <div>
+                    <h5>Pendaftaran Terbaru</h5>
+                    <p>Registrasi dan verifikasi terbaru dari peserta.</p>
+                </div>
+                <a href="<?= base_url('pelatihan/admin/verifikasi_pendaftaran') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Lihat Semua</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Peserta</th>
+                            <th>Pelatihan</th>
+                            <th>Tanggal</th>
+                            <th>Status Peserta</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($recent_pendaftaran)): ?>
+                            <tr><td colspan="5" class="text-center text-muted py-4">Belum ada pendaftaran baru.</td></tr>
+                        <?php else: foreach ($recent_pendaftaran as $rp): ?>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark"><?= esc($rp['nama']) ?></div>
+                                    <div class="small text-muted"><?= esc($rp['instansi'] ?? 'RSUD KOTA JOGJA') ?></div>
+                                </td>
+                                <td><span class="text-wrap fw-semibold small"><?= esc($rp['pelatihan_nama']) ?></span></td>
+                                <td class="small"><?= tanggal_indo($rp['tanggal']) ?></td>
+                                <td>
+                                    <span class="badge rounded-pill text-bg-light border"><?= esc($rp['status_peserta']) ?></span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="<?= base_url('pelatihan/admin/verifikasi_pendaftaran') ?>" class="btn btn-sm btn-danger rounded-pill px-3">Verifikasi</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel dashboard-certificates">
+            <div class="panel-head">
+                <div>
+                    <h5>Sertifikat Terbaru</h5>
+                    <p>Unggahan dan penerbitan terakhir.</p>
+                </div>
+                <a href="<?= base_url('pelatihan/admin/sertifikat') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Rekap</a>
+            </div>
+            <div class="compact-list">
+                <?php if (empty($recent_sertifikat)): ?>
+                    <div class="empty-state">Belum ada sertifikat terbaru.</div>
+                <?php else: foreach ($recent_sertifikat as $s): ?>
+                    <a href="<?= base_url('pelatihan/admin/sertifikat') ?>" class="compact-item text-decoration-none">
+                        <span class="fw-bold text-dark"><?= esc($s['nama_peserta'] ?? $s['user_nama'] ?? 'Peserta') ?></span>
+                        <small><?= esc($s['judul'] ?? $s['pelatihan_nama'] ?? 'Sertifikat') ?></small>
+                        <em><?= esc($s['verifikasi'] ?? '-') ?></em>
+                    </a>
+                <?php endforeach; endif; ?>
+            </div>
+        </div>
+
+        <div class="panel dashboard-training">
+            <div class="panel-head">
+                <div>
+                    <h5>Pelatihan Aktif</h5>
+                    <p>Progress pendaftaran, jadwal mulai, dan kelulusan peserta.</p>
+                </div>
+                <a href="<?= base_url('pelatihan/admin/pelatihan') ?>" class="btn btn-dark btn-sm rounded-pill px-3">Kelola</a>
+            </div>
+
+            <?php if (empty($pelatihan)): ?>
+                <div class="empty-state">Belum ada pelatihan aktif.</div>
+            <?php else: ?>
+                <div class="training-grid">
+                    <?php foreach ($pelatihan as $p): ?>
+                        <?php
+                            $hariMulai = $p['hari_mulai'];
+                            $hariReg = $p['hari_reg_tutup'];
+                            $statusJadwal = 'Berjalan';
+                            if ($hariMulai === 0) {
+                                $statusJadwal = 'Dimulai hari ini';
+                            } elseif ($hariMulai !== null && $hariMulai > 0) {
+                                $statusJadwal = $hariMulai . ' hari lagi mulai';
+                            }
+                            $regText = $hariReg === null ? 'Registrasi belum dijadwalkan' : ($hariReg < 0 ? 'Registrasi selesai' : ($hariReg === 0 ? 'Registrasi tutup hari ini' : $hariReg . ' hari lagi registrasi berakhir'));
+                        ?>
+                        <a href="<?= base_url('pelatihan/admin/pelatihan/kelola/' . $p['id']) ?>" class="training-card text-decoration-none">
+                            <div class="training-details">
+                                <div class="training-heading">
                                     <div class="min-w-0">
                                         <div class="training-title"><?= esc($p['nama']) ?></div>
                                         <div class="training-meta"><?= tanggal_indo($p['jadwal_mulai'] ?? 'now') ?>, <?= esc(substr($p['jam_mulai'] ?? '-', 0, 5)) ?> WIB</div>
                                     </div>
                                     <span class="status-pill"><?= esc($statusJadwal) ?></span>
                                 </div>
-                                <div class="training-meta mb-3"><?= esc($regText) ?></div>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <div class="progress-label">
-                                            <span>Daftar</span>
-                                            <strong><?= (int)($p['total_daftar'] ?? 0) ?>/<?= (int)($p['kuota'] ?? 0) ?> (<?= (int)($p['persen_daftar'] ?? 0) ?>%)</strong>
-                                        </div>
-                                        <div class="progress thin"><div class="progress-bar bg-danger" style="width: <?= (int)($p['persen_daftar'] ?? 0) ?>%"></div></div>
+                                <div class="training-meta"><?= esc($regText) ?></div>
+                            </div>
+                            <div class="training-progress">
+                                <div>
+                                    <div class="progress-label">
+                                        <span>Daftar</span>
+                                        <strong><?= (int)($p['total_daftar'] ?? 0) ?>/<?= (int)($p['kuota'] ?? 0) ?> (<?= (int)($p['persen_daftar'] ?? 0) ?>%)</strong>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="progress-label">
-                                            <span>Kelulusan</span>
-                                            <strong><?= (int)($p['persen_lulus'] ?? 0) ?>%</strong>
-                                        </div>
-                                        <div class="progress thin"><div class="progress-bar bg-dark" style="width: <?= (int)($p['persen_lulus'] ?? 0) ?>%"></div></div>
-                                    </div>
+                                    <div class="progress thin"><div class="progress-bar bg-danger" style="width: <?= (int)($p['persen_daftar'] ?? 0) ?>%"></div></div>
                                 </div>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <h5>Pendaftaran Terbaru</h5>
-                        <p>Registrasi dan verifikasi terbaru dari peserta.</p>
-                    </div>
-                    <a href="<?= base_url('pelatihan/admin/verifikasi_pendaftaran') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Lihat Semua</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table align-middle table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Peserta</th>
-                                <th>Pelatihan</th>
-                                <th>Tanggal</th>
-                                <th>Status</th>
-                                <th class="text-end">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($recent_pendaftaran)): ?>
-                                <tr><td colspan="5" class="text-center text-muted py-4">Belum ada pendaftaran baru.</td></tr>
-                            <?php else: foreach ($recent_pendaftaran as $rp): ?>
-                                <tr>
-                                    <td>
-                                        <div class="fw-bold text-dark"><?= esc($rp['nama']) ?></div>
-                                        <div class="small text-muted"><?= esc($rp['instansi'] ?? 'RSUD KOTA JOGJA') ?></div>
-                                    </td>
-                                    <td><span class="text-wrap fw-semibold small"><?= esc($rp['pelatihan_nama']) ?></span></td>
-                                    <td class="small"><?= tanggal_indo($rp['tanggal']) ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill text-bg-light border"><?= esc($rp['status_peserta']) ?></span>
-                                        <span class="badge rounded-pill text-bg-light border"><?= esc($rp['status_pembayaran']) ?></span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="<?= base_url('pelatihan/admin/verifikasi_pendaftaran') ?>" class="btn btn-sm btn-danger rounded-pill px-3">Verifikasi</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-4">
-            <div class="panel mb-4">
-                <div class="panel-head">
-                    <div>
-                        <h5>Notifikasi</h5>
-                        <p>Registrasi, verifikasi, sertifikat, dan jadwal dekat.</p>
-                    </div>
-                </div>
-                <div class="notice-list">
-                    <?php if (empty($notifications)): ?>
-                        <div class="empty-state">Tidak ada notifikasi penting saat ini.</div>
-                    <?php else: foreach ($notifications as $n): ?>
-                        <a href="<?= $n['url'] ?>" class="notice-item text-decoration-none border-<?= esc($n['type']) ?>">
-                            <strong><?= esc($n['title']) ?></strong>
-                            <span><?= esc($n['message']) ?></span>
+                                <div>
+                                    <div class="progress-label">
+                                        <span>Kelulusan</span>
+                                        <strong><?= (int)($p['persen_lulus'] ?? 0) ?>%</strong>
+                                    </div>
+                                    <div class="progress thin"><div class="progress-bar bg-dark" style="width: <?= (int)($p['persen_lulus'] ?? 0) ?>%"></div></div>
+                                </div>
+                            </div>
                         </a>
-                    <?php endforeach; endif; ?>
+                    <?php endforeach; ?>
                 </div>
-            </div>
-
-            <div class="panel mb-4">
-                <div class="panel-head">
-                    <div>
-                        <h5>Sertifikat Terbaru</h5>
-                        <p>Unggahan dan penerbitan terakhir.</p>
-                    </div>
-                    <a href="<?= base_url('pelatihan/admin/sertifikat') ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3">Rekap</a>
-                </div>
-                <div class="compact-list">
-                    <?php if (empty($recent_sertifikat)): ?>
-                        <div class="empty-state">Belum ada sertifikat terbaru.</div>
-                    <?php else: foreach ($recent_sertifikat as $s): ?>
-                        <a href="<?= base_url('pelatihan/admin/sertifikat') ?>" class="compact-item text-decoration-none">
-                            <span class="fw-bold text-dark"><?= esc($s['nama_peserta'] ?? $s['user_nama'] ?? 'Peserta') ?></span>
-                            <small><?= esc($s['judul'] ?? $s['pelatihan_nama'] ?? 'Sertifikat') ?></small>
-                            <em><?= esc($s['verifikasi'] ?? '-') ?></em>
-                        </a>
-                    <?php endforeach; endif; ?>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <h5>Distribusi Unit Kerja</h5>
-                        <p>Komposisi peserta terdaftar.</p>
-                    </div>
-                </div>
-                <?php if (empty($distribusi_unit_kerja)): ?>
-                    <div class="empty-state">Belum ada data distribusi.</div>
-                <?php else: foreach ($distribusi_unit_kerja as $i): ?>
-                    <div class="progress-label mt-3">
-                        <span><?= esc($i['nama'] ?? 'Lainnya') ?></span>
-                        <strong><?= (int)$i['total'] ?> peserta (<?= (int)$i['persen'] ?>%)</strong>
-                    </div>
-                    <div class="progress thin"><div class="progress-bar bg-danger" style="width: <?= (int)$i['persen'] ?>%"></div></div>
-                <?php endforeach; endif; ?>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
 <style>
     .dashboard-shell { width: 100%; }
+    .dashboard-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+    .dashboard-sections > .panel { min-width: 0; margin: 0; }
+    .dashboard-shell .training-card { display: grid; gap: 16px; }
+    .training-details { display: grid; gap: 10px; min-width: 0; }
+    .training-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .training-progress { display: grid; gap: 14px; min-width: 0; }
+    .dashboard-shell .panel-head > div { min-width: 0; }
+    .dashboard-shell .panel-head > .btn { flex-shrink: 0; }
+    .dashboard-shell .progress-label { flex-wrap: wrap; align-items: center; }
+    .dashboard-shell .progress-label strong { margin-left: auto; }
+    .dashboard-registrations .table { min-width: 760px; }
+    .dashboard-certificates .compact-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; row-gap: 4px; align-items: center; }
+    .dashboard-certificates .compact-item span, .dashboard-certificates .compact-item small { grid-column: 1; }
+    .dashboard-certificates .compact-item em { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+    @media (min-width: 992px) {
+        .dashboard-sections { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .dashboard-distribution, .dashboard-notifications, .dashboard-registrations { grid-column: 1 / -1; }
+        .dashboard-notifications .notice-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .dashboard-notifications .empty-state { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1200px) {
+        .dashboard-sections { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+        .dashboard-distribution { grid-column: span 8; }
+        .dashboard-notifications { grid-column: span 4; }
+        .dashboard-notifications .notice-list { grid-template-columns: minmax(0, 1fr); }
+        .dashboard-training .training-grid, .dashboard-notifications .notice-list { max-height: min(560px, 70vh); overflow-y: auto; }
+        .dashboard-registrations { grid-column: 1 / -1; }
+        .dashboard-certificates, .dashboard-training { grid-column: span 6; }
+    }
+    @media (min-width: 1400px) {
+        .dashboard-shell .training-card { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: 20px; }
+    }
     .metric-card, .panel, .training-card, .notice-item, .compact-item {
         display: block;
         background: #fff;
@@ -227,6 +256,9 @@
     }
     .metric-card {
         min-height: 150px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
         border-radius: 14px;
         padding: 22px;
         background: linear-gradient(145deg, #ffffff 0%, var(--accent-soft) 170%);
@@ -239,7 +271,7 @@
     }
     .metric-label, .metric-note { display: block; font-size: .78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
     .metric-value { display: block; font-size: 2.3rem; line-height: 1.1; font-weight: 900; color: var(--accent); margin: 12px 0 8px; }
-    .metric-note { text-transform: none; letter-spacing: 0; color: var(--accent); }
+    .metric-note { margin-top: auto; text-transform: none; letter-spacing: 0; color: var(--accent); }
     .panel { border-radius: 14px; padding: 22px; overflow: hidden; }
     .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
     .panel-head h5 { margin: 0; color: #0f172a; font-weight: 900; }
@@ -266,6 +298,7 @@
     @media (max-width: 768px) {
         .panel-head { flex-direction: column; align-items: stretch; }
         .metric-card { min-height: 130px; }
+        .dashboard-shell .panel-head > .btn { align-self: flex-start; }
         .status-pill { white-space: normal; text-align: center; }
     }
 </style>
