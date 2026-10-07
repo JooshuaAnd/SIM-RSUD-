@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers\Pelatihan\Admin;
 use App\Controllers\BaseController;
+use App\Libraries\Pelatihan\FeedbackSessionSummary;
+use CodeIgniter\Database\BaseConnection;
 
 class Feedback extends BaseController
 {
@@ -82,139 +84,112 @@ class Feedback extends BaseController
             $avg = round($totalRating / $count, 1);
         }
 
-        // Fetch detailed question ratings
-        $questionStats = [];
-        $questions = $db->table('kuesioner_master_pelatihan')
-            ->select('kuesioner_master_pelatihan.*, kategori_evaluasi_pelatihan.nama_kategori as kategori')
-            ->join('kategori_evaluasi_pelatihan', 'kategori_evaluasi_pelatihan.id = kuesioner_master_pelatihan.kategori_id', 'left')
-            ->where('pelatihan_id', $id)
-            ->get()->getResultArray();
-        
-        if (!empty($questions)) {
-            foreach ($questions as $q) {
-                // Calculate average rating for this question based on peserta of this pelatihan
-                $ratingStat = $db->table('peserta_kuesioner_rating_pelatihan')
-                    ->selectAvg('nilai_rating')
-                    ->selectCount('id', 'total_votes')
-                    ->where('kuesioner_id', $q['id'])
-                    ->get()->getRowArray();
-                
-                $q['avg_rating'] = $ratingStat['nilai_rating'] ? round($ratingStat['nilai_rating'], 1) : 0;
-                $q['total_votes'] = $ratingStat['total_votes'] ?: 0;
-                
-                $questionStats[$q['kategori']][] = $q;
-            }
-        }
-
         $data = [
             'title' => 'Detail Feedback: ' . $p['nama'],
             'p' => $p,
             'avg' => $avg,
             'feedbacks' => $feedbacks,
-            'questionStats' => $questionStats
         ];
 
-        // ─── Aggregate ratings by Sesi ───────────────────────────────────────
-        $sesiStats = [];
-        $sesiList = $db->table('sesi_interaktif_pelatihan')->where('pelatihan_id', $id)->get()->getResultArray();
-        foreach ($sesiList as $sesi) {
-            $ratingsForSesi = $db->table('peserta_kuesioner_rating_pelatihan')
-                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
-                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
-                ->where('peserta_kuesioner_rating_pelatihan.sesi_id', $sesi['id'])
-                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
-                ->get()->getResultArray();
-            if (!empty($ratingsForSesi)) {
-                $sesiStats[] = [
-                    'id'   => $sesi['id'],
-                    'nama' => $sesi['nama_sesi'],
-                    'pertanyaan' => array_map(function($r) {
-                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
-                    }, $ratingsForSesi),
-                    'avg_overall' => count($ratingsForSesi) > 0 ? round(array_sum(array_column($ratingsForSesi, 'avg_rating')) / count($ratingsForSesi), 1) : 0,
-                ];
-            }
-        }
+        $sesiStats = (new FeedbackSessionSummary())->getStats($db, (int) $id);
 
-        // ─── Aggregate ratings by Materi ─────────────────────────────────────
-        $materiStats = [];
-        $materiList = $db->table('materi_pelatihan')->where('pelatihan_id', $id)->orderBy('urutan', 'ASC')->get()->getResultArray();
-        foreach ($materiList as $materi) {
-            $ratingsForMateri = $db->table('peserta_kuesioner_rating_pelatihan')
-                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
-                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
-                ->where('peserta_kuesioner_rating_pelatihan.materi_id', $materi['id'])
-                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
-                ->get()->getResultArray();
-            if (!empty($ratingsForMateri)) {
-                $materiStats[] = [
-                    'id'    => $materi['id'],
-                    'judul' => $materi['judul'],
-                    'pertanyaan' => array_map(function($r) {
-                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
-                    }, $ratingsForMateri),
-                    'avg_overall' => count($ratingsForMateri) > 0 ? round(array_sum(array_column($ratingsForMateri, 'avg_rating')) / count($ratingsForMateri), 1) : 0,
-                ];
-            }
-        }
-
-        // ─── Aggregate ratings by Narasumber ──────────────────────────────────
-        $narasumberStats = [];
-        $narasumberList = $db->table('narasumber_pelatihan')
-            ->select('narasumber_pelatihan.id, pejabat_ttd_pelatihan.nama_pejabat, pejabat_ttd_pelatihan.gelar_depan, pejabat_ttd_pelatihan.gelar_belakang')
-            ->join('pejabat_ttd_pelatihan', 'pejabat_ttd_pelatihan.id = narasumber_pelatihan.pejabat_ttd_id', 'left')
-            ->where('narasumber_pelatihan.pelatihan_id', $id)
-            ->get()->getResultArray();
-        foreach ($narasumberList as $narasumber) {
-            $ratingsForNar = $db->table('peserta_kuesioner_rating_pelatihan')
-                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
-                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
-                ->where('peserta_kuesioner_rating_pelatihan.narasumber_id', $narasumber['id'])
-                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
-                ->get()->getResultArray();
-            if (!empty($ratingsForNar)) {
-                $narasumberStats[] = [
-                    'id'   => $narasumber['id'],
-                    'nama' => ($narasumber['gelar_depan'] ? $narasumber['gelar_depan'].' ' : '').$narasumber['nama_pejabat'].($narasumber['gelar_belakang'] ? ', '.$narasumber['gelar_belakang'] : ''),
-                    'pertanyaan' => array_map(function($r) {
-                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
-                    }, $ratingsForNar),
-                    'avg_overall' => count($ratingsForNar) > 0 ? round(array_sum(array_column($ratingsForNar, 'avg_rating')) / count($ratingsForNar), 1) : 0,
-                ];
-            }
-        }
-
-        // ─── Aggregate ratings by Penyelenggara ───────────────────────────────
-        $penyelenggaraStats = [];
-        $penyelenggaraList = $db->table('penyelenggara_pelatihan')
-            ->select('penyelenggara_pelatihan.id, master_penyelenggara.nama')
-            ->join('master_penyelenggara', 'master_penyelenggara.id = penyelenggara_pelatihan.penyelenggara_id', 'left')
-            ->where('penyelenggara_pelatihan.pelatihan_id', $id)
-            ->get()->getResultArray();
-        foreach ($penyelenggaraList as $penyelenggara) {
-            $ratingsForPen = $db->table('peserta_kuesioner_rating_pelatihan')
-                ->select('peserta_kuesioner_rating_pelatihan.kuesioner_id, kuesioner_master_pelatihan.pertanyaan, AVG(peserta_kuesioner_rating_pelatihan.nilai_rating) as avg_rating, COUNT(peserta_kuesioner_rating_pelatihan.id) as total_votes')
-                ->join('kuesioner_master_pelatihan', 'kuesioner_master_pelatihan.id = peserta_kuesioner_rating_pelatihan.kuesioner_id', 'left')
-                ->where('peserta_kuesioner_rating_pelatihan.penyelenggara_id', $penyelenggara['id'])
-                ->groupBy('peserta_kuesioner_rating_pelatihan.kuesioner_id')
-                ->get()->getResultArray();
-            if (!empty($ratingsForPen)) {
-                $penyelenggaraStats[] = [
-                    'id'   => $penyelenggara['id'],
-                    'nama' => $penyelenggara['nama'] ?? $penyelenggara['penyelenggara_id'],
-                    'pertanyaan' => array_map(function($r) {
-                        return ['pertanyaan' => $r['pertanyaan'], 'avg_rating' => round((float)$r['avg_rating'], 1), 'total_votes' => (int)$r['total_votes']];
-                    }, $ratingsForPen),
-                    'avg_overall' => count($ratingsForPen) > 0 ? round(array_sum(array_column($ratingsForPen, 'avg_rating')) / count($ratingsForPen), 1) : 0,
-                ];
-            }
-        }
-
-        $data['materiStats']       = $materiStats;
-        $data['narasumberStats']   = $narasumberStats;
-        $data['penyelenggaraStats'] = $penyelenggaraStats;
+        $data = array_merge($data, $this->getAverageRatingStats($db, (int) $id));
         $data['sesiStats']         = $sesiStats;
 
         return view('Pelatihan/admin/feedback/detail', $data);
+    }
+
+    private function getAverageRatingStats(BaseConnection $db, int $pelatihanId): array
+    {
+        $materiRatings = $db->table('materi_pelatihan m')
+            ->select('m.id, m.judul, q.id as kuesioner_id, q.pertanyaan, SUM(r.nilai_rating) as rating_total, COUNT(r.id) as total_votes')
+            ->join('peserta_kuesioner_rating_pelatihan r', 'r.materi_id = m.id')
+            ->join('kuesioner_master_pelatihan q', 'q.id = r.kuesioner_id')
+            ->where('m.pelatihan_id', $pelatihanId)
+            ->where('q.pelatihan_id', $pelatihanId)
+            ->groupBy('m.id, m.judul, m.urutan, q.id, q.pertanyaan')
+            ->orderBy('m.urutan', 'ASC')
+            ->orderBy('m.id', 'ASC')
+            ->orderBy('q.id', 'ASC')
+            ->get()->getResultArray();
+
+        // Group all session assignments under the same master narasumber.
+        $narasumberRatings = $db->table('narasumber_pelatihan np')
+            ->select('np.pejabat_ttd_id as id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, q.id as kuesioner_id, q.pertanyaan, SUM(r.nilai_rating) as rating_total, COUNT(r.id) as total_votes')
+            ->join('pejabat_ttd_pelatihan pt', 'pt.id = np.pejabat_ttd_id')
+            ->join('peserta_kuesioner_rating_pelatihan r', 'r.narasumber_id = np.id')
+            ->join('kuesioner_master_pelatihan q', 'q.id = r.kuesioner_id')
+            ->where('np.pelatihan_id', $pelatihanId)
+            ->where('q.pelatihan_id', $pelatihanId)
+            ->groupBy('np.pejabat_ttd_id, pt.nama_pejabat, pt.gelar_depan, pt.gelar_belakang, q.id, q.pertanyaan')
+            ->orderBy('pt.nama_pejabat', 'ASC')
+            ->orderBy('np.pejabat_ttd_id', 'ASC')
+            ->orderBy('q.id', 'ASC')
+            ->get()->getResultArray();
+
+        foreach ($narasumberRatings as &$rating) {
+            $rating['nama'] = trim(($rating['gelar_depan'] ?? '') . ' ' . $rating['nama_pejabat'])
+                . (!empty($rating['gelar_belakang']) ? ', ' . $rating['gelar_belakang'] : '');
+        }
+        unset($rating);
+
+        // Group all session assignments under the same master penyelenggara.
+        $penyelenggaraRatings = $db->table('penyelenggara_pelatihan pp')
+            ->select('pp.penyelenggara_id as id, mp.nama, q.id as kuesioner_id, q.pertanyaan, SUM(r.nilai_rating) as rating_total, COUNT(r.id) as total_votes')
+            ->join('master_penyelenggara mp', 'mp.id = pp.penyelenggara_id')
+            ->join('peserta_kuesioner_rating_pelatihan r', 'r.penyelenggara_id = pp.id')
+            ->join('kuesioner_master_pelatihan q', 'q.id = r.kuesioner_id')
+            ->where('pp.pelatihan_id', $pelatihanId)
+            ->where('q.pelatihan_id', $pelatihanId)
+            ->groupBy('pp.penyelenggara_id, mp.nama, q.id, q.pertanyaan')
+            ->orderBy('mp.nama', 'ASC')
+            ->orderBy('pp.penyelenggara_id', 'ASC')
+            ->orderBy('q.id', 'ASC')
+            ->get()->getResultArray();
+
+        return [
+            'materiStats' => $this->buildEntityRatingStats($materiRatings, 'judul'),
+            'narasumberStats' => $this->buildEntityRatingStats($narasumberRatings, 'nama'),
+            'penyelenggaraStats' => $this->buildEntityRatingStats($penyelenggaraRatings, 'nama'),
+        ];
+    }
+
+    private function buildEntityRatingStats(array $ratings, string $labelKey): array
+    {
+        $stats = [];
+        foreach ($ratings as $rating) {
+            $entityId = (int) $rating['id'];
+            $totalVotes = (int) $rating['total_votes'];
+            if ($totalVotes === 0) {
+                continue;
+            }
+
+            if (!isset($stats[$entityId])) {
+                $stats[$entityId] = [
+                    'id' => $entityId,
+                    $labelKey => $rating[$labelKey],
+                    'pertanyaan' => [],
+                    'rating_total' => 0,
+                    'total_votes' => 0,
+                ];
+            }
+
+            $ratingTotal = (float) $rating['rating_total'];
+            $stats[$entityId]['pertanyaan'][] = [
+                'pertanyaan' => $rating['pertanyaan'],
+                'avg_rating' => round($ratingTotal / $totalVotes, 1),
+                'total_votes' => $totalVotes,
+            ];
+            $stats[$entityId]['rating_total'] += $ratingTotal;
+            $stats[$entityId]['total_votes'] += $totalVotes;
+        }
+
+        foreach ($stats as &$stat) {
+            $stat['avg_overall'] = round($stat['rating_total'] / $stat['total_votes'], 1);
+            unset($stat['rating_total']);
+        }
+        unset($stat);
+
+        return array_values($stats);
     }
 }

@@ -28,169 +28,194 @@
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <?php if(!empty($questionStats)): ?>
-        <?php foreach ($questionStats as $kat => $qs): ?>
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
-                <h6 class="fw-bold mb-4 text-primary border-bottom pb-2 text-uppercase"><i class="fas fa-list-ul me-2"></i> KATEGORI: <?= esc($kat) ?></h6>
-                <?php foreach($qs as $q): ?>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small fw-bold text-dark"><?= esc($q['pertanyaan']) ?></span>
-                        <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i> <?= $q['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $q['total_votes'] ?> vote)</span></span>
-                    </div>
-                    <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                        <div class="progress-bar bg-warning" style="width: <?= ($q['avg_rating'] / 5) * 100 ?>%"></div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <div class="col-12">
-            <div class="alert alert-light border-0 shadow-sm text-center py-4">
-                <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-50"></i>
-                <h6 class="fw-bold text-muted mb-0">Belum ada data detail rating kuesioner.</h6>
-            </div>
-        </div>
-    <?php endif; ?>
-</div>
-
     <div class="col-12">
         
         <?php // ─── Sesi Stats ──────────────────────────────────────────────── ?>
-        <?php if (!empty($sesiStats)): ?>
         <div class="mb-4">
-            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-clock me-2 text-info"></i> Rata-rata Penilaian per Sesi</h5>
-            <div class="row g-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-dark mb-0"><i class="fas fa-clock me-2 text-info"></i>Rincian Feedback per Sesi</h5>
+                <span class="badge bg-dark text-white rounded-pill px-3 py-2"><?= count($sesiStats) ?> Sesi</span>
+            </div>
+            <?php if (!empty($sesiStats)): ?>
+            <div class="accordion shadow-sm rounded-lg" id="accordionFeedbackSesi">
                 <?php foreach ($sesiStats as $ss): ?>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100 border-top border-info border-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0 text-info text-uppercase"><i class="fas fa-users me-2"></i><?= esc($ss['nama']) ?></h6>
-                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-info text-white">
-                                <i class="fas fa-star me-1"></i><?= $ss['avg_overall'] ?> / 5.0
-                            </span>
-                        </div>
-                        <?php foreach ($ss['pertanyaan'] as $pq): ?>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
-                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                <div class="accordion-item border-0 border-bottom">
+                    <h2 class="accordion-header" id="headingFeedbackSesi<?= (int) $ss['id'] ?>">
+                        <button class="accordion-button collapsed py-3 bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFeedbackSesi<?= (int) $ss['id'] ?>" aria-expanded="false" aria-controls="collapseFeedbackSesi<?= (int) $ss['id'] ?>">
+                            <div class="d-flex w-100 justify-content-between align-items-center pe-3 gap-3">
+                                <span class="fw-bold text-dark"><?= esc($ss['nama']) ?></span>
+                                <span class="d-flex align-items-center gap-2 flex-shrink-0">
+                                    <?php if ($ss['avg_overall'] !== null): ?>
+                                        <span class="badge rounded-pill px-3 py-2 fw-bold bg-info text-white"><i class="fas fa-star me-1"></i><?= $ss['avg_overall'] ?> / 5.0</span>
+                                    <?php else: ?>
+                                        <span class="badge rounded-pill px-3 py-2 fw-bold bg-secondary text-white">Belum ada feedback</span>
+                                    <?php endif; ?>
+                                    <small class="text-muted fw-bold"><?= (int) $ss['total_votes'] ?> jawaban</small>
+                                </span>
                             </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                                <div class="progress-bar bg-info" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                        </button>
+                    </h2>
+                    <div id="collapseFeedbackSesi<?= (int) $ss['id'] ?>" class="accordion-collapse collapse" aria-labelledby="headingFeedbackSesi<?= (int) $ss['id'] ?>" data-bs-parent="#accordionFeedbackSesi">
+                        <div class="accordion-body bg-light p-4">
+                            <div class="row g-3">
+                                <?php foreach (['Fasilitator', 'Materi', 'Modul', 'Narasumber', 'Penyelenggara'] as $kategori): ?>
+                                    <?php $kategoriData = $ss['kategori'][$kategori]; ?>
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border-0 shadow-sm rounded-4">
+                                            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-2 py-3">
+                                                <span class="fw-bold text-primary text-uppercase"><i class="fas fa-list-ul me-2"></i>KATEGORI: <?= esc($kategori) ?></span>
+                                                <?php if ($kategoriData['avg_overall'] !== null): ?>
+                                                    <span class="badge bg-warning-subtle text-dark rounded-pill"><i class="fas fa-star text-warning me-1"></i><?= $kategoriData['avg_overall'] ?> / 5.0</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="card-body">
+                                                <?php if (empty($kategoriData['pertanyaan'])): ?>
+                                                    <div class="small text-muted py-2">Belum ada jawaban untuk kategori ini pada sesi ini.</div>
+                                                <?php else: ?>
+                                                    <?php foreach ($kategoriData['pertanyaan'] as $pertanyaan): ?>
+                                                    <div class="mb-3">
+                                                        <div class="d-flex justify-content-between align-items-start gap-3 mb-1">
+                                                            <span class="small fw-bold text-dark"><?= esc($pertanyaan['pertanyaan']) ?></span>
+                                                            <span class="small fw-bold text-warning text-nowrap"><i class="fas fa-star me-1"></i><?= $pertanyaan['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pertanyaan['total_votes'] ?>)</span></span>
+                                                        </div>
+                                                        <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                                            <div class="progress-bar bg-info" style="width: <?= min(100, max(0, ($pertanyaan['avg_rating'] / 5) * 100)) ?>%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
-                        <?php endforeach; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
+            <?php else: ?>
+                <div class="alert alert-light border-0 shadow-sm text-center py-4 mb-0">
+                    <i class="fas fa-inbox fa-2x text-muted mb-2 opacity-50"></i>
+                    <div class="fw-bold text-muted">Belum ada sesi pada pelatihan ini.</div>
+                </div>
+            <?php endif; ?>
         </div>
         <hr class="my-4">
-        <?php endif; ?>
 
-        <?php // ─── Materi Stats ─────────────────────────────────────────────── ?>
-        <?php if (!empty($materiStats)): ?>
-        <div class="mb-4">
-            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-book me-2 text-primary"></i> Rata-rata Penilaian Materi</h5>
-            <div class="row g-3">
-                <?php foreach ($materiStats as $ms): ?>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0 text-primary text-uppercase"><i class="fas fa-book-open me-2"></i><?= esc($ms['judul']) ?></h6>
-                            <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: #1e3a5f; color: white;">
-                                <i class="fas fa-star me-1"></i><?= $ms['avg_overall'] ?> / 5.0
-                            </span>
-                        </div>
-                        <?php foreach ($ms['pertanyaan'] as $pq): ?>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
-                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
-                            </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                                <div class="progress-bar bg-primary" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <hr class="my-4">
-        <?php endif; ?>
+        <div class="accordion shadow-sm rounded-lg mb-4" id="accordionRataRataPenilaian">
+            <div class="accordion-item border-0">
+                <h2 class="accordion-header" id="headingRataRataPenilaian">
+                    <button class="accordion-button collapsed py-3 bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRataRataPenilaian" aria-expanded="false" aria-controls="collapseRataRataPenilaian">
+                        <span class="fw-bold text-dark"><i class="fas fa-chart-bar me-2 text-primary"></i>Rata-Rata Penilaian</span>
+                    </button>
+                </h2>
+                <div id="collapseRataRataPenilaian" class="accordion-collapse collapse" aria-labelledby="headingRataRataPenilaian" data-bs-parent="#accordionRataRataPenilaian">
+                    <div class="accordion-body bg-light p-4">
+                        <?php if (empty($materiStats) && empty($narasumberStats) && empty($penyelenggaraStats)): ?>
+                            <div class="text-center text-muted py-3">Belum ada data rata-rata penilaian.</div>
+                        <?php endif; ?>
 
-        <?php // ─── Narasumber Stats ─────────────────────────────────────────── ?>
-        <?php if (!empty($narasumberStats)): ?>
-        <div class="mb-4">
-            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-chalkboard-teacher me-2 text-success"></i> Rata-rata Penilaian Narasumber</h5>
-            <div class="row g-3">
-                <?php foreach ($narasumberStats as $ns): ?>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0 text-success text-uppercase"><i class="fas fa-user-tie me-2"></i><?= esc($ns['nama']) ?></h6>
-                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-success text-white">
-                                <i class="fas fa-star me-1"></i><?= $ns['avg_overall'] ?> / 5.0
-                            </span>
-                        </div>
-                        <?php foreach ($ns['pertanyaan'] as $pq): ?>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
-                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                        <?php // ─── Materi Stats ─────────────────────────────────────────────── ?>
+                        <?php if (!empty($materiStats)): ?>
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-book me-2 text-primary"></i> Rata-rata Penilaian Materi</h5>
+                            <div class="row g-3">
+                                <?php foreach ($materiStats as $ms): ?>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="fw-bold mb-0 text-primary text-uppercase"><i class="fas fa-book-open me-2"></i><?= esc($ms['judul']) ?></h6>
+                                            <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: #1e3a5f; color: white;">
+                                                <i class="fas fa-star me-1"></i><?= $ms['avg_overall'] ?> / 5.0
+                                            </span>
+                                        </div>
+                                        <?php foreach ($ms['pertanyaan'] as $pq): ?>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                                            </div>
+                                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                                <div class="progress-bar bg-primary" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                                <div class="progress-bar bg-success" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
-                            </div>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <hr class="my-4">
-        <?php endif; ?>
+                        <?php endif; ?>
 
-        <?php // ─── Penyelenggara Stats ──────────────────────────────────────── ?>
-        <?php if (!empty($penyelenggaraStats)): ?>
-        <div class="mb-4">
-            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-users-cog me-2 text-warning"></i> Rata-rata Penilaian Penyelenggara</h5>
-            <div class="row g-3">
-                <?php foreach ($penyelenggaraStats as $ps): ?>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0 text-warning text-uppercase"><i class="fas fa-building me-2"></i><?= esc($ps['nama']) ?></h6>
-                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-warning text-dark">
-                                <i class="fas fa-star me-1"></i><?= $ps['avg_overall'] ?> / 5.0
-                            </span>
-                        </div>
-                        <?php foreach ($ps['pertanyaan'] as $pq): ?>
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
-                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                        <?php // ─── Narasumber Stats ─────────────────────────────────────────── ?>
+                        <?php if (!empty($narasumberStats)): ?>
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-chalkboard-teacher me-2 text-success"></i> Rata-rata Penilaian Narasumber</h5>
+                            <div class="row g-3">
+                                <?php foreach ($narasumberStats as $ns): ?>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="fw-bold mb-0 text-success text-uppercase"><i class="fas fa-user-tie me-2"></i><?= esc($ns['nama']) ?></h6>
+                                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-success text-white">
+                                                <i class="fas fa-star me-1"></i><?= $ns['avg_overall'] ?> / 5.0
+                                            </span>
+                                        </div>
+                                        <?php foreach ($ns['pertanyaan'] as $pq): ?>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                                            </div>
+                                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                                <div class="progress-bar bg-success" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
-                                <div class="progress-bar bg-warning" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php // ─── Penyelenggara Stats ──────────────────────────────────────── ?>
+                        <?php if (!empty($penyelenggaraStats)): ?>
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3 text-uppercase"><i class="fas fa-users-cog me-2 text-warning"></i> Rata-rata Penilaian Penyelenggara</h5>
+                            <div class="row g-3">
+                                <?php foreach ($penyelenggaraStats as $ps): ?>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="fw-bold mb-0 text-warning text-uppercase"><i class="fas fa-building me-2"></i><?= esc($ps['nama']) ?></h6>
+                                            <span class="badge rounded-pill px-3 py-2 fw-bold bg-warning text-dark">
+                                                <i class="fas fa-star me-1"></i><?= $ps['avg_overall'] ?> / 5.0
+                                            </span>
+                                        </div>
+                                        <?php foreach ($ps['pertanyaan'] as $pq): ?>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="small fw-bold text-dark"><?= esc($pq['pertanyaan']) ?></span>
+                                                <span class="small fw-bold text-warning"><i class="fas fa-star me-1"></i><?= $pq['avg_rating'] ?> <span class="text-muted fw-normal">(<?= $pq['total_votes'] ?> vote)</span></span>
+                                            </div>
+                                            <div class="progress" style="height: 6px; border-radius: 10px; background: #e2e8f0;">
+                                                <div class="progress-bar bg-warning" style="width: <?= ($pq['avg_rating'] / 5) * 100 ?>%"></div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
-                        <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
         <hr class="my-4">
-        <?php endif; ?>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold text-dark mb-0">Rincian Feedback per Peserta</h5>

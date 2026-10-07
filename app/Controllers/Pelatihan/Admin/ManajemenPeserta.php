@@ -1,9 +1,14 @@
 <?php
 namespace App\Controllers\Pelatihan\Admin;
 use App\Controllers\BaseController;
+use App\Libraries\Pelatihan\FeedbackSessionSummary;
 use App\Models\Pelatihan\UserPelatihanModel;
 use App\Models\Pelatihan\UnitKerjaPelatihanModel;
 use App\Models\Pelatihan\ProfesiPelatihanModel;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ManajemenPeserta extends BaseController
 {
@@ -2006,7 +2011,12 @@ class ManajemenPeserta extends BaseController
         $sheet3->getColumnDimension('C')->setWidth(50);
         $sheet3->getColumnDimension('D')->setWidth(20);
 
-        // 3. Detail Per Peserta
+        // 3. Detail Per Sesi
+        $rowF += 2;
+        $sesiStats = (new FeedbackSessionSummary())->getStats($db, (int) $pelatihanId);
+        $rowF = $this->appendSessionFeedback($sheet3, $sesiStats, $rowF);
+
+        // 4. Detail Per Peserta
         $rowF += 2;
         $sheet3->setCellValue('A'.$rowF, 'DETAIL FEEDBACK PER PESERTA');
         $sheet3->getStyle('A'.$rowF)->getFont()->setBold(true)->setSize(12);
@@ -2058,5 +2068,88 @@ class ManajemenPeserta extends BaseController
         header('Cache-Control: max-age=0');
         $writer->save('php://output');
         exit();
+    }
+
+    private function appendSessionFeedback(Worksheet $sheet, array $sesiStats, int $row): int
+    {
+        $startRow = $row;
+        $sheet->mergeCells("A{$row}:E{$row}");
+        $sheet->setCellValue("A{$row}", 'DETAIL FEEDBACK PER SESI');
+        $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E3A5F']],
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(26);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $row++;
+
+        if (empty($sesiStats)) {
+            $sheet->mergeCells("A{$row}:E{$row}");
+            $sheet->setCellValue("A{$row}", 'Belum ada sesi pada pelatihan ini.');
+            $sheet->getRowDimension($row)->setRowHeight(26);
+            return $row + 1;
+        }
+
+        $sheet->mergeCells("A{$row}:C{$row}");
+        $sheet->setCellValue("A{$row}", 'Sesi / Kategori / Pertanyaan');
+        $sheet->setCellValue("D{$row}", 'Rata-rata Rating (1–5)');
+        $sheet->setCellValue("E{$row}", 'Jumlah Jawaban');
+        $sheet->getStyle("A{$row}:E{$row}")->getFont()->setBold(true);
+        $sheet->getRowDimension($row)->setRowHeight(24);
+        $row++;
+
+        foreach ($sesiStats as $sesiStat) {
+            $sheet->mergeCells("A{$row}:C{$row}");
+            $sheet->setCellValueExplicit("A{$row}", 'SESI: ' . $sesiStat['nama'], DataType::TYPE_STRING);
+            $sheet->setCellValue("D{$row}", $sesiStat['avg_overall'] ?? '-');
+            $sheet->setCellValue("E{$row}", (int) $sesiStat['total_votes']);
+            $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => '1E3A5F']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E2EDF7']],
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(max(26, ceil(mb_strlen($sesiStat['nama']) / 90) * 16 + 8));
+            $row++;
+
+            foreach ($sesiStat['kategori'] as $kategori => $kategoriStat) {
+                $sheet->mergeCells("A{$row}:C{$row}");
+                $sheet->setCellValue("A{$row}", 'KATEGORI: ' . $kategori);
+                $sheet->setCellValue("D{$row}", $kategoriStat['avg_overall'] ?? '-');
+                $sheet->setCellValue("E{$row}", (int) $kategoriStat['total_votes']);
+                $sheet->getStyle("A{$row}:E{$row}")->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F2F4F7']],
+                ]);
+                $sheet->getRowDimension($row)->setRowHeight(24);
+                $row++;
+
+                if (empty($kategoriStat['pertanyaan'])) {
+                    $sheet->mergeCells("A{$row}:E{$row}");
+                    $sheet->setCellValue("A{$row}", 'Belum ada jawaban untuk kategori ini pada sesi ini.');
+                    $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->getColor()->setRGB('6C757D');
+                    $sheet->getRowDimension($row)->setRowHeight(24);
+                    $row++;
+                    continue;
+                }
+
+                foreach ($kategoriStat['pertanyaan'] as $pertanyaan) {
+                    $sheet->mergeCells("A{$row}:C{$row}");
+                    $sheet->setCellValueExplicit("A{$row}", $pertanyaan['pertanyaan'], DataType::TYPE_STRING);
+                    $sheet->setCellValue("D{$row}", $pertanyaan['avg_rating']);
+                    $sheet->setCellValue("E{$row}", (int) $pertanyaan['total_votes']);
+                    $lines = max(ceil(mb_strlen($pertanyaan['pertanyaan']) / 90), substr_count($pertanyaan['pertanyaan'], "\n") + 1);
+                    $sheet->getRowDimension($row)->setRowHeight(max(24, $lines * 16 + 8));
+                    $row++;
+                }
+            }
+            $row++;
+        }
+
+        $lastRow = $row - 1;
+        $sheet->getStyle("A{$startRow}:E{$lastRow}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("D{$startRow}:D{$lastRow}")->getNumberFormat()->setFormatCode('0.0');
+        $sheet->getStyle("E{$startRow}:E{$lastRow}")->getNumberFormat()->setFormatCode('0');
+        $sheet->getStyle("D{$startRow}:E{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        return $row;
     }
 }
