@@ -23,6 +23,26 @@
 <style>
     .nav-pills .nav-link { color: #6c757d; }
     .nav-pills .nav-link.active { color: #fff !important; }
+    .jpl-export-card {
+        background-color: #f2f8f4 !important;
+        border-bottom-color: #217346 !important;
+    }
+    .jpl-export-card .jpl-export-metric { color: #217346 !important; }
+    .jpl-export-card .jpl-export-icon {
+        color: #217346 !important;
+        background-color: #e2efe7 !important;
+        border-color: #c9dfd1 !important;
+    }
+    .jpl-export-card .jpl-export-button {
+        color: #217346;
+        border-color: #217346;
+    }
+    .jpl-export-card .jpl-export-button:hover,
+    .jpl-export-card .jpl-export-button:focus-visible {
+        color: #fff;
+        background-color: #217346;
+        border-color: #217346;
+    }
 </style>
 
 <div class="container-fluid px-0">
@@ -78,13 +98,19 @@
             </div>
         </div>
         <div class="col-md-4 col-xl">
-            <div class="card border-0 shadow-sm rounded-custom bg-white h-100 border-bottom border-info border-3" style="cursor:pointer;" onclick="window.location.href='<?= site_url("pelatihan/admin/monitoring/export_jpl_excel?tahun=$selectedYear") ?>'">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-1 fw-bold" style="font-size: 0.65rem;">RATA RATA JPL</h6>
-                        <h3 class="mb-0 fw-bold text-info"><?= number_format($rataRataJPL, 1) ?> <span class="fs-6 text-muted fw-normal">JPL</span></h3>
+            <div class="card jpl-export-card border-0 shadow-sm rounded-custom h-100 border-bottom border-3">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <h6 class="text-muted mb-1 fw-bold" style="font-size: 0.65rem;">RIWAYAT JPL PESERTA</h6>
+                            <h3 class="jpl-export-metric mb-0 fw-bold"><?= number_format($rataRataJPL, 1) ?> <span class="fs-6 text-muted fw-normal">JPL</span></h3>
+                            <small class="text-muted">Rata-rata capaian tahun <?= esc($selectedYear) ?></small>
+                        </div>
+                        <div class="jpl-export-icon p-3 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="border: 1px solid #dee2e6; width:48px; height:48px;"><i class="fas fa-file-excel"></i></div>
                     </div>
-                    <div class="bg-light text-info p-3 rounded-circle d-flex align-items-center justify-content-center" style="border: 1px solid #dee2e6; width:48px; height:48px;"><i class="fas fa-file-excel text-info"></i></div>
+                    <a href="<?= site_url("pelatihan/admin/monitoring/export_jpl_excel?tahun=$selectedYear") ?>" class="jpl-export-button btn btn-outline-success btn-sm fw-bold mt-3" aria-label="Unduh Excel riwayat JPL peserta tahun <?= esc($selectedYear) ?>">
+                        <i class="fas fa-download me-2"></i> Unduh Excel
+                    </a>
                 </div>
             </div>
         </div>
