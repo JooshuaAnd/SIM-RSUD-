@@ -1742,7 +1742,7 @@ $nowTs = time();
                                     <?php if (isset($post_test_status) && $post_test_status == 'Lulus'): ?>
                                         <i class="fas fa-info-circle fa-2x text-muted opacity-25 mb-3"></i>
                                         <p class="text-dark fw-bold mb-2">Selamat! Anda telah berhasil menyelesaikan pelatihan <br><span class="text-danger"><?= $p['nama'] ?></span></p>
-                                        <p class="text-muted mb-0 small">Sertifikat Anda sedang dalam tahap verifikasi akhir dan proses penandatanganan oleh penyelenggara. Anda akan menerima notifikasi segera setelah sertifikat digital resmi Anda siap untuk diunduh.</p>
+                                        <p class="text-muted mb-0 small">Template sertifikat pelatihan ini belum disiapkan oleh penyelenggara. Sertifikat Anda akan terbit otomatis begitu template tersedia, dan Anda akan menerima notifikasi saat sertifikat siap diunduh.</p>
                                     <?php else: ?>
                                         <i class="fas fa-info-circle fa-2x text-danger opacity-75 mb-3"></i>
                                         <p class="text-dark fw-bold mb-2">Anda telah menyelesaikan pelatihan <br><span class="text-danger"><?= $p['nama'] ?></span></p>

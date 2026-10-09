@@ -54,8 +54,8 @@ class Auth extends BaseController
 
         $dbRole = strtolower($user['role'] ?? '');
 
-        // Only ordinary admins explicitly granted this flag may select a participant session.
-        if ($dbRole === 'admin' && (int) ($user['admin_akses_peserta'] ?? 0) === 1) {
+        // Admin accounts explicitly granted this flag may select a participant session.
+        if (in_array($dbRole, ['admin', 'admin_pengabdian'], true) && (int) ($user['admin_akses_peserta'] ?? 0) === 1) {
             $this->session->remove([
                 'logged_in', 'role', 'account_role', 'user_id', 'nik', 'email', 'nama',
                 'jenis_peserta', 'force_password_reset', 'pending_login_nik', 'pending_login_created_at',
@@ -69,6 +69,7 @@ class Auth extends BaseController
             return view('Pelatihan/auth/login', [
                 'roleSelectionRequired' => true,
                 'pendingUserName' => $user['nama_lengkap'],
+                'pendingAdminRole' => $dbRole,
             ]);
         }
 
@@ -86,19 +87,24 @@ class Auth extends BaseController
             return redirect()->to('/pelatihan/login')->with('error', 'Sesi pemilihan akses sudah berakhir. Silakan login kembali.');
         }
 
-        if (!in_array($selectedRole, ['admin', 'peserta'], true)) {
+        if (!in_array($selectedRole, ['admin', 'admin_pengabdian', 'peserta'], true)) {
             return redirect()->to('/pelatihan/login')->with('error', 'Pilihan akses tidak valid. Silakan login kembali.');
         }
 
         $user = (new UserPelatihanModel())->where('nik', $pendingNik)->first();
         if (
             !$user ||
-            strtolower($user['role'] ?? '') !== 'admin' ||
+            !in_array(strtolower($user['role'] ?? ''), ['admin', 'admin_pengabdian'], true) ||
             (int) ($user['admin_akses_peserta'] ?? 0) !== 1 ||
             ($user['status'] ?? 'aktif') !== 'aktif'
         ) {
             $this->clearPendingLogin();
             return redirect()->to('/pelatihan/login')->with('error', 'Akses akun berubah atau tidak tersedia. Silakan login kembali.');
+        }
+
+        if ($selectedRole !== 'peserta' && $selectedRole !== strtolower($user['role'])) {
+            $this->clearPendingLogin();
+            return redirect()->to('/pelatihan/login')->with('error', 'Pilihan akses tidak sesuai dengan akun Anda.');
         }
 
         return $this->completeLogin($user, $selectedRole);
@@ -107,16 +113,16 @@ class Auth extends BaseController
     private function completeLogin(array $user, string $activeRole)
     {
         $accountRole = strtolower($user['role'] ?? '');
-        if ($accountRole === 'admin') {
-            if (!in_array($activeRole, ['admin', 'peserta'], true)) {
-                $activeRole = 'admin';
+        if (in_array($accountRole, ['admin', 'admin_pengabdian'], true)) {
+            if (!in_array($activeRole, [$accountRole, 'peserta'], true)) {
+                $activeRole = $accountRole;
             }
             if ($activeRole === 'peserta' && (int) ($user['admin_akses_peserta'] ?? 0) !== 1) {
                 $this->clearPendingLogin();
                 return redirect()->to('/pelatihan/login')->with('error', 'Akun ini tidak memiliki akses sebagai peserta.');
             }
         } else {
-            // admin_pengabdian and participant accounts keep their original, restricted role.
+            // Other accounts keep their original role.
             $activeRole = $accountRole;
         }
 

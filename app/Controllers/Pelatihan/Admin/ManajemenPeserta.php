@@ -50,7 +50,7 @@ class ManajemenPeserta extends BaseController
                 ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
                 ->whereIn('peserta_pelatihan.user_id', $niks)
                 ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                ->where('master_pelatihan.cert_published', 1)
+                ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
                 ->findAll();
             foreach ($allCompletedPelat as $cp) {
                 $pelatByUser[$cp['user_id']][] = $cp;
@@ -337,7 +337,7 @@ class ManajemenPeserta extends BaseController
                 ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
                 ->whereIn('peserta_pelatihan.user_id', $niks)
                 ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                ->where('master_pelatihan.cert_published', 1)
+                ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
                 ->findAll();
             foreach ($allCompletedPelat as $cp) {
                 $pelatByUser[$cp['user_id']][] = $cp;
@@ -498,7 +498,7 @@ class ManajemenPeserta extends BaseController
                 ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
                 ->whereIn('peserta_pelatihan.user_id', $niks)
                 ->where('peserta_pelatihan.status_peserta', 'Lulus')
-                ->where('master_pelatihan.cert_published', 1)
+                ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
                 ->findAll();
             foreach ($allCompletedPelat as $cp) {
                 $pelatByUser[$cp['user_id']][] = $cp;
@@ -838,7 +838,7 @@ class ManajemenPeserta extends BaseController
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->where('peserta_pelatihan.user_id', $userId)
             ->where('peserta_pelatihan.status_peserta', 'Lulus')
-            ->where('master_pelatihan.cert_published', 1)
+            ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
             ->get()->getResultArray();
 
         // 2. External / Mandiri
@@ -940,7 +940,7 @@ class ManajemenPeserta extends BaseController
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->whereIn('peserta_pelatihan.user_id', $niks)
             ->where('peserta_pelatihan.status_peserta', 'Lulus')
-            ->where('master_pelatihan.cert_published', 1)
+            ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
             ->findAll();
             
         $pelatByUser = [];
@@ -1060,7 +1060,7 @@ class ManajemenPeserta extends BaseController
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->whereIn('peserta_pelatihan.user_id', $niks)
             ->where('peserta_pelatihan.status_peserta', 'Lulus')
-            ->where('master_pelatihan.cert_published', 1)
+            ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
             ->findAll();
             
         $pelatByUser = [];

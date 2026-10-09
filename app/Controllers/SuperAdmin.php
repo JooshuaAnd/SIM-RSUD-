@@ -106,7 +106,7 @@ class SuperAdmin extends BaseController
                     'no_wa' => '-', 
                     'password' => password_hash($password, PASSWORD_DEFAULT),
                     'role' => $roleToInsert,
-                    'admin_akses_peserta' => ($roleToInsert === 'admin' && $this->request->getPost('admin_akses_peserta') === '1') ? 1 : 0,
+                    'admin_akses_peserta' => $this->request->getPost('admin_akses_peserta') === '1' ? 1 : 0,
                     'status' => 'aktif',
                     'created_at' => date('Y-m-d H:i:s'),
                     'updated_at' => date('Y-m-d H:i:s'),
@@ -148,17 +148,17 @@ class SuperAdmin extends BaseController
         $db = \Config\Database::connect();
         $user = $db->table('users_pelatihan')
             ->where('nik', $nik)
-            ->where('role', 'admin')
+            ->whereIn('role', ['admin', 'admin_pengabdian'])
             ->get()
             ->getRowArray();
 
         if (!$user) {
-            return redirect()->back()->with('error', 'Admin Pelatihan tidak ditemukan. Akses Admin Pengabdian tidak dapat diubah di sini.');
+            return redirect()->back()->with('error', 'Admin Pelatihan atau Admin Pengabdian tidak ditemukan.');
         }
 
         $db->table('users_pelatihan')
             ->where('nik', $nik)
-            ->where('role', 'admin')
+            ->whereIn('role', ['admin', 'admin_pengabdian'])
             ->update([
                 'admin_akses_peserta' => (int) $enabled,
                 'updated_at' => date('Y-m-d H:i:s'),

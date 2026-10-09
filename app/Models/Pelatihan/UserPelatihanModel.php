@@ -36,7 +36,7 @@ class UserPelatihanModel extends Model
             ->join('master_pelatihan', 'master_pelatihan.id = peserta_pelatihan.pelatihan_id')
             ->where('peserta_pelatihan.user_id', $userId)
             ->where('peserta_pelatihan.status_peserta', 'Lulus')
-            ->where('master_pelatihan.cert_published', 1)
+            ->where(\App\Models\Pelatihan\PesertaPelatihanModel::CERT_ISSUED_SQL, null, false)
             ->get()->getResultArray();
 
         // 2. Approved external / mandiri / surat tugas certificates (non-RSUD)

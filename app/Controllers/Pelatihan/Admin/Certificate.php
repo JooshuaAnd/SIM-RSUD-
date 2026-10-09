@@ -475,57 +475,16 @@ class Certificate extends BaseController
 
         $masterPelat = $this->masterPelatihanModel->find($id);
 
-        $noSertifTemplate = $template['no_sertifikat'] ?? $this->generateNoSertifikat($masterPelat ?? ['ranah_skp' => 'Pembelajaran', 'jadwal_selesai' => date('Y-m-d'), 'penyelenggara' => 'RSUD']);
-
-        // Fetch passed participants
+        // Sertifikat peserta yang lulus biasanya sudah terbit otomatis saat mereka
+        // menyelesaikan pelatihan; ini menyusul yang belum (idempoten).
+        $issuer = new \App\Libraries\CertificateIssuer();
         $passedPeserta = $this->pesertaModel->where('pelatihan_id', $id)
             ->where('status_peserta', 'Lulus')
             ->findAll();
 
         foreach ($passedPeserta as $p) {
-            $u = $this->userModel->find($p['user_id']);
-            if (!$u) continue;
-
-            $exist = $this->certModel->where('user_id', $u['nik'])
-                ->where('pelatihan_id', $id)
-                ->where('jenis_dokumen', 'rsud')
-                ->first();
-
-            if (!$exist) {
-                $noSertifikat = str_replace('{id}', str_pad($p['id'], 4, '0', STR_PAD_LEFT), $noSertifTemplate);
-
-                $this->certModel->insert([
-                    'user_id' => $u['nik'],
-                    'user_nama' => $u['nama_lengkap'],
-                    'user_profesi' => $u['id_profesi'] ? 'Tenaga Kesehatan' : 'Staff Umum', // fallback
-                    'judul' => $masterPelat['nama'],
-                    'ranah' => 'Pembelajaran',
-                    'kategori_kegiatan' => 'Peserta Pelatihan',
-                    'skp' => $masterPelat['jpl'],
-                    'tgl_mulai' => $masterPelat['jadwal_mulai'],
-                    'tgl_selesai' => $masterPelat['jadwal_selesai'],
-                    'penerbit' => 'RSUD Kota Yogyakarta',
-                    'jenis_dokumen' => 'rsud',
-                    'verifikasi' => 'approved',
-                    'tgl_upload' => date('Y-m-d H:i:s'),
-                    'tgl_verifikasi' => date('Y-m-d H:i:s'),
-                    'pelatihan_id' => $id,
-                    'no_sertifikat' => $noSertifikat,
-                ]);
-
-                // Tambahkan notifikasi
-                $db = \Config\Database::connect();
-                $db->table('notifikasi_pelatihan')->insert([
-                    'user_id' => $u['nik'],
-                    'title' => 'Sertifikat Diterbitkan',
-                    'message' => 'Sertifikat untuk pelatihan ' . $masterPelat['nama'] . ' telah diterbitkan. Silakan unduh di menu Sertifikat Saya.',
-                    'type' => 'success',
-                    'is_read' => 0,
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-            }
-            // Recalculate JPL
-            $this->userModel->recalculateJpl($u['nik']);
+            $issuer->issue((int) $id, (string) $p['user_id'], false);
+            $this->userModel->recalculateJpl($p['user_id']);
         }
 
         return redirect()->to(site_url('pelatihan/admin/sertifikat'))->with('success', 'Sertifikat pelatihan resmi diterbitkan.');
@@ -674,6 +633,14 @@ class Certificate extends BaseController
         } else {
             $this->templateModel->insert($data);
             $msg = 'Template sertifikat berhasil dibuat.';
+        }
+
+        // Peserta yang sudah lulus sebelum template ada langsung mendapat sertifikat.
+        if (!empty($data['pelatihan_id'])) {
+            $issued = (new \App\Libraries\CertificateIssuer())->issueForPassedParticipants((int) $data['pelatihan_id']);
+            if ($issued > 0) {
+                $msg .= " Sertifikat untuk {$issued} peserta yang sudah lulus diterbitkan otomatis.";
+            }
         }
 
         return redirect()->to(site_url('pelatihan/admin/sertifikat'))->with('success', $msg);

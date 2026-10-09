@@ -51,10 +51,10 @@
                         </div>
                         <div class="mb-3" id="admin_akses_peserta_container" style="display: none;">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="admin_akses_peserta" id="admin_akses_peserta" value="1">
-                                <label class="form-check-label fw-semibold" for="admin_akses_peserta">Izinkan login sebagai peserta</label>
+                                <input class="form-check-input" type="checkbox" name="admin_akses_peserta" id="admin_akses_peserta" value="1" disabled>
+                                <label class="form-check-label" for="admin_akses_peserta">Aktifkan akses peserta</label>
                             </div>
-                            <small class="text-muted">Khusus Admin Pelatihan. Admin Pengabdian tidak mendapat akses peserta.</small>
+                            <small class="text-muted">Jika tidak dicentang, akses peserta nonaktif.</small>
                         </div>
                         <div class="mb-3" id="nik_container" style="display: none;">
                             <label class="form-label">NIK / Identitas</label>
@@ -157,12 +157,12 @@
                                                 <td><?= $admin['nik'] ?></td>
                                                 <td><?= $admin['email'] ?></td>
                                                 <td>
-                                                    <?php if ($admin['role'] === 'admin'): ?>
+                                                    <?php if (in_array($admin['role'], ['admin', 'admin_pengabdian'], true)): ?>
                                                         <?php $aksesPesertaAktif = (int) ($admin['admin_akses_peserta'] ?? 0) === 1; ?>
                                                         <span class="badge <?= $aksesPesertaAktif ? 'bg-success' : 'bg-secondary' ?> mb-2">
                                                             <?= $aksesPesertaAktif ? 'Aktif' : 'Nonaktif' ?>
                                                         </span>
-                                                        <form action="<?= base_url('superadmin/toggle_admin_akses_peserta') ?>" method="POST">
+                                                        <form action="<?= base_url('superadmin/toggle_admin_akses_peserta') ?>" method="POST" class="akses-peserta-form" data-admin-name="<?= esc($admin['nama_lengkap'], 'attr') ?>">
                                                             <?= csrf_field() ?>
                                                             <input type="hidden" name="nik" value="<?= esc($admin['nik'], 'attr') ?>">
                                                             <input type="hidden" name="enabled" value="<?= $aksesPesertaAktif ? '0' : '1' ?>">
@@ -233,8 +233,33 @@
         const nikInput = document.getElementById('nik');
         const namaContainer = document.getElementById('nama_container');
         const namaInput = document.getElementById('nama_lengkap');
-        const adminAksesPesertaContainer = document.getElementById('admin_akses_peserta_container');
-        const adminAksesPesertaInput = document.getElementById('admin_akses_peserta');
+        const aksesPesertaContainer = document.getElementById('admin_akses_peserta_container');
+        const aksesPesertaInput = document.getElementById('admin_akses_peserta');
+        document.querySelectorAll('.akses-peserta-form').forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const enabled = form.elements.enabled.value === '1';
+                const action = enabled ? 'Aktifkan' : 'Nonaktifkan';
+                const effect = enabled
+                    ? 'Akun ini akan dapat memilih masuk sebagai admin sesuai jenis akunnya atau sebagai peserta.'
+                    : 'Pada login berikutnya, akun ini hanya dapat masuk sebagai admin sesuai jenis akunnya.';
+                Swal.fire({
+                    title: action + ' akses peserta?',
+                    text: 'Admin: ' + form.dataset.adminName + '. ' + effect,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, ' + action.toLowerCase(),
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: enabled ? '#198754' : '#dc3545',
+                    focusCancel: true
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        form.querySelector('button[type="submit"]').disabled = true;
+                        form.submit();
+                    }
+                });
+            });
+        });
 
         nikInput.addEventListener('input', function() {
             this.value = this.value.replace(/\D/g, '').slice(0, 16);
@@ -246,9 +271,11 @@
 
         tipeAdminSelect.addEventListener('change', function() {
             const val = this.value;
-            adminAksesPesertaContainer.style.display = val === 'pelatihan' ? 'block' : 'none';
-            if (val !== 'pelatihan') {
-                adminAksesPesertaInput.checked = false;
+            const supportsPeserta = val === 'pelatihan' || val === 'admin_pengabdian';
+            aksesPesertaContainer.style.display = supportsPeserta ? 'block' : 'none';
+            aksesPesertaInput.disabled = !supportsPeserta;
+            if (!supportsPeserta) {
+                aksesPesertaInput.checked = false;
             }
 
             if (val === 'pelatihan' || val === 'admin_pengabdian') {

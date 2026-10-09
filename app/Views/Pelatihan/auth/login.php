@@ -407,11 +407,11 @@ $roleSelectionRequired = $roleSelectionRequired ?? false;
             <?php if ($roleSelectionRequired): ?>
                 <form action="<?= base_url('pelatihan/auth/select-role') ?>" method="POST" id="roleSelectionForm">
                     <?= csrf_field() ?>
-                    <button type="submit" name="role" value="admin" class="role-card role-choice-button">
+                    <button type="submit" name="role" value="<?= esc($pendingAdminRole ?? 'admin', 'attr') ?>" class="role-card role-choice-button">
                         <span class="role-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
                         <span>
-                            <span class="role-name d-block">Masuk sebagai Admin</span>
-                            <span class="role-desc d-block">Kelola pelatihan dan data administrasi.</span>
+                            <span class="role-name d-block"><?= ($pendingAdminRole ?? 'admin') === 'admin_pengabdian' ? 'Masuk sebagai Admin Pengabdian' : 'Masuk sebagai Admin' ?></span>
+                            <span class="role-desc d-block"><?= ($pendingAdminRole ?? 'admin') === 'admin_pengabdian' ? 'Kelola kegiatan pengabdian masyarakat.' : 'Kelola pelatihan dan data administrasi.' ?></span>
                         </span>
                     </button>
                     <button type="submit" name="role" value="peserta" class="role-card role-choice-button">

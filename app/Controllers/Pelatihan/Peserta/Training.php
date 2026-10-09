@@ -1498,6 +1498,11 @@ class Training extends BaseController
                        'updated_at'     => date('Y-m-d H:i:s')
                    ]);
                 $msg = 'Pelatihan Selesai! Anda telah resmi Lulus pelatihan ini. Terimakasih atas evaluasi Anda.';
+
+                // Sertifikat langsung terbit bila template sudah dibuat admin.
+                if ((new \App\Libraries\CertificateIssuer())->issue((int) $id, (string) $userId)) {
+                    $msg .= ' Sertifikat Anda sudah terbit dan dapat diunduh.';
+                }
             } else {
                 $msg = 'Pelatihan Selesai! Terimakasih atas evaluasi Anda.';
             }
