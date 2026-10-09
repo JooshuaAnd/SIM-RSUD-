@@ -103,14 +103,17 @@
                                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 fw-semibold w-100" style="font-size: 0.7rem;">
                                                     <i class="fas fa-times-circle me-1 text-danger"></i> Ditolak
                                                 </span>
-                                                <button type="button" class="btn btn-sm btn-danger py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="openPaymentModalMhs('<?= $row['id'] ?>', '<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>', '<?= addslashes($row['alasan_penolakan'] ?? '') ?>')" title="Bayar Ulang">
+                                                <?php if (!empty($row['alasan_penolakan'])): ?>
+                                                <small class="text-danger d-block text-start" style="white-space: pre-wrap;"><strong>Alasan penolakan:</strong> <?= esc($row['alasan_penolakan']) ?></small>
+                                                <?php endif; ?>
+                                                <button type="button" class="btn btn-sm btn-danger py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="openPaymentModalMhs('<?= $row['id'] ?>', '<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>', <?= esc(json_encode($row['alasan_penolakan'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)" title="Bayar Ulang">
                                                     <i class="fas fa-credit-card me-1"></i> Bayar
                                                 </button>
                                             <?php else : ?>
                                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 fw-semibold w-100" style="font-size: 0.7rem;">
                                                     <i class="fas fa-exclamation-triangle me-1 text-danger"></i> Belum Bayar
                                                 </span>
-                                                <button type="button" class="btn btn-sm btn-danger py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="openPaymentModalMhs('<?= $row['id'] ?>', '<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>', '<?= addslashes($row['alasan_penolakan'] ?? '') ?>')" title="Bayar Tagihan">
+                                                <button type="button" class="btn btn-sm btn-danger py-1 px-2 w-100" style="font-size: 0.7rem;" onclick="openPaymentModalMhs('<?= $row['id'] ?>', '<?= $row['nama'] ?>', '<?= $row['nim'] ?>', '<?= $row['prodi'] ?>', '<?= $row['nominal'] ?>', '<?= $row['invoice_file'] ?>', <?= esc(json_encode($row['alasan_penolakan'] ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), 'attr') ?>)" title="Bayar Tagihan">
                                                     <i class="fas fa-credit-card me-1"></i> Bayar
                                                 </button>
                                             <?php endif; ?>

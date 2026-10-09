@@ -1,25 +1,110 @@
 <?= $this->include('Pendidikan/AdminDiklat/layout/header') ?>
 <?= $this->include('Pendidikan/AdminDiklat/layout/sidebar') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold text-dark">Manajemen Institusi</h5>
-    <div>
-        <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn <?= ($tab === 'inbox') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=inbox') ?>'">
-                Inbox <span class="badge bg-light text-dark ms-1"><?= $counts['inbox'] ?? 0 ?></span><?php if (!empty($counts['revision_submitted'])): ?> <span class="badge bg-danger ms-1"><?= $counts['revision_submitted'] ?> revisi masuk</span><?php endif; ?>
-            </button>
-            <button type="button" class="btn <?= ($tab === 'approved') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=approved') ?>'">
-                Disetujui <span class="badge bg-light text-dark ms-1"><?= $counts['approved'] ?? 0 ?></span>
-            </button>
-            <button type="button" class="btn <?= ($tab === 'revision') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=revision') ?>'">
-                Revisi <span class="badge bg-light text-dark ms-1"><?= $counts['revision'] ?? 0 ?></span>
-            </button>
-            <button type="button" class="btn <?= ($tab === 'declined') ? 'btn-primary' : 'btn-outline-primary' ?>" onclick="location.href='<?= base_url('pendidikan/admin/diklat/institusi?tab=declined') ?>'">
-                Ditolak <span class="badge bg-light text-dark ms-1"><?= $counts['declined'] ?? 0 ?></span>
-            </button>
-        </div>
-    </div>
-</div>
+<style>
+    .institusi-status-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .institusi-status-tabs .institusi-status-tab {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 76px;
+        padding: 16px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, .04);
+        color: #59616b;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+    .institusi-status-tabs .institusi-status-tab:hover {
+        background: #f8f9fa;
+        color: #343a40;
+    }
+
+    .institusi-status-tabs .institusi-status-tab.active {
+        background: #fff0f0;
+        border-color: #f3cccc;
+        color: var(--primary-red, #c62828);
+    }
+
+    .institusi-status-tabs .institusi-status-tab:focus-visible {
+        outline: 2px solid var(--primary-red, #c62828);
+        outline-offset: 2px;
+    }
+
+    .institusi-status-tabs .institusi-tab-count {
+        min-width: 28px;
+        padding: 3px 8px;
+        border-radius: 20px;
+        background: #edf0f3;
+        color: #59616b;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .institusi-status-tabs .active .institusi-tab-count {
+        background: var(--primary-red, #c62828);
+        color: #fff;
+    }
+
+    .institusi-status-tabs .institusi-tab-revision {
+        padding: 3px 8px;
+        border-radius: 20px;
+        background: #fff3cd;
+        color: #664d03;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 767.98px) {
+        .institusi-status-tabs {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .institusi-status-tabs .institusi-status-tab {
+            padding: 10px 8px;
+            font-size: 13px;
+        }
+    }
+</style>
+
+<h5 class="fw-bold text-dark mb-3">Manajemen Institusi</h5>
+<nav class="institusi-status-tabs" aria-label="Status institusi">
+    <a class="institusi-status-tab <?= ($tab === 'inbox') ? 'active' : '' ?>" href="<?= base_url('pendidikan/admin/diklat/institusi?tab=inbox') ?>" <?= ($tab === 'inbox') ? 'aria-current="page"' : '' ?>>
+        <i class="fas fa-inbox" aria-hidden="true"></i>
+        <span>Inbox</span>
+        <span class="institusi-tab-count"><?= $counts['inbox'] ?? 0 ?></span>
+        <?php if (!empty($counts['revision_submitted'])): ?><span class="institusi-tab-revision"><?= $counts['revision_submitted'] ?> revisi masuk</span><?php endif; ?>
+    </a>
+    <a class="institusi-status-tab <?= ($tab === 'approved') ? 'active' : '' ?>" href="<?= base_url('pendidikan/admin/diklat/institusi?tab=approved') ?>" <?= ($tab === 'approved') ? 'aria-current="page"' : '' ?>>
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span>Disetujui</span>
+        <span class="institusi-tab-count"><?= $counts['approved'] ?? 0 ?></span>
+    </a>
+    <a class="institusi-status-tab <?= ($tab === 'revision') ? 'active' : '' ?>" href="<?= base_url('pendidikan/admin/diklat/institusi?tab=revision') ?>" <?= ($tab === 'revision') ? 'aria-current="page"' : '' ?>>
+        <i class="fas fa-pen-to-square" aria-hidden="true"></i>
+        <span>Revisi</span>
+        <span class="institusi-tab-count"><?= $counts['revision'] ?? 0 ?></span>
+    </a>
+    <a class="institusi-status-tab <?= ($tab === 'declined') ? 'active' : '' ?>" href="<?= base_url('pendidikan/admin/diklat/institusi?tab=declined') ?>" <?= ($tab === 'declined') ? 'aria-current="page"' : '' ?>>
+        <i class="fas fa-circle-xmark" aria-hidden="true"></i>
+        <span>Ditolak</span>
+        <span class="institusi-tab-count"><?= $counts['declined'] ?? 0 ?></span>
+    </a>
+</nav>
 
 <?php if ($viewMode === 'detail' && isset($detail)): ?>
 <div class="mb-3">

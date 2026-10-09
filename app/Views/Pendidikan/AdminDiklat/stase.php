@@ -120,24 +120,173 @@
 </div>
 
 <!-- Add/Edit Stase Modal -->
-<div class="modal fade" id="addStaseModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<style>
+    @media (min-width: 992px) {
+        #addStaseModal .modal-dialog { max-width: 1100px; }
+    }
+
+    #addStaseModal .modal-content {
+        border: 0;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .16);
+    }
+
+    #addStaseModal .modal-header {
+        padding: 24px;
+        border-bottom: 1px solid #edf0f3;
+        gap: 16px;
+    }
+
+    #addStaseModal .stase-form-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        border-radius: 14px;
+        background: #fff0f0;
+        color: var(--primary-red, #c62828);
+        font-size: 20px;
+    }
+
+    #addStaseModal .modal-title { font-size: 18px; }
+    #addStaseModal #staseForm {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #addStaseModal .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+    }
+    #addStaseModal .stase-section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #343a40;
+        margin: 0;
+    }
+
+    #addStaseModal .form-label { color: #495057; }
+    #addStaseModal .form-control,
+    #addStaseModal .form-select {
+        min-height: 46px;
+        border-color: #dee2e6;
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    #addStaseModal .form-control:focus,
+    #addStaseModal .form-select:focus {
+        border-color: var(--primary-red, #c62828);
+        box-shadow: 0 0 0 3px rgba(198, 40, 40, .1);
+    }
+
+    #addStaseModal .stase-room-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+    }
+
+    #addStaseModal .stase-room-list .form-check {
+        position: relative;
+        padding: 0;
+        margin: 0;
+    }
+
+    #addStaseModal .stase-room-list .form-check-input {
+        position: absolute;
+        top: 16px;
+        left: 12px;
+        margin: 0;
+    }
+
+    #addStaseModal .stase-room-list .form-check-label {
+        display: block;
+        height: 100%;
+        padding: 12px 12px 12px 38px;
+        border: 1px solid #e3e7eb;
+        border-radius: 9px;
+        background: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        overflow-wrap: anywhere;
+    }
+
+    #addStaseModal .stase-room-list .form-check-label:hover { border-color: #d7a5a5; }
+    #addStaseModal .form-check-input:checked {
+        background-color: var(--primary-red, #c62828);
+        border-color: var(--primary-red, #c62828);
+    }
+
+    #addStaseModal .form-check-input:focus {
+        border-color: var(--primary-red, #c62828);
+        box-shadow: 0 0 0 3px rgba(198, 40, 40, .1);
+    }
+
+    #addStaseModal .form-check-input:checked + .form-check-label {
+        background: #fff0f0;
+        border-color: #e6aaaa;
+        color: #a62020;
+    }
+
+    #addStaseModal .modal-footer {
+        padding: 16px 24px;
+        background: #f8f9fa;
+        border-top: 1px solid #edf0f3;
+        gap: 8px;
+    }
+
+    #addStaseModal .modal-footer .btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    @media (max-width: 575.98px) {
+        #addStaseModal .modal-header,
+        #addStaseModal .modal-body { padding: 20px 16px; }
+        #addStaseModal .modal-footer { padding: 16px; }
+        #addStaseModal .stase-room-list { grid-template-columns: 1fr; }
+    }
+</style>
+<div class="modal fade" id="addStaseModal" tabindex="-1" aria-labelledby="staseModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h6 class="modal-title fw-bold"><i class="fas fa-route me-2"></i><span id="staseModalTitle">Tambah Stase</span></h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <div class="stase-form-icon"><i class="fas fa-route" aria-hidden="true"></i></div>
+                <div class="flex-grow-1">
+                    <h6 class="modal-title fw-bold text-dark" id="staseModalTitle">Tambah Stase</h6>
+                    <p class="small text-muted mb-0 mt-1">Atur informasi, ruangan, dan periode stase.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <form id="staseForm">
                 <input type="hidden" name="id" id="staseId" value="">
                 <div class="modal-body">
-                    <div class="row g-3">
+                    <div class="row g-4">
+                        <div class="col-lg-6">
+                        <div class="row g-3">
+                        <div class="col-12"><h6 class="stase-section-title">Informasi Stase</h6></div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Nama Stase <span class="text-danger">*</span></label>
+                            <label for="staseNama" class="form-label small fw-bold">Nama Stase <span class="text-danger">*</span></label>
                             <input type="text" name="nama_stase" id="staseNama" class="form-control" required placeholder="Keperawatan Kritis">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Profesi</label>
-                            <select name="profesi_id" id="staseProfesi" class="form-control">
+                            <label for="staseProfesi" class="form-label small fw-bold">Profesi</label>
+                            <select name="profesi_id" id="staseProfesi" class="form-select">
                                 <option value="">Pilih Profesi</option>
                                 <?php if (!empty($profesiList)): ?>
                                     <?php foreach ($profesiList as $p): ?>
@@ -146,9 +295,21 @@
                                 <?php endif; ?>
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label small fw-bold">Ruangan</label>
-                            <div class="border rounded p-3" style="max-height:160px;overflow-y:auto;">
+                        <div class="col-12 mt-4"><h6 class="stase-section-title">Periode Stase</h6></div>
+                        <div class="col-md-6">
+                            <label for="staseMulai" class="form-label small fw-bold">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai" id="staseMulai" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="staseAkhir" class="form-label small fw-bold">Tanggal Akhir</label>
+                            <input type="date" name="tanggal_akhir" id="staseAkhir" class="form-control">
+                        </div>
+                        </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6 class="stase-section-title" id="staseRoomsLabel">Ruangan</h6>
+                            <p class="small text-muted mt-1 mb-2">Pilih satu atau beberapa ruangan untuk stase ini.</p>
+                            <div class="stase-room-list" role="group" aria-labelledby="staseRoomsLabel">
                                 <?php if (!empty($unitKerjaList)): ?>
                                     <?php foreach ($unitKerjaList as $u): ?>
                                     <div class="form-check">
@@ -161,19 +322,11 @@
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Tanggal Mulai</label>
-                            <input type="date" name="tanggal_mulai" id="staseMulai" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Tanggal Akhir</label>
-                            <input type="date" name="tanggal_akhir" id="staseAkhir" class="form-control">
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Stase</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check me-2" aria-hidden="true"></i>Simpan Stase</button>
                 </div>
             </form>
         </div>

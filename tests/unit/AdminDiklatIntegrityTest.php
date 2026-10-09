@@ -3,6 +3,7 @@
 use App\Controllers\Pendidikan\AdminDiklat;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Config as Database;
+use CodeIgniter\HTTP\Files\UploadedFile;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\Test\CIUnitTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -71,13 +72,13 @@ final class AdminDiklatIntegrityTest extends CIUnitTestCase
         parent::tearDown();
     }
 
-    private function call(string $method, array $payload = [], int $id = 1): array
+    private function call(string $method, array $payload = [], int $id = 1, ?UploadedFile $file = null): array
     {
         $request = $this->getMockBuilder(IncomingRequest::class)->disableOriginalConstructor()
             ->onlyMethods(['getJSON', 'getPost', 'getFile'])->getMock();
         $request->method('getJSON')->willReturnCallback(fn ($array = false) => $array ? $payload : json_decode(json_encode($payload)));
         $request->method('getPost')->willReturnCallback(fn ($key = null) => $key === null ? $payload : ($payload[$key] ?? null));
-        $request->method('getFile')->willReturn(null);
+        $request->method('getFile')->willReturn($file);
         $controller = new AdminDiklat();
         $controller->initController($request, service('response')->setStatusCode(200), service('logger'));
         $response = $controller->{$method}($id);
@@ -248,10 +249,35 @@ final class AdminDiklatIntegrityTest extends CIUnitTestCase
 
     public function testUnpaidInvoiceCanStillBeUpdated(): void
     {
-        $this->adminDb->table('mahasiswa_pendidikan')->where('id', 42)->update(['payment_status' => 'Belum Invoice']);
-        $this->assertSame(200, $this->call('mahasiswaUploadInvoice', ['nominal' => '175000'], 42)[0]);
+        $this->adminDb->table('mahasiswa_pendidikan')->where('id', 42)->update([
+            'payment_status' => 'Belum Invoice', 'invoice_file' => null,
+        ]);
+        $file = $this->getMockBuilder(UploadedFile::class)->disableOriginalConstructor()
+            ->onlyMethods(['getError', 'hasMoved', 'isValid', 'getMimeType', 'getSize', 'getRandomName', 'move'])->getMock();
+        $file->method('getError')->willReturn(UPLOAD_ERR_OK);
+        $file->method('hasMoved')->willReturn(false);
+        $file->method('isValid')->willReturn(true);
+        $file->method('getMimeType')->willReturn('application/pdf');
+        $file->method('getSize')->willReturn(1024);
+        $file->method('getRandomName')->willReturn('integrity_invoice_test.pdf');
+        $file->expects($this->once())->method('move')->with(FCPATH . 'uploads/invoices', 'integrity_invoice_test.pdf');
+
+        $this->assertSame(200, $this->call('mahasiswaUploadInvoice', ['nominal' => '175000'], 42, $file)[0]);
         $this->assertSame('Belum Bayar', $this->row('mahasiswa_pendidikan', 42)['payment_status']);
         $this->assertEquals(175000, $this->row('mahasiswa_pendidikan', 42)['nominal']);
+        $this->assertSame('integrity_invoice_test.pdf', $this->row('mahasiswa_pendidikan', 42)['invoice_file']);
+    }
+
+    public function testUnpaidInvoiceCannotBeUpdatedWithoutPdf(): void
+    {
+        $this->adminDb->table('mahasiswa_pendidikan')->where('id', 42)->update(['payment_status' => 'Belum Invoice']);
+        $before = $this->row('mahasiswa_pendidikan', 42);
+        [$status, $body] = $this->call('mahasiswaUploadInvoice', ['nominal' => '175000'], 42);
+
+        $this->assertSame(422, $status);
+        $this->assertFalse($body['success']);
+        $this->assertSame('File invoice PDF wajib diunggah.', $body['message']);
+        $this->assertSame($before, $this->row('mahasiswa_pendidikan', 42));
     }
 
     public function testMappingRequiresCorrectCiProfession(): void

@@ -964,6 +964,14 @@ class Pengajuan extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Mahasiswa tidak ditemukan.']);
         }
 
+        if (!in_array($mahasiswa['payment_status'] ?? '', ['Belum Bayar', 'Ditolak'], true)
+            || empty($mahasiswa['invoice_file'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Bukti bayar hanya dapat dikirim setelah invoice tersedia dan pembayaran belum bayar atau ditolak.',
+            ])->setStatusCode(409);
+        }
+
         $file_bukti = $this->request->getFile('bukti_bayar');
         if (!$file_bukti || !$file_bukti->isValid() || $file_bukti->hasMoved()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengunggah file bukti pembayaran.']);

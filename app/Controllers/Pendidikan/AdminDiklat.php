@@ -1675,7 +1675,22 @@ class AdminDiklat extends BaseController
         $file = $this->request->getFile('invoice_file');
         $nominal = $this->request->getPost('nominal');
 
-        $data = [];
+        $missingNominal = $nominal === null || $nominal === '';
+        $missingFile = !$file || $file->getError() === UPLOAD_ERR_NO_FILE;
+        if ($missingNominal || $missingFile) {
+            $message = $missingNominal && $missingFile
+                ? 'Nominal dan file invoice PDF wajib diisi.'
+                : ($missingNominal ? 'Nominal wajib diisi.' : 'File invoice PDF wajib diunggah.');
+            return $this->response->setJSON(['success' => false, 'message' => $message])->setStatusCode(422);
+        }
+        if (!is_scalar($nominal) || !preg_match('/^[0-9]+$/', (string) $nominal) || (int) $nominal < 0) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Nominal harus berupa angka nol atau lebih.'])->setStatusCode(422);
+        }
+        if ($file->hasMoved()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'File invoice PDF wajib diunggah ulang.'])->setStatusCode(422);
+        }
+
+        $data = ['nominal' => (int) $nominal];
         if ($file) {
             if (!$file->isValid()) {
                 return $this->response->setJSON([
@@ -1705,20 +1720,6 @@ class AdminDiklat extends BaseController
                 $file->move($uploadPath, $newName);
                 $data['invoice_file'] = $newName;
             }
-        }
-
-        if ($nominal !== null && $nominal !== '') {
-            if (!preg_match('/^[0-9]+$/', (string) $nominal) || (int) $nominal < 0) {
-                return $this->response->setJSON(['success' => false, 'message' => 'Nominal harus berupa angka nol atau lebih.'])->setStatusCode(422);
-            }
-            $data['nominal'] = (int) $nominal;
-        }
-
-        if (empty($data)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Tidak ada data yang diunggah'
-            ])->setStatusCode(422);
         }
 
         $data['payment_status'] = 'Belum Bayar';
@@ -1777,7 +1778,7 @@ class AdminDiklat extends BaseController
         $json = $this->request->getJSON(true);
         $status = $json['status'] ?? '';
 
-        if (!in_array($status, ['Lunas', 'Belum Bayar', 'Menunggu Verifikasi', 'Ditolak'], true)) {
+        if (!in_array($status, ['Lunas', 'Ditolak'], true)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Status tidak valid'
@@ -1785,6 +1786,12 @@ class AdminDiklat extends BaseController
         }
 
         if ($status === 'Lunas') {
+            if (($json['action'] ?? '') !== 'setujui') {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Pembayaran hanya dapat dilunaskan melalui persetujuan admin.',
+                ])->setStatusCode(422);
+            }
             $hasUploadedFile = static function ($filename, array $directories): bool {
                 if (!is_string($filename) || trim($filename) === ''
                     || strpbrk($filename, "/\\\0") !== false) {
@@ -1815,6 +1822,13 @@ class AdminDiklat extends BaseController
                     'message' => 'Pembayaran tidak dapat dilunaskan karena bukti pembayaran belum tersedia di server.',
                 ])->setStatusCode(422);
             }
+        }
+
+        if (($mahasiswa['payment_status'] ?? '') !== 'Menunggu Verifikasi') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Hanya pembayaran yang menunggu verifikasi dapat disetujui atau ditolak.',
+            ])->setStatusCode(409);
         }
 
         $data = ['payment_status' => $status];

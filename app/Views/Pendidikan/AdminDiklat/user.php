@@ -308,28 +308,29 @@ function deleteCI(id, nama) {
                 </div>
 
                 <!-- Upload Invoice -->
-                <div class="mb-3 p-3 border rounded">
+                <div id="payInvoiceUploadSection" class="mb-3 p-3 border rounded">
                     <p class="fw-semibold mb-2"><i class="fas fa-upload me-1"></i> Upload Invoice</p>
-                    <form id="uploadInvoiceForm" enctype="multipart/form-data">
+                    <form id="uploadInvoiceForm" enctype="multipart/form-data" novalidate>
                         <div id="payInvoiceLocked" class="alert alert-success small d-none">Pembayaran sudah lunas. Invoice dan nominal tidak dapat diubah.</div>
                         <div class="mb-2">
-                            <label class="form-label">Nominal</label>
-                            <input type="text" class="form-control" id="payNominal" placeholder="Rp" oninput="formatNominalInput(this)">
+                            <label for="payNominal" class="form-label">Nominal <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="payNominal" placeholder="Rp" oninput="formatNominalInput(this)" required aria-describedby="payNominalError">
+                            <div class="invalid-feedback" id="payNominalError">Nominal wajib diisi.</div>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">File PDF</label>
-                            <input type="file" class="form-control" id="payInvoiceFile" accept=".pdf">
+                            <label for="payInvoiceFile" class="form-label">File PDF <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="payInvoiceFile" accept=".pdf" required aria-describedby="payInvoiceFileError">
+                            <div class="invalid-feedback" id="payInvoiceFileError">File invoice PDF wajib diunggah.</div>
                         </div>
                         <button type="submit" class="btn btn-info btn-sm text-white"><i class="fas fa-cloud-upload-alt me-1"></i> Upload</button>
-                        <small class="text-muted d-block mt-1">Kosongkan nominal jika hanya upload file, atau sebaliknya</small>
                     </form>
-                    <div id="payInvoiceInfo" class="mt-2 d-none">
-                        <small class="text-muted">Invoice: <a href="#" id="payInvoiceLink" target="_blank">Lihat Invoice</a></small>
-                    </div>
+                </div>
+                <div id="payInvoiceInfo" class="mb-3 d-none">
+                    <a href="#" id="payInvoiceLink" target="_blank" rel="noopener" class="btn btn-outline-primary w-100 py-3 fw-semibold"><i class="fas fa-file-invoice me-2"></i>Lihat Invoice</a>
                 </div>
 
                 <!-- Verifikasi -->
-                <div class="mb-2 p-3 border rounded">
+                <div id="payVerifikasiSection" class="mb-2 p-3 border rounded d-none">
                     <p class="fw-semibold mb-2"><i class="fas fa-check-circle me-1"></i> Verifikasi Pembayaran</p>
                     <div id="payVerifikasiContent">
                         <p class="text-muted small mb-2">Belum ada bukti bayar dari institusi</p>
@@ -500,11 +501,14 @@ function deleteMahasiswa(id, nama) {
 
 // --- Payment Management ---
 function kelolaPembayaran(m) {
+    $('#payInvoiceFile').val('');
+    $('#payNominal, #payInvoiceFile').removeClass('is-invalid').removeAttr('aria-invalid');
     $('#payMhsId').val(m.id);
     $('#payMhsNama').text(m.nama_lengkap || '-');
-    $('#payMhsNim').text(m.nim || '');
+    $('#payMhsNim').text('NIM: ' + (m.nim || '-'));
 
     var payStatus = m.payment_status || 'Belum Invoice';
+    $('#payInvoiceUploadSection').toggleClass('d-none', payStatus !== 'Belum Invoice' || !!m.invoice_file);
     $('#uploadInvoiceForm :input').prop('disabled', payStatus === 'Lunas');
     $('#payInvoiceLocked').toggleClass('d-none', payStatus !== 'Lunas');
     var badgeHtml = '';
@@ -530,7 +534,7 @@ function kelolaPembayaran(m) {
     }
 
     // Invoice info
-    if (m.invoice_file) {
+    if (m.invoice_file && payStatus !== 'Menunggu Verifikasi') {
         $('#payInvoiceInfo').removeClass('d-none');
         $('#payInvoiceLink').attr('href', '<?= base_url('uploads/invoices') ?>/' + m.invoice_file);
     } else {
@@ -538,12 +542,11 @@ function kelolaPembayaran(m) {
     }
 
     // Verifikasi section
+    var showVerification = !!m.file_bukti_bayar && ['Menunggu Verifikasi', 'Ditolak', 'Lunas'].includes(payStatus);
+    $('#payVerifikasiSection').toggleClass('d-none', !showVerification);
     var verifHtml = '';
-    if (m.file_bukti_bayar) {
-        verifHtml += '<div class="d-flex align-items-center justify-content-between mb-2">';
-        verifHtml += '<div><small class="text-muted d-block">Bukti bayar dari institusi</small>';
-        verifHtml += '<a href="<?= base_url('pendidikan/admin/diklat/api/mahasiswa/bukti-bayar') ?>/' + m.id + '" target="_blank" class="fw-semibold"><i class="fas fa-file-pdf me-1"></i> Lihat Bukti Bayar</a></div>';
-        verifHtml += '</div>';
+    if (showVerification) {
+        verifHtml += '<a href="<?= base_url('pendidikan/admin/diklat/api/mahasiswa/bukti-bayar') ?>/' + m.id + '" target="_blank" rel="noopener" class="btn btn-primary w-100 py-3 fw-bold mb-3"><i class="fas fa-file-invoice-dollar me-2"></i>Lihat Bukti Bayar Institusi <i class="fas fa-arrow-up-right-from-square ms-2"></i></a>';
         if (payStatus === 'Menunggu Verifikasi') {
             verifHtml += '<div class="d-flex gap-2 mt-2">';
             verifHtml += '<button class="btn btn-success btn-sm flex-fill" onclick="verifikasiPembayaran(' + m.id + ', \'Lunas\')"><i class="fas fa-check me-1"></i> Setujui</button>';
@@ -553,8 +556,6 @@ function kelolaPembayaran(m) {
         if (payStatus === 'Ditolak' && m.alasan_penolakan) {
             verifHtml += '<div class="alert alert-danger mt-2 mb-0 py-2 px-3"><small class="fw-semibold"><i class="fas fa-exclamation-circle me-1"></i> Alasan Penolakan:</small><br><small>' + escapeAdminDiklatHtml(m.alasan_penolakan) + '</small></div>';
         }
-    } else {
-        verifHtml += '<p class="text-muted small mb-0">Belum ada bukti bayar dari institusi</p>';
     }
     $('#payVerifikasiContent').html(verifHtml);
 
@@ -590,14 +591,24 @@ $('#uploadInvoiceForm').submit(function(e) {
     var file = $('#payInvoiceFile')[0].files[0];
     var nominal = $('#payNominal').val().replace(/\./g, '');
 
-    if (!file && !nominal) {
-        showAdminDiklatNotification('warning', 'Data belum lengkap', 'Pilih file PDF atau isi nominal.');
+    $('#payNominal, #payInvoiceFile').removeClass('is-invalid').removeAttr('aria-invalid');
+    $('#payInvoiceFileError').text('File invoice PDF wajib diunggah.');
+    if (!nominal || !file) {
+        if (!nominal) $('#payNominal').addClass('is-invalid').attr('aria-invalid', 'true');
+        if (!file) $('#payInvoiceFile').addClass('is-invalid').attr('aria-invalid', 'true');
+        $(nominal ? '#payInvoiceFile' : '#payNominal').trigger('focus');
         return;
     }
 
     if (file) {
         if (file.type !== 'application/pdf') {
-            showAdminDiklatNotification('error', 'File tidak valid', 'File harus berupa PDF.');
+            $('#payInvoiceFileError').text('File invoice harus berupa PDF.');
+            $('#payInvoiceFile').addClass('is-invalid').attr('aria-invalid', 'true').trigger('focus');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            $('#payInvoiceFileError').text('Ukuran file invoice maksimal 2 MB.');
+            $('#payInvoiceFile').addClass('is-invalid').attr('aria-invalid', 'true').trigger('focus');
             return;
         }
         formData.append('invoice_file', file);
@@ -626,6 +637,10 @@ $('#uploadInvoiceForm').submit(function(e) {
             showAdminDiklatNotification('error', 'Gagal', xhr.responseJSON?.message || 'Server error');
         }
     });
+});
+
+$('#payNominal, #payInvoiceFile').on('input change', function() {
+    $(this).removeClass('is-invalid').removeAttr('aria-invalid');
 });
 
 function verifikasiPembayaran(id, status) {
@@ -660,10 +675,11 @@ function verifikasiPembayaran(id, status) {
             cancelButtonText: 'Batal',
             confirmButtonColor: '#ce2127',
             preConfirm: (reason) => {
-                if (!reason) {
+                if (!reason || !reason.trim()) {
                     Swal.showValidationMessage('Alasan penolakan harus diisi!');
+                    return false;
                 }
-                return reason;
+                return reason.trim();
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -679,7 +695,7 @@ function kirimVerifikasi(id, status, alasan) {
         url: '<?= base_url('pendidikan/admin/diklat/api/mahasiswa/verifikasi-pembayaran') ?>/' + id,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ status: status, alasan_penolakan: alasan }),
+        data: JSON.stringify({ status: status, action: status === 'Lunas' ? 'setujui' : 'tolak', alasan_penolakan: alasan }),
         success: function(res) {
             if (res.success) {
                 Swal.fire({

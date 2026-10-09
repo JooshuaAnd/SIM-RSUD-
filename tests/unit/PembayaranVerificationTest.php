@@ -76,6 +76,9 @@ final class PembayaranVerificationTest extends CIUnitTestCase
 
     private function verify(array $payload, int $studentId = 42): array
     {
+        if (($payload['status'] ?? '') === 'Lunas' && !array_key_exists('action', $payload)) {
+            $payload['action'] = 'setujui';
+        }
         $request = $this->getMockBuilder(IncomingRequest::class)
             ->disableOriginalConstructor()->onlyMethods(['getJSON'])->getMock();
         $request->method('getJSON')->willReturn($payload);
@@ -88,6 +91,43 @@ final class PembayaranVerificationTest extends CIUnitTestCase
     private function record(): array
     {
         return $this->paymentDb->table('mahasiswa_pendidikan')->where('id', 42)->get()->getRowArray();
+    }
+
+    #[DataProvider('incompleteInvoices')]
+    public function testInvoiceRequiresNominalAndPdf(?string $nominal, bool $hasFile, string $message): void
+    {
+        $before = $this->record();
+        $file = null;
+        if ($hasFile) {
+            $file = $this->getMockBuilder(UploadedFile::class)->disableOriginalConstructor()
+                ->onlyMethods(['getError', 'move'])->getMock();
+            $file->method('getError')->willReturn(UPLOAD_ERR_OK);
+            $file->expects($this->never())->method('move');
+        }
+        $request = $this->getMockBuilder(IncomingRequest::class)->disableOriginalConstructor()
+            ->onlyMethods(['getPost', 'getFile'])->getMock();
+        $request->method('getPost')->with('nominal')->willReturn($nominal);
+        $request->method('getFile')->with('invoice_file')->willReturn($file);
+        $controller = new AdminDiklat();
+        $controller->initController($request, service('response')->setStatusCode(200), service('logger'));
+        $response = $controller->mahasiswaUploadInvoice(42);
+
+        $this->assertSame(422, $response->getStatusCode());
+        $payload = json_decode($response->getBody(), true);
+        $this->assertFalse($payload['success']);
+        $this->assertSame($message, $payload['message']);
+        $this->assertSame($before, $this->record());
+        $this->assertFileExists(FCPATH . 'uploads/invoices/' . $this->invoiceName);
+    }
+
+    public static function incompleteInvoices(): array
+    {
+        return [
+            'both missing' => [null, false, 'Nominal dan file invoice PDF wajib diisi.'],
+            'nominal only' => ['125000', false, 'File invoice PDF wajib diunggah.'],
+            'file only' => ['', true, 'Nominal wajib diisi.'],
+            'invalid nominal with file' => ['abc', true, 'Nominal harus berupa angka nol atau lebih.'],
+        ];
     }
 
     public function testRejectsProofAndPersistsReasonWithoutChangingInvoice(): void
@@ -124,7 +164,7 @@ final class PembayaranVerificationTest extends CIUnitTestCase
 
     public static function acceptedStatuses(): array
     {
-        return [['Lunas'], ['Belum Bayar'], ['Menunggu Verifikasi']];
+        return [['Lunas']];
     }
 
     #[DataProvider('acceptedStatuses')]
@@ -141,6 +181,30 @@ final class PembayaranVerificationTest extends CIUnitTestCase
         [$status, $payload] = $this->verify(['status' => 'Invalid']);
         $this->assertSame(422, $status);
         $this->assertFalse($payload['success']);
+        $this->assertSame('Menunggu Verifikasi', $this->record()['payment_status']);
+    }
+
+    public function testCannotSettleWithoutExplicitApproval(): void
+    {
+        [$status, $payload] = $this->verify(['status' => 'Lunas', 'action' => null]);
+        $this->assertSame(422, $status);
+        $this->assertFalse($payload['success']);
+        $this->assertSame('Menunggu Verifikasi', $this->record()['payment_status']);
+    }
+
+    public function testCannotApproveBeforeInstitutionSubmitsProof(): void
+    {
+        $this->paymentDb->table('mahasiswa_pendidikan')->where('id', 42)->update(['payment_status' => 'Belum Bayar']);
+        [$status, $payload] = $this->verify(['status' => 'Lunas']);
+        $this->assertSame(409, $status);
+        $this->assertFalse($payload['success']);
+        $this->assertSame('Belum Bayar', $this->record()['payment_status']);
+    }
+
+    public function testVerificationCannotResetPaymentToUnpaid(): void
+    {
+        [$status] = $this->verify(['status' => 'Belum Bayar']);
+        $this->assertSame(422, $status);
         $this->assertSame('Menunggu Verifikasi', $this->record()['payment_status']);
     }
 
@@ -212,7 +276,11 @@ final class PembayaranVerificationTest extends CIUnitTestCase
 
         $request = $this->getMockBuilder(IncomingRequest::class)->disableOriginalConstructor()
             ->onlyMethods(['getPost', 'getFile'])->getMock();
-        $request->method('getPost')->willReturnCallback(fn ($field) => $field === 'mahasiswa_id' ? '42' : null);
+        $request->method('getPost')->willReturnCallback(fn ($field) => match ($field) {
+            'mahasiswa_id' => '42',
+            'status', 'payment_status' => 'Lunas',
+            default => null,
+        });
         $request->method('getFile')->with('bukti_bayar')->willReturn($file);
         $controller = new Pengajuan();
         $controller->initController($request, service('response')->setStatusCode(200), service('logger'));
@@ -235,7 +303,7 @@ final class PembayaranVerificationTest extends CIUnitTestCase
     public function testApprovalClearsOldRejectionReason(): void
     {
         $this->paymentDb->table('mahasiswa_pendidikan')->where('id', 42)->update([
-            'payment_status' => 'Ditolak', 'alasan_penolakan' => 'Alasan lama.',
+            'payment_status' => 'Menunggu Verifikasi', 'alasan_penolakan' => 'Alasan lama.',
         ]);
         [$status, $payload] = $this->verify(['status' => 'Lunas']);
         $this->assertSame(200, $status);
