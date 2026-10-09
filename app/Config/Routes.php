@@ -50,6 +50,8 @@ $routes->group('riset/admin', ['namespace' => 'App\Controllers\Riset\Admin'], fu
     $routes->post('izin/approve', 'Izin::approve');
 
     $routes->get('publikasi', 'Publikasi::index');
+    $routes->get('publikasi/arsip', 'Publikasi::arsip');
+    $routes->post('publikasi/arsip/submit', 'Publikasi::arsipSubmit');
     $routes->get('publikasi/detail/(:any)', 'Publikasi::detail/$1');
     $routes->get('publikasi/print/(:any)', 'Publikasi::print/$1');
     $routes->post('publikasi/uploadSuratIzin', 'Publikasi::uploadSuratIzin');

@@ -35,6 +35,10 @@
                 <i class="fas fa-file-export"></i> Review Publikasi
             </a>
 
+            <a class="nav-link <?= (isset($active_menu) && $active_menu == 'publikasi_arsip') ? 'active' : '' ?>" href="<?= base_url('riset/admin/publikasi/arsip') ?>">
+                <i class="fas fa-cloud-upload-alt"></i> Upload Arsip Publikasi
+            </a>
+
             <div class="px-3 mb-2 mt-4">
                 <label class="text-uppercase fw-bold text-muted" style="font-size: 10px; letter-spacing: 1px;">Pengaturan</label>
             </div>

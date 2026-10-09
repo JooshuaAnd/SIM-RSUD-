@@ -31,6 +31,76 @@ class Publikasi extends BaseController
         ]);
     }
 
+    public function arsip()
+    {
+        return view('Riset/admin/publikasi/arsip', [
+            'title'       => 'Upload Arsip Publikasi',
+            'active_menu' => 'publikasi_arsip',
+        ]);
+    }
+
+    public function arsipSubmit()
+    {
+        // Semua isian wajib karena data ditampilkan di halaman depan repositori.
+        $rules = [
+            'nama'            => ['label' => 'Nama Penulis', 'rules' => 'required|max_length[255]'],
+            'identitas'       => ['label' => 'NIM / NIDN', 'rules' => 'required|max_length[100]'],
+            'prodi'           => ['label' => 'Program Studi', 'rules' => 'required|max_length[100]'],
+            'institusi'       => ['label' => 'Institusi', 'rules' => 'required|max_length[255]'],
+            'judul'           => ['label' => 'Judul Penelitian', 'rules' => 'required'],
+            'waktu_mulai'     => ['label' => 'Waktu Mulai Penelitian', 'rules' => 'required|valid_date[Y-m-d]'],
+            'waktu_selesai'   => ['label' => 'Waktu Selesai Penelitian', 'rules' => 'required|valid_date[Y-m-d]'],
+            'jenis_jurnal'    => ['label' => 'Jenis Jurnal', 'rules' => 'required|max_length[100]'],
+            'kategori_jurnal' => ['label' => 'Kategori / Bidang Jurnal', 'rules' => 'required|max_length[100]'],
+            'nama_publikasi'  => ['label' => 'Nama Publikasi / Jurnal', 'rules' => 'required|max_length[255]'],
+            'issn'            => ['label' => 'ISSN / E-ISSN', 'rules' => 'required|max_length[50]'],
+            'scope'           => ['label' => 'Scope / Bidang', 'rules' => 'required'],
+            'alamat_web'      => ['label' => 'Alamat Web (URL)', 'rules' => 'required|valid_url_strict|max_length[500]'],
+            'abstrak'         => ['label' => 'Abstrak', 'rules' => 'required'],
+            'draft_artikel'   => [
+                'label' => 'Dokumen Publikasi',
+                'rules' => 'uploaded[draft_artikel]|ext_in[draft_artikel,pdf,doc,docx]|max_size[draft_artikel,10240]',
+            ],
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        if ($this->request->getPost('waktu_selesai') < $this->request->getPost('waktu_mulai')) {
+            return redirect()->back()->withInput()->with('error', 'Waktu selesai penelitian tidak boleh lebih awal dari waktu mulai.');
+        }
+
+        $file = $this->request->getFile('draft_artikel');
+        $fileName = $file->getRandomName();
+        $file->move(FCPATH . 'uploads/riset/publikasi', $fileName);
+
+        $this->publikasiModel->insert([
+            'user_riset_id'      => null,
+            'pengajuan_riset_id' => null,
+            'tujuan_laporan'     => 'upload',
+            'judul'              => trim($this->request->getPost('judul')),
+            'waktu_mulai'        => $this->request->getPost('waktu_mulai'),
+            'waktu_selesai'      => $this->request->getPost('waktu_selesai'),
+            'nama'               => trim($this->request->getPost('nama')),
+            'identitas'          => trim($this->request->getPost('identitas')),
+            'prodi'              => trim($this->request->getPost('prodi')),
+            'institusi'          => trim($this->request->getPost('institusi')),
+            'jenis_jurnal'       => trim($this->request->getPost('jenis_jurnal')),
+            'nama_publikasi'     => trim($this->request->getPost('nama_publikasi')),
+            'kategori_jurnal'    => trim($this->request->getPost('kategori_jurnal')),
+            'issn'               => trim($this->request->getPost('issn')),
+            'scope'              => trim($this->request->getPost('scope')),
+            'alamat_web'         => trim($this->request->getPost('alamat_web')),
+            'abstrak'            => trim($this->request->getPost('abstrak')),
+            'dokumen_path'       => 'uploads/riset/publikasi/' . $fileName,
+            'status'             => 'selesai',
+        ]);
+
+        return redirect()->to(base_url('riset/admin/publikasi'))
+            ->with('success', 'Arsip publikasi berhasil diunggah dan langsung berstatus Selesai. Publikasi tampil di Katalog Arsip Publik dan halaman depan repositori.');
+    }
+
     public function detail($id = null)
     {
         $publikasi = $this->publikasiModel->find($id);
@@ -43,8 +113,11 @@ class Publikasi extends BaseController
         $dokumen = $this->dokumenModel->where('pengajuan_riset_id', $id)
                                       ->whereIn('jenis_dokumen', ['publikasi', 'permohonan_izin', 'salinan_izin_penelitian', 'draft_artikel', 'pernyataan_anonimitas', 'Surat Izin Publikasi Resmi'])
                                       ->findAll();
+        if (!empty($publikasi['dokumen_path'])) {
+            $dokumen[] = ['jenis_dokumen' => 'draft_artikel', 'file_path' => $publikasi['dokumen_path']];
+        }
         $publikasi['dokumen'] = $dokumen;
-        
+
         // Fetch user data for contact info
         $userModel = new \App\Models\UserRisetModel();
         $user = $userModel->find($publikasi['user_riset_id']);
@@ -92,6 +165,8 @@ class Publikasi extends BaseController
         $nomor_surat = $this->request->getPost('nomor_surat');
 
         $updateData = [];
+        // Setelah persetujuan akhir admin tetap di halaman detail agar bisa mengunduh surat.
+        $redirectUrl = base_url('riset/admin/publikasi');
 
         if ($status === 'konfirmasi_dokumen') {
             $updateData['status'] = 'menunggu_pembayaran';
@@ -132,11 +207,13 @@ class Publikasi extends BaseController
                 $romanMonth = $romans[date('m')];
                 $updateData['no_surat_izin'] = "{$increment}/SIP-PUB/{$romanMonth}/" . $currentYear;
             }
-            $message = 'Pembayaran divalidasi. Surat Izin Publikasi diterbitkan dan diarsipkan otomatis!';
+            $message = 'Dokumen akhir diterima dan pembayaran divalidasi. Surat Izin Publikasi diterbitkan dan diarsipkan, silakan unduh atau cetak surat pada halaman ini.';
+            $redirectUrl = base_url('riset/admin/publikasi/detail/' . $id);
         } elseif ($status === 'konfirmasi_bayar_terima') {
             $updateData['status'] = 'selesai';
             $updateData['catatan_revisi'] = null;
-            $message = 'Pembayaran divalidasi. Laporan hasil riset diarsipkan tanpa penerbitan surat izin.';
+            $message = 'Dokumen akhir diterima. Laporan hasil riset diarsipkan tanpa penerbitan surat izin.';
+            $redirectUrl = base_url('riset/admin/publikasi/detail/' . $id);
         } elseif ($status === 'revisi') {
             $updateData['status'] = 'direvisi';
             $updateData['catatan_revisi'] = $catatan;
@@ -156,7 +233,7 @@ class Publikasi extends BaseController
 
         $this->publikasiModel->update($id, $updateData);
 
-        return redirect()->to(base_url('riset/admin/publikasi'))
+        return redirect()->to($redirectUrl)
             ->with('success', $message);
     }
 
@@ -165,6 +242,11 @@ class Publikasi extends BaseController
         $publikasi = $this->publikasiModel->find($id);
         if (!$publikasi) {
             return redirect()->back()->with('error', 'Data publikasi tidak ditemukan.');
+        }
+
+        // Arsip yang diunggah admin menyimpan berkasnya langsung di publikasi.
+        if (!empty($publikasi['dokumen_path'])) {
+            return redirect()->to(base_url($publikasi['dokumen_path']));
         }
 
         $dokumen = null;

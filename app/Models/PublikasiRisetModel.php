@@ -28,6 +28,7 @@ class PublikasiRisetModel extends Model
         'scope',
         'alamat_web',
         'abstrak',
+        'dokumen_path',
         'status',
         'catatan_revisi',
         'nominal_bayar',

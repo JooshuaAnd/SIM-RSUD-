@@ -97,6 +97,8 @@ class Izin extends BaseController
         $waktu_selesai    = $this->request->getPost('waktu_selesai');
 
         $updateData = [];
+        // Setelah persetujuan akhir admin tetap di halaman detail agar bisa mengunduh surat.
+        $redirectUrl = base_url('riset/admin/izin');
 
         if ($status_validasi == 'konfirmasi_dokumen') {
             $updateData['status'] = 'menunggu_pembayaran';
@@ -121,7 +123,8 @@ class Izin extends BaseController
             if ($waktu_selesai) {
                 $updateData['waktu_selesai'] = $waktu_selesai;
             }
-            $message = 'Pembayaran divalidasi. Surat Izin berhasil diterbitkan.';
+            $message = 'Dokumen akhir diterima dan pembayaran divalidasi. Surat Izin berhasil diterbitkan, silakan unduh atau cetak surat pada halaman ini.';
+            $redirectUrl = base_url('riset/admin/izin/detail/' . $id);
         } elseif ($status_validasi == 'revisi') {
             $updateData['status'] = 'direvisi';
             $updateData['catatan_revisi'] = $catatan;
@@ -141,7 +144,7 @@ class Izin extends BaseController
 
         $this->pengajuanModel->update($id, $updateData);
 
-        return redirect()->to(base_url('riset/admin/izin'))
+        return redirect()->to($redirectUrl)
             ->with('success', $message);
     }
 
